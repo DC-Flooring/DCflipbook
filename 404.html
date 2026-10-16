@@ -72,6 +72,10 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .qcard .row3{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px 8px; margin-top:4px; }
 .qcard .actions{ display:flex; gap:6px; flex-wrap:wrap; }
 .qcard .waiting{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.04em; color:var(--bad); }
+.qcard .views{ margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-soft); }
+.qcard .views.opened{ color:var(--ok); }
+.list-section{ display:flex; justify-content:space-between; margin:16px 2px 8px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); }
+.list-section:first-child{ margin-top:2px; }
 .copy-fu-btn{
   width:100%; margin-top:8px; padding:7px 10px; background:none; border:1px solid var(--brass); color:var(--brass);
   border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;
@@ -442,7 +446,10 @@ function fromDbRow(r){
     hidden: !!r.hidden,
     shortSlug: r.short_slug || null,
     createdAt: r.created_at,
-    updatedAt: r.updated_at
+    updatedAt: r.updated_at,
+    firstViewedAt: r.first_viewed_at || null,
+    lastViewedAt: r.last_viewed_at || null,
+    viewCount: r.view_count || 0
   };
 }
 
@@ -494,6 +501,34 @@ async function deleteQuoteRows(refs){
     const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?ref=in.(${list})`, { method:'DELETE', headers: SB_HEADERS });
     return res.ok;
   }catch(e){ return false; }
+}
+/* Customer view tracking. Fire-and-forget: any failure is swallowed so the customer always sees their quote.
+   The PATCH is filtered on the view_count we read, so two near-simultaneous opens can't overwrite each other:
+   if someone else got in first it matches no row, and we re-read and retry once. first_viewed_at is only
+   sent while it is still empty. */
+const trackedThisLoad = new Set();
+async function trackView(q){
+  try{
+    if(trackedThisLoad.has(q.ref)) return;
+    trackedThisLoad.add(q.ref);
+    const now = new Date().toISOString();
+    let count = q.viewCount || 0, first = q.firstViewedAt;
+    for(let attempt=0; attempt<2; attempt++){
+      const body = { view_count: count+1, last_viewed_at: now };
+      if(!first) body.first_viewed_at = now;
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?ref=eq.${encodeURIComponent(q.ref)}&view_count=eq.${count}`, {
+        method:'PATCH',
+        headers:{ ...SB_HEADERS, 'Content-Type':'application/json', Prefer:'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok) return;
+      const rows = await res.json();
+      if(rows.length) return;
+      const fresh = await getQuote(q.ref);
+      if(!fresh) return;
+      count = fresh.viewCount; first = fresh.firstViewedAt;
+    }
+  }catch(e){ /* tracking is best-effort */ }
 }
 async function nextRef(){
   return 'DCF-' + Date.now().toString().slice(-6);
@@ -569,6 +604,27 @@ function reminderQuotes(all){
     .filter(q=>{ const age = quoteAgeDays(q); return q.status==='sent' && !q.hidden && age!==null && age > REMINDER_AFTER_DAYS; })
     .sort((a,b)=> quoteAgeDays(b) - quoteAgeDays(a));
 }
+function timeAgo(iso){
+  const t = Date.parse(iso || '');
+  if(isNaN(t)) return '';
+  const mins = Math.floor((Date.now() - t) / 60000);
+  if(mins < 1) return 'just now';
+  if(mins < 60) return `${mins} minute${mins===1?'':'s'} ago`;
+  const hours = Math.floor(mins / 60);
+  if(hours < 24) return `${hours} hour${hours===1?'':'s'} ago`;
+  const days = Math.floor(hours / 24);
+  if(days < 30) return `${days} day${days===1?'':'s'} ago`;
+  return 'on ' + fmtDate(new Date(t).toISOString().slice(0,10));
+}
+function viewsLabel(q){
+  const n = q.viewCount || 0;
+  if(!n) return 'Not opened';
+  const ago = q.lastViewedAt ? timeAgo(q.lastViewedAt) : '';
+  return `Opened ${n} ${n===1?'time':'times'}${ago ? ', last viewed ' + ago : ''}`;
+}
+function viewsHtml(q){
+  return `<div class="views ${q.viewCount ? 'opened' : ''}">${escapeHtml(viewsLabel(q))}</div>`;
+}
 function quoteLink(q){
   return `${siteBase()}/${q.shortSlug ? 'q/'+encodeURIComponent(q.shortSlug) : 'quote/'+encodeURIComponent(q.ref)}`;
 }
@@ -634,7 +690,7 @@ async function renderList(force = true){
     const term = searchTerm.trim().toLowerCase();
     const reminders = term ? allReminders.filter(q=> matchesSearch(q, term)) : allReminders;
     if(!reminders.length){ el.innerHTML = emptyListHtml(); return; }
-    el.innerHTML = reminders.map(q=>{
+    const reminderCard = q=>{
       const days = Math.floor(quoteAgeDays(q));
       return `<div class="qcard ${q.ref===currentRef?'active':''}" data-ref="${escapeHtml(q.ref)}">
         <div class="row1">
@@ -643,9 +699,17 @@ async function renderList(force = true){
         </div>
         <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
         <div class="row3"><span class="total">${money(calcTotals(q).total)}</span></div>
+        ${viewsHtml(q)}
         <button class="copy-fu-btn" data-ref="${escapeHtml(q.ref)}">Copy follow-up message</button>
       </div>`;
-    }).join('');
+    };
+    const sections = [
+      ['Never opened', reminders.filter(q=> !q.viewCount)],
+      ['Opened, no decision', reminders.filter(q=> q.viewCount > 0)]
+    ].filter(([, list])=> list.length);
+    el.innerHTML = sections.map(([title, list])=>
+      `<div class="list-section"><span>${title}</span><span>${list.length}</span></div>${list.map(reminderCard).join('')}`
+    ).join('');
     Array.from(el.querySelectorAll('.qcard')).forEach(c=>{
       c.addEventListener('click', ()=> openEditor(c.dataset.ref));
     });
@@ -704,6 +768,7 @@ async function renderList(force = true){
           <button class="del-btn" data-ref="${q.ref}" title="Delete permanently">Delete</button>
         </div>
       </div>
+      ${viewsHtml(q)}
       ${reasonHtml}
     </div>`;
   }).join('');
@@ -905,7 +970,8 @@ function renderEditor(){
     const v = editVersion;
     const ok = await saveQuote(draft);
     if(ok && v === editVersion) setDirty(false);
-    location.hash = draft.ref;
+    history.pushState(null, '', `${siteBase()}/?preview=1#${encodeURIComponent(draft.ref)}`);
+    route();
   });
   document.getElementById('printBtn').addEventListener('click', printQuote);
   document.getElementById('copyBtn').addEventListener('click', async ()=>{
@@ -1136,6 +1202,7 @@ async function renderCustomer(routeInfo){
     stage.innerHTML = `<div class="not-found">Quote <strong>${escapeHtml(routeInfo.value)}</strong> couldn't be found.<br>Double check the link, or ask DC Flooring to resend it.</div>`;
     return;
   }
+  if(!isPreview()) trackView(q);   // not awaited, errors swallowed inside
   const {subtotal, vat, total} = calcTotals(q);
   const liRows = q.lineItems.filter(li=>li.product).map(li=>{
     const qty = parseFloat(li.qty), price=parseFloat(li.unitPrice)||0;
@@ -1284,6 +1351,10 @@ function wireBook(){
 }
 
 /* ---------------- routing ---------------- */
+function isPreview(){
+  // "Preview as customer" opens the quote with ?preview=1 so admin views are never counted
+  return new URLSearchParams(location.search).get('preview') === '1';
+}
 function siteBase(){
   // Site is served from a custom domain root (quotes.benchcreative.co.uk).
   return location.origin;
