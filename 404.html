@@ -30,6 +30,7 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .pill.sent{ background:#e0d3ba; color:var(--walnut); }
 .pill.accepted{ background:#dbe6dc; color:var(--ok); }
 .pill.declined{ background:#f0dcd9; color:var(--bad); }
+.pill.expired{ background:#efe0c8; color:#8a5a14; }
 
 /* ===== LOGIN ===== */
 #login{ display:none; min-height:100vh; align-items:center; justify-content:center; padding:24px 16px; background:#272727; color:var(--linen); }
@@ -44,32 +45,42 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 
 /* ===== ADMIN ===== */
 #admin{ display:none; min-height:100vh; }
-.admin-body{ display:flex; max-width:1560px; margin:0 auto; gap:0; min-height:100vh; }
+.admin-body{ display:flex; width:100%; min-width:0; max-width:1560px; margin:0 auto; gap:0; min-height:100vh; }   /* min-width:0: a flex item otherwise can't shrink below its content (e.g. a nowrap line) */
+.admin-main{ flex:1; min-width:0; display:flex; }
 .sidebar{
-  width:200px; flex-shrink:0; background:#272727; color:var(--linen); padding:28px 20px;
-  display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px;
+  width:190px; flex-shrink:0; background:#272727; color:var(--linen);
+  display:flex; flex-direction:column; padding:26px 0 18px;
+  position:sticky; top:0; height:100vh; align-self:flex-start; overflow-y:auto;
 }
-.sidebar .sidebar-logo{ display:block; width:100%; max-width:160px; height:auto; aspect-ratio:8/5; object-fit:cover; object-position:50% 46%; mix-blend-mode:lighten; }
-.sidebar-meta{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.sidebar-top{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:0 18px 20px; text-align:center; }
+.sidebar .sidebar-logo{ display:block; width:100%; max-width:150px; height:auto; aspect-ratio:8/5; object-fit:cover; object-position:50% 46%; mix-blend-mode:lighten; }
+.sidebar .tagline{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--brass); }
+.nav{ display:flex; flex-direction:column; gap:2px; }
+.nav-item{
+  position:relative; display:flex; align-items:center; gap:12px; padding:11px 16px 11px 18px;
+  border-left:3px solid transparent; color:var(--linen-soft); text-decoration:none; font-size:13.5px; font-weight:500;
+}
+.nav-item:hover{ background:rgba(255,255,255,.04); color:var(--linen); }
+.nav-item.active{ background:rgba(255,255,255,.09); border-left-color:#b08d57; color:#fff; }
+.nav-item svg{ width:19px; height:19px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.nav-badge{ margin-left:auto; min-width:19px; padding:1px 6px; border-radius:10px; background:var(--brass); color:#fff; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.4; text-align:center; }
+.nav-badge.zero{ background:rgba(255,255,255,.14); color:var(--linen-soft); }
+.sidebar-bottom{ margin-top:auto; padding:16px 18px 0; text-align:center; }
 .logout-link{ padding:0; background:none; border:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--linen-soft); text-decoration:underline; cursor:pointer; }
 .logout-link:hover{ color:var(--brass); }
-.sidebar .tagline{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--brass); }
-.list-pane{ width:300px; flex-shrink:0; border-right:1px solid var(--line); padding:20px; background:var(--paper); }
+.list-pane{ width:300px; min-width:0; flex-shrink:0; border-right:1px solid var(--line); padding:20px; background:var(--paper); }
+.page-pane{ display:none; flex:1; min-width:0; padding:28px clamp(18px,2.6vw,40px) 44px; }
+/* which panes each view shows */
+#admin[data-view="dashboard"] .list-pane, #admin[data-view="dashboard"] .editor-pane,
+#admin[data-view="settings"] .list-pane, #admin[data-view="settings"] .editor-pane{ display:none; }
+#admin[data-view="dashboard"] #dashboardPane, #admin[data-view="settings"] #settingsPane{ display:block; }
+
 .new-btn{
   width:100%; padding:11px; background:var(--brass); color:#fff; border:none; border-radius:4px;
   font-size:13px; font-weight:600; letter-spacing:.02em; cursor:pointer; margin-bottom:16px;
 }
 .new-btn:hover{ background:var(--oak); }
-.list-tabs{ display:flex; gap:4px; margin:-4px 0 14px; border-bottom:1px solid var(--line); }
-.list-tab{
-  flex:1; display:flex; align-items:center; justify-content:center; gap:6px; background:none; border:none;
-  border-bottom:2px solid transparent; margin-bottom:-1px; padding:8px 4px 9px; font-size:12.5px; font-weight:600;
-  color:var(--ink-soft); cursor:pointer;
-}
-.list-tab:hover{ color:var(--ink); }
-.list-tab.active{ color:var(--ink); border-bottom-color:var(--brass); }
-.tab-badge{ min-width:18px; padding:1px 6px; border-radius:10px; background:var(--brass); color:#fff; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.4; }
-.tab-badge.zero{ background:#e5dbc7; color:var(--ink-soft); }
+
 .list-search{
   width:100%; padding:8px 10px; margin-bottom:12px; border:1px solid var(--line); border-radius:4px;
   font-size:13px; font-family:'Work Sans',sans-serif; background:#fff; color:var(--ink);
@@ -82,13 +93,15 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .qcard:hover{ border-color:var(--brass); }
 .qcard.active{ border-color:var(--brass); box-shadow:0 0 0 1px var(--brass); }
 .qcard{ min-width:0; }
-.qcard .row1{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px 8px; margin-bottom:5px; }
-.qcard .row1-left{ display:flex; gap:6px; align-items:center; min-width:0; }
+.qcard .row1{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:5px; }
+.qcard .row1-left{ display:flex; gap:6px; align-items:center; flex:1 1 0; min-width:0; }
 .qcard .row3{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px 8px; margin-top:4px; }
 .qcard .actions{ display:flex; gap:6px; flex-wrap:wrap; }
 .qcard .waiting{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.04em; color:var(--bad); }
-.qcard .views{ margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-soft); }
-.qcard .views.opened{ color:var(--ok); }
+.qcard .row1-right{ display:flex; align-items:center; gap:8px; flex:none; justify-content:flex-end; }
+.view-badge{ display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ok); cursor:help; }
+.view-badge svg{ width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.view-badge.none{ color:#b3a893; }
 .list-section{ display:flex; justify-content:space-between; margin:16px 2px 8px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); }
 .list-section:first-child{ margin-top:2px; }
 .copy-fu-btn{
@@ -96,10 +109,10 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
   border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;
 }
 .copy-fu-btn:hover{ background:var(--brass); color:#fff; }
-.qcard .ref{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); }
+.qcard .ref{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .qcard .name{ font-size:14px; font-weight:600; margin-bottom:2px; overflow-wrap:anywhere; }
 .qcard .total{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); }
-.qcard .reason{ font-size:11px; color:var(--bad); margin-top:6px; font-style:italic; }
+.qcard .reason{ font-size:11px; color:var(--bad); margin-top:6px; font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .qcard.is-hidden{ opacity:.5; }
 .hide-btn{
   font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.05em; text-transform:uppercase;
@@ -195,6 +208,7 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .link-box{ display:flex; gap:8px; align-items:center; margin-top:14px; }
 .link-box input{ flex:1; min-width:0; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; border:1px solid var(--line); border-radius:4px; background:#fff; }
 .link-box .btn{ padding:8px 12px; }
+.views-detail{ margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:11.5px; line-height:1.55; color:var(--ink-soft); }
 .link-note{ font-size:11px; color:var(--ink-soft); margin-top:6px; line-height:1.5; }
 .response-box{ margin-top:22px; padding:14px 16px; border-radius:5px; }
 .response-box.accepted{ background:#eaf1eb; }
@@ -203,6 +217,60 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .response-box .rr{ font-size:12.5px; color:var(--ink-soft); }
 .saved-flash{ font-size:12px; color:var(--ok); font-family:'IBM Plex Mono',monospace; opacity:0; transition:opacity 200ms; }
 .saved-flash.show{ opacity:1; }
+
+/* ===== DASHBOARD + SETTINGS ===== */
+.page-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px 20px; margin-bottom:22px; }
+.page-head h1{ font-size:26px; }
+.period{ display:inline-flex; max-width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:#fff; }
+.period button{ padding:8px 14px; background:none; border:none; border-right:1px solid var(--line); font-size:12.5px; font-weight:500; color:var(--ink-soft); cursor:pointer; white-space:nowrap; }
+.period button:last-child{ border-right:none; }
+.period button:hover{ color:var(--ink); }
+.period button.active{ background:var(--brass); color:#fff; }
+.panel{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:18px 20px; margin-bottom:22px; }
+.panel h2{ font-size:16px; margin:0 0 2px; }
+.cap{ margin:0 0 14px; font-size:11.5px; line-height:1.5; color:var(--ink-soft); }
+.att-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.att-col h3{ margin:0; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); display:flex; justify-content:space-between; }
+.att-col h3 span{ color:var(--ink-soft); }
+.na-row{ margin-top:8px; padding:10px 12px; border:1px solid var(--line); border-radius:6px; background:var(--paper); cursor:pointer; }
+.na-row:hover{ border-color:var(--brass); }
+.na-top{ display:flex; justify-content:space-between; gap:10px; }
+.na-name{ font-size:13.5px; font-weight:600; overflow-wrap:anywhere; }
+.na-value{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; white-space:nowrap; }
+.na-meta{ margin-top:3px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.5; color:var(--ink-soft); overflow-wrap:anywhere; }
+.na-row .copy-fu-btn{ margin-top:8px; padding:5px 8px; font-size:11.5px; }
+.na-empty{ padding:10px 0 2px; font-size:12.5px; line-height:1.5; color:var(--ink-soft); }
+.na-more{ margin-top:8px; font-size:11.5px; color:var(--ink-soft); }
+.kpis{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:22px; }
+.kpi{ min-width:0; padding:16px 18px; background:#fff; border:1px solid var(--line); border-radius:8px; }
+.k-label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); }
+.k-value{ margin:6px 0 2px; font-family:'Fraunces',serif; font-size:28px; font-weight:600; line-height:1.15; overflow-wrap:anywhere; }
+.k-value.dim{ color:#b3a893; }
+.k-sub{ font-size:12.5px; color:var(--ink); }
+.k-sub small{ display:block; margin-top:2px; font-size:11.5px; color:var(--ink-soft); }
+.k-cap{ margin-top:10px; font-size:11px; line-height:1.45; color:var(--ink-soft); }
+.chart{ display:flex; gap:clamp(4px,1.4vw,16px); height:210px; }
+.wk{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.bars{ flex:1; display:flex; align-items:flex-end; justify-content:center; gap:3px; padding-top:18px; border-bottom:1px solid #cdbfa5; }
+.bar{ position:relative; width:min(20px,42%); min-height:2px; border-radius:3px 3px 0 0; }
+.bar.sent{ background:var(--brass); }
+.bar.won{ background:var(--ok); }
+.bar i{ position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-style:normal; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink); }
+.wk-label{ height:24px; padding-top:6px; text-align:center; font-size:10.5px; color:var(--ink-soft); white-space:nowrap; }
+.legend{ display:flex; gap:16px; margin-top:6px; font-size:11.5px; color:var(--ink-soft); }
+.legend span::before{ content:""; display:inline-block; width:10px; height:10px; margin-right:6px; border-radius:2px; vertical-align:-1px; }
+.legend .l-sent::before{ background:var(--brass); } .legend .l-won::before{ background:var(--ok); }
+.dash-foot{ font-size:11.5px; color:var(--ink-soft); }
+.settings-form{ max-width:660px; }
+.settings-form .panel{ margin-bottom:18px; }
+.settings-form .field input, .settings-form .field textarea{ font-size:14px; }
+.settings-form .hint{ margin:-8px 0 14px; font-size:11.5px; line-height:1.5; color:var(--ink-soft); }
+.settings-actions{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.settings-msg{ font-size:12.5px; font-family:'IBM Plex Mono',monospace; color:var(--ok); }
+.settings-msg.err{ color:var(--bad); }
+.settings-notice{ margin-bottom:18px; padding:12px 14px; border:1px solid #edd0ca; border-radius:6px; background:#f7ece9; font-size:13px; line-height:1.5; }
+.settings-notice .btn{ margin-top:8px; }
+.settings-logout{ display:none; margin-top:26px; }
 
 /* ===== CUSTOMER (booklet) ===== */
 #customer{ display:none; min-height:100vh; align-items:center; justify-content:center; padding:48px 16px;
@@ -345,23 +413,46 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .admin-link{ position:fixed; bottom:14px; left:14px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7a6a52; text-decoration:none; letter-spacing:.05em; }
 
 @media (min-width:1100px){
-  .sidebar{ width:170px; padding:24px 14px; }
+  .sidebar{ width:176px; }
   .list-pane{ width:270px; padding:18px; }
   .editor-pane{ padding:26px clamp(22px,2.4vw,36px); }
   .editor-grid{ display:grid; grid-template-columns:minmax(0,1fr) clamp(240px,22vw,300px); gap:clamp(22px,2vw,30px); align-items:start; }
   .editor-summary{ position:sticky; top:20px; margin-top:0; }
 }
 @media (max-width:1099px){
-  /* side-by-side panes leave the editor too narrow below ~1100px, so stack them */
-  .admin-body{ flex-direction:column; }
-  .sidebar{ width:100%; flex-direction:row; justify-content:center; padding:16px 20px; gap:12px; }
+  /* side-by-side panes leave the editor too narrow below ~1100px, so the list sits above the editor */
+  .admin-main{ flex-direction:column; }
   .list-pane{ width:100%; border-right:none; border-bottom:1px solid var(--line); }
+  .att-grid{ grid-template-columns:1fr; }
+  .kpis{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:800px){
+  /* the sidebar becomes a fixed bottom bar with the same four items */
+  .admin-body{ flex-direction:column; padding-bottom:calc(66px + env(safe-area-inset-bottom, 0px)); }
+  .sidebar{
+    position:fixed; left:0; right:0; bottom:0; top:auto; z-index:60; width:100%; height:auto; align-self:auto;
+    flex-direction:row; padding:0 0 env(safe-area-inset-bottom, 0px); overflow:visible; border-top:1px solid #3a3a3a;
+  }
+  .sidebar-top, .sidebar-bottom{ display:none; }
+  .nav{ flex-direction:row; width:100%; gap:0; }
+  .nav-item{
+    flex:1; min-width:0; flex-direction:column; justify-content:center; gap:3px; padding:8px 2px 7px;
+    border-left:0; border-top:2px solid transparent; font-size:10.5px; text-align:center;
+  }
+  .nav-item.active{ border-top-color:#b08d57; }
+  .nav-item svg{ width:21px; height:21px; }
+  .nav-badge{ position:absolute; top:3px; left:calc(50% + 6px); margin:0; min-width:16px; padding:0 4px; font-size:9.5px; }
+  .settings-logout{ display:inline-block; }
 }
 @media (max-width:640px){
+  .page-pane{ padding:20px 16px 36px; }
+  .kpis{ gap:10px; }
+  .kpi{ padding:12px 13px; }
+  .k-value{ font-size:23px; }
+  .panel{ padding:16px 14px; }
   .editor-pane{ padding:20px 16px; }
   .li-table col.c-qty{ width:14%; } .li-table col.c-unit{ width:22%; } .li-table col.c-total{ width:21%; } .li-table col.c-rm{ width:28px; }
   .li-table td.li-total{ font-size:11.5px; }
-  .sidebar .sidebar-logo{ max-width:96px; }
   .page{ padding:28px 24px 28px 38px; }
   .decision-inner{ padding:28px 24px 28px 38px; }
   .cover{ padding-left:38px; }
@@ -396,18 +487,23 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 <!-- ============ ADMIN ============ -->
 <div id="admin">
   <div class="admin-body">
-    <div class="sidebar">
-      <img src="/floors-for-living-logo.png" alt="Floors for Living logo" class="sidebar-logo">
-      <div class="sidebar-meta">
+<nav class="sidebar" aria-label="Main">
+      <div class="sidebar-top">
+        <img src="/floors-for-living-logo.png" alt="Floors for Living logo" class="sidebar-logo">
         <div class="tagline">Quote Builder</div>
+      </div>
+      <div class="nav">
+        <a class="nav-item" href="#/dashboard" data-view="dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span class="nav-label">Dashboard</span></a>
+        <a class="nav-item" href="#/quotes" data-view="quotes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg><span class="nav-label">Quotes</span></a>
+        <a class="nav-item" href="#/reminders" data-view="reminders"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="nav-label">Reminders</span><span class="nav-badge zero" id="reminderBadge">0</span></a>
+        <a class="nav-item" href="#/settings" data-view="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg><span class="nav-label">Settings</span></a>
+      </div>
+      <div class="sidebar-bottom">
         <button class="logout-link" id="logoutBtn" type="button">Log out</button>
       </div>
-    </div>
+    </nav>
+    <div class="admin-main">
     <div class="list-pane">
-      <div class="list-tabs" role="tablist" aria-label="Quote lists">
-        <button class="list-tab active" role="tab" aria-selected="true" data-tab="all">All quotes</button>
-        <button class="list-tab" role="tab" aria-selected="false" data-tab="reminders">Reminders <span class="tab-badge zero" id="reminderBadge">0</span></button>
-      </div>
       <button class="new-btn" id="newQuoteBtn">+ New Quote</button>
       <input type="search" class="list-search" id="searchInput" placeholder="Search name or quote ref" aria-label="Search quotes by customer name or quote ref" autocomplete="off">
       <div class="list-filters" id="listFilters">
@@ -428,6 +524,9 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
       <div id="qList"></div>
     </div>
     <div class="editor-pane" id="editorPane"></div>
+    <div class="page-pane" id="dashboardPane" aria-live="polite"></div>
+    <div class="page-pane" id="settingsPane"></div>
+    </div>
   </div>
 </div>
 
@@ -439,10 +538,24 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 
 <script>
 /* ---------------- settings ---------------- */
-// A "sent" quote shows up under Reminders once it has been waiting longer than this many days.
-const REMINDER_AFTER_DAYS = 5;
+// Dashboard thresholds, all in one place so they are easy to change.
+const DEFAULT_PERIOD = '30d';          // 'month' | '30d' | 'quarter' | 'all'
+const EXPIRING_SOON_DAYS = 3;          // "Needs attention": valid-until is within this many days
+const WARM_MIN_VIEWS = 2;              // "Needs attention": opened at least this many times, no decision yet
+const NEVER_OPENED_AFTER_DAYS = 2;     // "Needs attention": sent more than this many days ago and never opened
+const NEEDS_ATTENTION_MAX = 5;         // rows shown in each "Needs attention" list
+const CHART_WEEKS = 8;                 // weeks shown in the sent vs accepted chart
+const SETTINGS_WAIT_MS = 2500;         // how long the first screen waits for the settings row before using defaults
 
-// Printed on the "Print quote" output. Fill these in; any field left empty is simply not printed.
+// Business settings live in the `settings` table (row id 1) and are edited on the Settings page.
+// These are the fallbacks used until that row loads, or if it can't be loaded.
+const DEFAULT_SETTINGS = {
+  businessName:'', phone:'', email:'', address:'',
+  defaultTerms:'Price valid for 14 days. 25% deposit required to confirm your fitting date.',
+  quoteValidDays:14,   // pre-fills "Valid until" on new quotes
+  reminderDays:5       // a sent quote shows under Reminders once it has waited longer than this
+};
+// The business details printed on quotes (header contact row and sign-off), kept in step with the settings.
 const BUSINESS = { businessName:'', phone:'', email:'', address:'' };
 
 /* ---------------- Supabase storage ---------------- */
@@ -539,7 +652,10 @@ function resetAdminState(){
   draft = null; currentRef = null; quoteCache = null; selectedRefs = new Set();
   searchTerm = ''; filterFrom = ''; filterTo = ''; showHidden = false; listTab = 'all';
   isDirty = false;
-  ['qList','editorPane'].forEach(id=>{ const el = document.getElementById(id); if(el) el.innerHTML = ''; });
+  settings = { ...DEFAULT_SETTINGS }; settingsState = 'idle'; settingsPromise = Promise.resolve(); firstRenderDone = false;
+  adminView = null; dashPeriod = DEFAULT_PERIOD;
+  applySettings();
+  ['qList','editorPane','dashboardPane','settingsPane'].forEach(id=>{ const el = document.getElementById(id); if(el) el.innerHTML = ''; });
   ['searchInput','filterFrom','filterTo'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
   ['showHiddenChk','selectAllChk'].forEach(id=>{ const el = document.getElementById(id); if(el){ el.checked = false; el.indeterminate = false; } });
 }
@@ -656,6 +772,53 @@ async function deleteQuoteRows(refs){
     return res.ok;
   }catch(e){ return false; }
 }
+/* Business settings (single row, id = 1). Loading never blocks the app: on any failure the defaults are used. */
+let settings = { ...DEFAULT_SETTINGS };
+let settingsState = 'idle';          // 'idle' | 'loading' | 'ok' | 'failed'
+let settingsPromise = Promise.resolve();
+function fromSettingsRow(r){
+  const whole = (v, d, max)=>{ const n = Math.round(Number(v)); return Number.isFinite(n) && n >= 1 ? Math.min(n, max) : d; };
+  return {
+    businessName: r.business_name || '', phone: r.phone || '', email: r.email || '', address: r.address || '',
+    defaultTerms: r.default_terms == null ? DEFAULT_SETTINGS.defaultTerms : String(r.default_terms),
+    quoteValidDays: whole(r.quote_valid_days, DEFAULT_SETTINGS.quoteValidDays, 365),
+    reminderDays: whole(r.reminder_days, DEFAULT_SETTINGS.reminderDays, 90)
+  };
+}
+function toSettingsRow(x){
+  const t = v=>{ v = (v || '').trim(); return v || null; };
+  return { id:1, business_name:t(x.businessName), phone:t(x.phone), email:t(x.email), address:t(x.address),
+           default_terms:x.defaultTerms, quote_valid_days:x.quoteValidDays, reminder_days:x.reminderDays,
+           updated_at:new Date().toISOString() };
+}
+function applySettings(){
+  BUSINESS.businessName = settings.businessName; BUSINESS.phone = settings.phone;
+  BUSINESS.email = settings.email; BUSINESS.address = settings.address;
+}
+async function loadSettings(){
+  settingsState = 'loading';
+  try{
+    const res = await adminFetch('settings?id=eq.1&select=*');
+    if(!res.ok) throw new Error('settings ' + res.status);
+    const rows = await res.json();
+    settings = { ...DEFAULT_SETTINGS, ...(rows[0] ? fromSettingsRow(rows[0]) : {}) };
+    settingsState = 'ok';
+  }catch(e){
+    settings = { ...DEFAULT_SETTINGS };
+    settingsState = 'failed';
+  }
+  applySettings();
+}
+async function saveSettings(next){
+  try{
+    const res = await adminFetch('settings?on_conflict=id', {
+      method:'POST', headers:{ 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates' },
+      body: JSON.stringify(toSettingsRow(next))
+    });
+    return res.ok;
+  }catch(e){ return false; }
+}
+
 /* Customer view tracking: one record_view() call per page load. Best-effort, a failure never reaches the customer. */
 const viewedThisLoad = new Set();
 function recordView(slug){
@@ -683,12 +846,16 @@ function genSlug(len = SLUG_LENGTH){
 }
 
 /* ---------------- defaults ---------------- */
+function addDays(dateStr, n){
+  const d = new Date(dateStr + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0,10);
+}
 function blankQuote(ref){
-  const today = new Date(); const valid = new Date(today.getTime()+14*86400000);
+  const today = todayLondon();
   return {
-    ref, customerName:'', date: today.toISOString().slice(0,10), validUntil: valid.toISOString().slice(0,10),
+    ref, customerName:'', date: today, validUntil: addDays(today, settings.quoteValidDays),
     lineItems: [{product:'', qty:'', unitPrice:''}],
-    notes:'Price valid for 14 days. 25% deposit required to confirm your fitting date.',
+    notes: settings.defaultTerms,
     gallery: [{name:'', ref:'', tex:'t1'}],
     status:'draft', response:null, hidden:false, shortSlug: genSlug(),
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
@@ -736,14 +903,14 @@ function matchesSearch(q, term){
   return (q.customerName||'').toLowerCase().includes(term) || (q.ref||'').toLowerCase().includes(term);
 }
 
-/* reminders: sent, not hidden, created more than REMINDER_AFTER_DAYS ago, oldest first */
+/* reminders: sent, not hidden, created more than settings.reminderDays ago, oldest first */
 function quoteAgeDays(q){
   const t = Date.parse(q.createdAt || q.date || '');
   return isNaN(t) ? null : (Date.now() - t) / DAY_MS;
 }
 function reminderQuotes(all){
   return all
-    .filter(q=>{ const age = quoteAgeDays(q); return q.status==='sent' && !q.hidden && age!==null && age > REMINDER_AFTER_DAYS; })
+    .filter(q=>{ const age = quoteAgeDays(q); return q.status==='sent' && !q.hidden && age!==null && age > settings.reminderDays; })
     .sort((a,b)=> quoteAgeDays(b) - quoteAgeDays(a));
 }
 function timeAgo(iso){
@@ -764,8 +931,35 @@ function viewsLabel(q){
   const ago = q.lastViewedAt ? timeAgo(q.lastViewedAt) : '';
   return `Opened ${n} ${n===1?'time':'times'}${ago ? ', last viewed ' + ago : ''}`;
 }
-function viewsHtml(q){
-  return `<div class="views ${q.viewCount ? 'opened' : ''}">${escapeHtml(viewsLabel(q))}</div>`;
+const EYE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+// small eye + view count (muted when never opened); the full wording is the tooltip
+function viewBadgeHtml(q){
+  const n = q.viewCount || 0, label = viewsLabel(q);
+  return `<span class="view-badge ${n ? '' : 'none'}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${EYE_SVG}${n}</span>`;
+}
+// "Expired" is worked out in the browser (sent + valid-until in the past); the stored status is never changed
+function isQuoteExpired(q){ return q.status === 'sent' && isExpired(q); }
+function displayStatus(q){
+  return isQuoteExpired(q)
+    ? { cls:'expired', label:'expired', tip:'Sent, but past its valid-until date' }
+    : { cls:statusClass(q.status), label:q.status, tip:'' };
+}
+function pillHtml(q, style){
+  const st = displayStatus(q);
+  return `<span class="pill ${st.cls}"${st.tip ? ` title="${escapeHtml(st.tip)}"` : ''}${style ? ` style="${style}"` : ''}>${escapeHtml(st.label)}</span>`;
+}
+function fmtDateTime(iso){
+  const d = new Date(iso);
+  return isNaN(d) ? '' : d.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+// the longer wording shown in the editor's summary panel
+function viewsDetail(q){
+  const n = q.viewCount || 0;
+  if(!n) return 'Not opened yet.';
+  const parts = [];
+  if(q.firstViewedAt) parts.push(`First viewed ${fmtDateTime(q.firstViewedAt)}`);
+  if(q.lastViewedAt) parts.push(`${parts.length ? 'last' : 'Last'} viewed ${fmtDateTime(q.lastViewedAt)}`);
+  return `Opened ${n} ${n===1?'time':'times'}.${parts.length ? ' ' + parts.join(', ') + '.' : ''}`;
 }
 function quoteLink(q){
   return `${siteBase()}/q/${encodeURIComponent(q.shortSlug || '')}`;
@@ -788,6 +982,15 @@ async function copyText(text){
     return ok;
   }catch(e){ return false; }
 }
+// Copies the follow-up message for a quote; gives a quote that is missing its short link one first.
+async function copyFollowUp(q, btn){
+  if(!q.shortSlug){
+    q.shortSlug = genSlug();
+    if(!(await saveQuote(q))){ flashButton(btn, 'Copy failed'); return; }
+  }
+  const ok = await copyText(followUpMessage(q));
+  flashButton(btn, ok ? 'Copied ✓' : 'Copy failed');
+}
 function flashButton(btn, text){
   if(!btn.dataset.label) btn.dataset.label = btn.textContent;
   btn.textContent = text;
@@ -795,37 +998,17 @@ function flashButton(btn, text){
   btn._flashTimer = setTimeout(()=>{ btn.textContent = btn.dataset.label; }, 1400);
 }
 
-function syncTabUi(){
-  const isRem = listTab === 'reminders';
-  document.querySelectorAll('.list-tab').forEach(t=>{
-    const on = t.dataset.tab === listTab;
-    t.classList.toggle('active', on);
-    t.setAttribute('aria-selected', on ? 'true' : 'false');
-  });
-  document.getElementById('listFilters').style.display = isRem ? 'none' : '';
-  document.getElementById('selectAllRow').style.display = isRem ? 'none' : '';
-  if(isRem) document.getElementById('bulkBar').style.display = 'none';
-}
-function setListTab(tab){
-  listTab = tab;
-  syncTabUi();
-  renderList(false);
-}
-
 function emptyListHtml(){
   const term = searchTerm.trim();
   if(term) return `<div class="empty-list"><strong>No quotes found</strong><br>Nothing matches “${escapeHtml(term)}”.</div>`;
-  if(listTab === 'reminders') return `<div class="empty-list">Nothing to chase right now. Sent quotes show up here once they've been waiting more than ${REMINDER_AFTER_DAYS} days.</div>`;
+  if(listTab === 'reminders') return `<div class="empty-list">Nothing to chase right now. Sent quotes show up here once they've been waiting more than ${settings.reminderDays} days.</div>`;
   return '<div class="empty-list">No quotes match — create one or adjust your filters.</div>';
 }
 
 async function renderList(force = true){
   const all = await loadQuotes(force);
-  const allReminders = reminderQuotes(all);
-  const badge = document.getElementById('reminderBadge');
-  badge.textContent = allReminders.length;
-  badge.classList.toggle('zero', allReminders.length === 0);
-  syncTabUi();
+  const allReminders = refreshBadge(all);
+  syncListUi();
 
   const el = document.getElementById('qList');
   if(listTab === 'reminders'){
@@ -837,11 +1020,10 @@ async function renderList(force = true){
       return `<div class="qcard ${q.ref===currentRef?'active':''}" data-ref="${escapeHtml(q.ref)}">
         <div class="row1">
           <div class="row1-left"><span class="ref">${escapeHtml(q.ref)}</span></div>
-          <span class="waiting">Waiting ${days} day${days===1?'':'s'}</span>
+          <div class="row1-right">${viewBadgeHtml(q)}${isQuoteExpired(q) ? pillHtml(q) : ''}<span class="waiting">Waiting ${days} day${days===1?'':'s'}</span></div>
         </div>
         <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
         <div class="row3"><span class="total">${money(calcTotals(q).total)}</span></div>
-        ${viewsHtml(q)}
         <button class="copy-fu-btn" data-ref="${escapeHtml(q.ref)}">Copy follow-up message</button>
       </div>`;
     };
@@ -859,13 +1041,7 @@ async function renderList(force = true){
       btn.addEventListener('click', async e=>{
         e.stopPropagation();
         const q = reminders.find(r=> r.ref === btn.dataset.ref);
-        if(!q) return;
-        if(!q.shortSlug){   // very old quote without a short link yet
-          q.shortSlug = genSlug();
-          if(!(await saveQuote(q))){ flashButton(btn, 'Copy failed'); return; }
-        }
-        const ok = await copyText(followUpMessage(q));
-        flashButton(btn, ok ? 'Copied ✓' : 'Copy failed');
+        if(q) await copyFollowUp(q, btn);
       });
     });
     return;
@@ -894,7 +1070,7 @@ async function renderList(force = true){
     const {total} = calcTotals(q);
     let reasonHtml = '';
     if(q.status==='declined' && reasonLine(q.response)){
-      reasonHtml = `<div class="reason">${reasonLine(q.response)}</div>`;
+      reasonHtml = `<div class="reason" title="${escapeHtml(reasonPlain(q.response))}">${reasonLine(q.response)}</div>`;
     }
     return `<div class="qcard ${q.ref===currentRef?'active':''} ${q.hidden?'is-hidden':''}" data-ref="${escapeHtml(q.ref)}">
       <div class="row1">
@@ -904,7 +1080,7 @@ async function renderList(force = true){
           </label>
           <span class="ref">${escapeHtml(q.ref)}</span>
         </div>
-        <span class="pill ${statusClass(q.status)}">${escapeHtml(q.status)}</span>
+        <div class="row1-right">${viewBadgeHtml(q)}${pillHtml(q)}</div>
       </div>
       <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
       <div class="row3">
@@ -914,7 +1090,6 @@ async function renderList(force = true){
           <button class="del-btn" data-ref="${escapeHtml(q.ref)}" title="Delete permanently">Delete</button>
         </div>
       </div>
-      ${viewsHtml(q)}
       ${reasonHtml}
     </div>`;
   }).join('');
@@ -989,6 +1164,12 @@ const statusClass = s=> KNOWN_STATUSES.includes(s) ? s : 'draft';
 const decisionClass = d=> d === 'accepted' ? 'accepted' : 'declined';
 // New rows store reason_category; older rows may have reasonCategory.
 const responseCategory = r=> (r && (r.reason_category || r.reasonCategory)) || '';
+// Plain-text version of the same line (the card cuts it to one line and shows this as a tooltip)
+function reasonPlain(r){
+  if(!r) return '';
+  const cat = responseCategory(r), reason = r.reason || '';
+  return (cat || '') + (cat && reason ? ' · ' : '') + (reason ? `"${reason}"` : '');
+}
 // "Category · "reason"" as escaped HTML ('' when there is neither)
 function reasonLine(r){
   if(!r) return '';
@@ -1048,7 +1229,7 @@ function renderEditor(){
   pane.innerHTML = `
     <div class="editor-header">
       <div>
-        <div class="eyebrow">${escapeHtml(draft.ref)} <span class="pill ${statusClass(draft.status)}" style="margin-left:8px;">${escapeHtml(draft.status)}</span></div>
+        <div class="eyebrow">${escapeHtml(draft.ref)} ${pillHtml(draft, 'margin-left:8px;')}</div>
         <h2 style="font-size:22px;">${draft.customerName ? escapeHtml(draft.customerName) : 'New quote'}</h2>
       </div>
     </div>
@@ -1091,6 +1272,7 @@ function renderEditor(){
           <button class="btn btn-ghost" id="copyBtn">Copy link</button>
         </div>
         <div class="link-note">Anyone with this link can view and respond to this quote.</div>
+        <div class="views-detail" id="viewsDetail">${escapeHtml(viewsDetail(draft))}</div>
       </aside>
     </div>
   `;
@@ -1135,6 +1317,7 @@ function renderEditor(){
     const v = editVersion;
     const ok = await saveQuote(draft);
     if(ok && v === editVersion) setDirty(false);
+    adminReturnUrl = location.pathname + location.search + location.hash;
     history.pushState(null, '', `${siteBase()}/q/${encodeURIComponent(draft.shortSlug)}?preview=1`);
     route();
   });
@@ -1168,7 +1351,7 @@ async function saveCurrent(){
   if(fresh){ draft.status = fresh.status; draft.response = fresh.response; }
   if(v === editVersion) setDirty(false);
   const pill = document.querySelector('.editor-header .pill');
-  if(pill){ pill.className = 'pill ' + statusClass(draft.status); pill.textContent = draft.status; }
+  if(pill){ const st = displayStatus(draft); pill.className = 'pill ' + st.cls; pill.textContent = st.label; pill.title = st.tip; }
   const flash = document.getElementById('savedFlash');
   if(flash){ flash.classList.add('show'); setTimeout(()=> flash.classList.remove('show'), 1600); }
   renderList();
@@ -1314,6 +1497,305 @@ function printQuote(){
   w.document.close();
 }
 
+/* ---------------- admin views: Dashboard / Quotes / Reminders / Settings ---------------- */
+const VIEW_RE = /^#\/(dashboard|quotes|reminders|settings)\/?$/;
+let adminView = null;
+let navSeq = 0;
+let firstRenderDone = false;
+let dashPeriod = DEFAULT_PERIOD;
+let adminReturnUrl = '/#/quotes';      // where "Admin ↗" returns to after previewing a quote
+
+function viewFromHash(){ const m = location.hash.match(VIEW_RE); return m ? m[1] : null; }
+
+// count badge on the sidebar's Reminders item
+function refreshBadge(all){
+  const list = reminderQuotes(all);
+  const badge = document.getElementById('reminderBadge');
+  badge.textContent = list.length;
+  badge.classList.toggle('zero', list.length === 0);
+  return list;
+}
+// the list panel is shared by Quotes and Reminders; Reminders has no date/hidden filters or bulk select
+function syncListUi(){
+  const isRem = listTab === 'reminders';
+  document.getElementById('listFilters').style.display = isRem ? 'none' : '';
+  document.getElementById('selectAllRow').style.display = isRem ? 'none' : '';
+  if(isRem) document.getElementById('bulkBar').style.display = 'none';
+}
+function setViewUi(view){
+  adminView = view;
+  listTab = view === 'reminders' ? 'reminders' : 'all';
+  document.getElementById('admin').dataset.view = view;
+  document.querySelectorAll('.nav-item').forEach(a=>{
+    const on = a.dataset.view === view;
+    a.classList.toggle('active', on);
+    if(on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
+  syncListUi();
+}
+function pushViewUrl(view){
+  if(location.pathname !== '/' || location.hash !== '#/' + view) history.pushState(null, '', '/#/' + view);
+}
+async function goView(view){ pushViewUrl(view); await enterView(view); }
+
+async function enterView(view){
+  const seq = ++navSeq;
+  setViewUi(view);
+  window.scrollTo(0, 0);
+  if(view === 'dashboard'){
+    const all = await loadQuotes(true);
+    if(seq !== navSeq) return;
+    refreshBadge(all); renderDashboard(all);
+    return;
+  }
+  if(view === 'settings'){
+    renderSettings();
+    const all = await loadQuotes(false);
+    if(seq === navSeq) refreshBadge(all);
+    return;
+  }
+  await renderList();                                   // Quotes / Reminders: list + editor
+  if(seq !== navSeq) return;
+  if(draft){ renderEditor(); renderList(false); return; }
+  const all = await loadQuotes(false);
+  const first = (view === 'reminders' ? reminderQuotes(all) : visibleQuotes(all))[0];
+  if(first) openEditor(first.ref);
+  else document.getElementById('editorPane').innerHTML = `<div class="empty-list" style="padding-top:60px;">${all.length ? 'Select a quote from the list.' : 'Create your first quote to get started.'}</div>`;
+}
+// settings are loaded once per session, and never hold the app up
+function startSettingsLoad(){
+  settingsPromise = loadSettings().then(()=>{ if(firstRenderDone) refreshCurrentView(); });
+}
+async function refreshCurrentView(){
+  const all = await loadQuotes(false);
+  refreshBadge(all);
+  if(adminView === 'dashboard') renderDashboard(all);
+  else if(adminView === 'settings') renderSettings();
+  else if(adminView === 'quotes' || adminView === 'reminders') renderList(false);
+}
+
+/* ----- Dashboard ----- */
+const PERIODS = [['month','This month'], ['30d','Last 30 days'], ['quarter','This quarter'], ['all','All time']];
+const gbp0 = n => '£' + Math.round(n || 0).toLocaleString('en-GB');          // £12,345, no pence
+const quoteValue = q => calcTotals(q).total;                                  // VAT-inclusive
+const sumValue = list => list.reduce((s, q)=> s + quoteValue(q), 0);
+const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + 's')}`;
+function createdMs(q){ const t = Date.parse(q.createdAt || q.date || ''); return isNaN(t) ? null : t; }
+function periodStart(p){
+  const n = new Date();
+  if(p === 'month') return new Date(n.getFullYear(), n.getMonth(), 1).getTime();
+  if(p === '30d') return Date.now() - 30 * DAY_MS;
+  if(p === 'quarter') return new Date(n.getFullYear(), Math.floor(n.getMonth() / 3) * 3, 1).getTime();
+  return -Infinity;
+}
+const inPeriod = (q, p)=>{ const t = createdMs(q); return t === null ? p === 'all' : t >= periodStart(p); };
+const SENT_STATUSES = ['sent','accepted','declined'];            // everything that has gone to a customer (not drafts)
+
+function dashboardStats(all, period){
+  const qs = all.filter(q=> !q.hidden && inPeriod(q, period));    // hidden quotes are left out of every figure
+  const nonDraft = qs.filter(q=> SENT_STATUSES.includes(q.status));
+  const open = qs.filter(q=> q.status === 'sent' && !isQuoteExpired(q));
+  const won = qs.filter(q=> q.status === 'accepted');
+  const lost = qs.filter(q=> q.status === 'declined');
+  const decided = [...won, ...lost].map(q=>{
+    const a = createdMs(q), b = Date.parse(q.response && q.response.respondedAt || '');
+    return (a === null || isNaN(b)) ? null : Math.max(0, (b - a) / DAY_MS);
+  }).filter(x=> x !== null);
+  const nonDraftValue = sumValue(nonDraft), wonValue = sumValue(won);
+  return {
+    open, openValue: sumValue(open), won, wonValue, lost, lostValue: sumValue(lost), nonDraft,
+    winRate: nonDraft.length ? won.length / nonDraft.length : null,
+    winRateValue: nonDraftValue > 0 ? wonValue / nonDraftValue : null,
+    avgValue: nonDraft.length ? nonDraftValue / nonDraft.length : null,
+    avgDays: decided.length ? decided.reduce((s, x)=> s + x, 0) / decided.length : null, decidedCount: decided.length
+  };
+}
+function attentionLists(all){
+  const sent = all.filter(q=> !q.hidden && q.status === 'sent' && !isQuoteExpired(q));
+  const today = todayLondon(), soon = addDays(today, EXPIRING_SOON_DAYS);
+  const age = q=> quoteAgeDays(q) || 0;
+  return {
+    expiring: sent.filter(q=> q.validUntil && q.validUntil >= today && q.validUntil <= soon).sort((a, b)=> a.validUntil < b.validUntil ? -1 : a.validUntil > b.validUntil ? 1 : 0),
+    warm: sent.filter(q=> (q.viewCount || 0) >= WARM_MIN_VIEWS).sort((a, b)=> (b.viewCount || 0) - (a.viewCount || 0) || Date.parse(b.lastViewedAt || 0) - Date.parse(a.lastViewedAt || 0)),
+    cold: sent.filter(q=> !(q.viewCount || 0) && age(q) > NEVER_OPENED_AFTER_DAYS).sort((a, b)=> age(b) - age(a))
+  };
+}
+// quotes sent (by the week they were created) vs accepted (by the week the customer accepted) for the last CHART_WEEKS weeks
+function weeklySeries(all){
+  const now = new Date();
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const weeks = [];
+  for(let i = CHART_WEEKS - 1; i >= 0; i--){
+    const start = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() - 7 * i);
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
+    weeks.push({ start: start.getTime(), end: end.getTime(), label: start.toLocaleDateString('en-GB', { day:'numeric', month:'short' }), sent: 0, won: 0 });
+  }
+  const where = t=> weeks.find(w=> t >= w.start && t < w.end);
+  all.filter(q=> !q.hidden).forEach(q=>{
+    if(SENT_STATUSES.includes(q.status)){ const t = createdMs(q); const w = t === null ? null : where(t); if(w) w.sent++; }
+    if(q.status === 'accepted'){ const t = Date.parse((q.response && q.response.respondedAt) || q.updatedAt || ''); const w = isNaN(t) ? null : where(t); if(w) w.won++; }
+  });
+  return weeks;
+}
+function sentAgo(q){
+  const d = Math.floor(quoteAgeDays(q) || 0);
+  return d < 1 ? 'Sent today' : `Sent ${plural(d, 'day')} ago`;
+}
+function naRow(q, extra){
+  return `<div class="na-row" data-ref="${escapeHtml(q.ref)}">
+    <div class="na-top"><span class="na-name">${escapeHtml(q.customerName) || 'Unnamed customer'}</span><span class="na-value">${gbp0(quoteValue(q))}</span></div>
+    <div class="na-meta">${escapeHtml(q.ref)} · ${escapeHtml(sentAgo(q))}${extra ? '<br>' + escapeHtml(extra) : ''}</div>
+    <button class="copy-fu-btn" type="button" data-ref="${escapeHtml(q.ref)}">Copy follow-up message</button>
+  </div>`;
+}
+function attentionCol(title, list, empty, extraFn){
+  const shown = list.slice(0, NEEDS_ATTENTION_MAX);
+  return `<div class="att-col">
+    <h3>${escapeHtml(title)} <span>${list.length}</span></h3>
+    ${shown.length ? shown.map(q=> naRow(q, extraFn(q))).join('') : `<div class="na-empty">${escapeHtml(empty)}</div>`}
+    ${list.length > shown.length ? `<div class="na-more">+ ${list.length - shown.length} more</div>` : ''}
+  </div>`;
+}
+function kpiCard(label, value, sub, cap, dim){
+  return `<div class="kpi"><div class="k-label">${escapeHtml(label)}</div><div class="k-value${dim ? ' dim' : ''}">${escapeHtml(value)}</div><div class="k-sub">${sub}</div><div class="k-cap">${escapeHtml(cap)}</div></div>`;
+}
+function renderDashboard(all){
+  const el = document.getElementById('dashboardPane');
+  const st = dashboardStats(all, dashPeriod), att = attentionLists(all), today = todayLondon();
+  const pct = x=> Math.round(x * 100) + '%';
+  const expText = q=>{
+    const d = (Date.parse(q.validUntil + 'T00:00:00Z') - Date.parse(today + 'T00:00:00Z')) / DAY_MS;
+    return d < 1 ? 'Expires today' : d < 2 ? 'Expires tomorrow' : `Expires in ${d} days`;
+  };
+  const kpis = [
+    kpiCard('Potential revenue', gbp0(st.openValue), escapeHtml(st.open.length ? plural(st.open.length, 'open quote') : 'No open quotes'),
+      'Quotes sent and still waiting for an answer (not expired), created in this period.', !st.open.length),
+    kpiCard('Won', gbp0(st.wonValue), escapeHtml(st.won.length ? plural(st.won.length, 'accepted quote') : 'No accepted quotes yet'),
+      'Accepted quotes created in this period.', !st.won.length),
+    kpiCard('Win rate', st.winRate === null ? '—' : pct(st.winRate),
+      st.winRate === null ? 'No quotes sent in this period'
+        : `${escapeHtml(`${st.won.length} of ${plural(st.nonDraft.length, 'quote')}`)}<small>${escapeHtml(st.winRateValue === null ? '' : `By value: ${pct(st.winRateValue)}`)}</small>`,
+      'Accepted ÷ all non-draft quotes created in this period.', st.winRate === null),
+    kpiCard('Average quote value', st.avgValue === null ? '—' : gbp0(st.avgValue),
+      escapeHtml(st.avgValue === null ? 'No quotes sent in this period' : `Across ${plural(st.nonDraft.length, 'quote')}`),
+      'Average total (inc. VAT) of non-draft quotes created in this period.', st.avgValue === null),
+    kpiCard('Average time to decision', st.avgDays === null ? '—' : (st.avgDays < 1 ? 'Under a day' : `${st.avgDays.toFixed(1)} days`),
+      escapeHtml(st.avgDays === null ? 'No decisions yet' : `From ${plural(st.decidedCount, 'decided quote')}`),
+      'Average time from creating a quote to the customer accepting or declining it.', st.avgDays === null),
+    kpiCard('Lost', gbp0(st.lostValue), escapeHtml(st.lost.length ? plural(st.lost.length, 'declined quote') : 'No declined quotes'),
+      'Declined quotes created in this period.', !st.lost.length)
+  ].join('');
+  const weeks = weeklySeries(all), maxCount = Math.max(1, ...weeks.map(w=> Math.max(w.sent, w.won)));
+  const chartHas = weeks.some(w=> w.sent || w.won);
+  const bar = (n, cls, what, w)=> n ? `<div class="bar ${cls}" style="height:${Math.max(3, n / maxCount * 100)}%" title="${escapeHtml(`${what}: ${n} (week of ${w.label})`)}"><i>${n}</i></div>` : '';
+  const chart = chartHas
+    ? `<div class="chart" role="img" aria-label="${escapeHtml('Quotes sent and accepted per week: ' + weeks.map(w=> `week of ${w.label}, ${w.sent} sent, ${w.won} accepted`).join('; '))}">${
+        weeks.map(w=> `<div class="wk"><div class="bars">${bar(w.sent, 'sent', 'Sent', w)}${bar(w.won, 'won', 'Accepted', w)}</div><div class="wk-label">${escapeHtml(w.label)}</div></div>`).join('')
+      }</div><div class="legend"><span class="l-sent">Sent</span><span class="l-won">Accepted</span></div>`
+    : `<div class="na-empty">No quotes have been sent in the last ${CHART_WEEKS} weeks yet. Once you send some, they'll show up here.</div>`;
+  el.innerHTML = `
+    <div class="page-head">
+      <h1>Dashboard</h1>
+      <div class="period" role="group" aria-label="Period">${PERIODS.map(([k, label])=> `<button type="button" data-period="${k}" class="${k === dashPeriod ? 'active' : ''}" aria-pressed="${k === dashPeriod}">${label}</button>`).join('')}</div>
+    </div>
+    <section class="panel">
+      <h2>Needs attention</h2>
+      <p class="cap">Open quotes only (sent, not expired, not hidden), whatever the period. Click one to open it.</p>
+      <div class="att-grid">
+        ${attentionCol('Expiring in the next ' + EXPIRING_SOON_DAYS + ' days', att.expiring, 'Nothing is about to expire.', expText)}
+        ${attentionCol('Opened ' + WARM_MIN_VIEWS + '+ times, no decision', att.warm, 'No warm quotes right now.', q=> viewsLabel(q))}
+        ${attentionCol('Sent over ' + NEVER_OPENED_AFTER_DAYS + ' days ago, never opened', att.cold, 'Everything sent has been opened.', ()=> '')}
+      </div>
+    </section>
+    <div class="kpis">${kpis}</div>
+    <section class="panel">
+      <h2>Quotes sent vs accepted</h2>
+      <p class="cap">Last ${CHART_WEEKS} weeks (weeks start on Monday). Sent counts non-draft quotes by the week they were created; accepted counts quotes by the week the customer accepted.</p>
+      ${chart}
+    </section>
+    <p class="dash-foot">All money is the VAT-inclusive total. Hidden quotes and drafts aren't counted.</p>`;
+}
+async function openFromDashboard(ref){
+  await openEditor(ref);
+  if(draft && draft.ref === ref) await goView('quotes');
+}
+document.getElementById('dashboardPane').addEventListener('click', async e=>{
+  const period = e.target.closest('.period button');
+  if(period){ dashPeriod = period.dataset.period; renderDashboard(await loadQuotes(false)); return; }
+  const copy = e.target.closest('.copy-fu-btn');
+  if(copy){
+    e.stopPropagation();
+    const q = (quoteCache || []).find(x=> x.ref === copy.dataset.ref);
+    if(q) await copyFollowUp(q, copy);
+    return;
+  }
+  const row = e.target.closest('.na-row');
+  if(row) openFromDashboard(row.dataset.ref);
+});
+
+/* ----- Settings page ----- */
+function renderSettings(){
+  const el = document.getElementById('settingsPane');
+  const s = settings, failed = settingsState === 'failed';
+  el.innerHTML = `
+    <div class="page-head"><h1>Settings</h1></div>
+    ${failed ? `<div class="settings-notice" role="alert">We couldn't load your saved settings, so the defaults are shown. Saving is switched off until they load, so nothing already stored gets overwritten.<br><button class="btn btn-ghost" id="settingsRetry" type="button">Try again</button></div>` : ''}
+    <form class="settings-form" id="settingsForm" novalidate>
+      <div class="panel">
+        <h2>Business details</h2>
+        <p class="cap">Printed in the header and sign-off of quotes. Anything left empty is simply not printed.</p>
+        <div class="field"><label for="s-name">Business name</label><input id="s-name" maxlength="100" autocomplete="organization" value="${escapeHtml(s.businessName)}"></div>
+        <div class="field"><label for="s-phone">Phone</label><input id="s-phone" type="tel" maxlength="40" autocomplete="tel" value="${escapeHtml(s.phone)}"></div>
+        <div class="field"><label for="s-email">Email</label><input id="s-email" type="email" maxlength="120" autocomplete="email" value="${escapeHtml(s.email)}"></div>
+        <div class="field"><label for="s-address">Address</label><textarea id="s-address" rows="2" maxlength="300">${escapeHtml(s.address)}</textarea></div>
+      </div>
+      <div class="panel">
+        <h2>New quotes</h2>
+        <div class="field"><label for="s-terms">Default terms</label><textarea id="s-terms" rows="4" maxlength="2000">${escapeHtml(s.defaultTerms)}</textarea></div>
+        <p class="hint">Fills the "Notes / terms" box on every new quote.</p>
+        <div class="field"><label for="s-valid">Default quote validity (days)</label><input id="s-valid" type="number" min="1" max="365" step="1" inputmode="numeric" value="${escapeHtml(s.quoteValidDays)}"></div>
+        <p class="hint">Sets "Valid until" on new quotes, counted from today.</p>
+      </div>
+      <div class="panel">
+        <h2>Reminders</h2>
+        <div class="field"><label for="s-remind">Remind me after (days)</label><input id="s-remind" type="number" min="1" max="90" step="1" inputmode="numeric" value="${escapeHtml(s.reminderDays)}"></div>
+        <p class="hint">A sent quote shows under Reminders once it has been waiting longer than this.</p>
+        <p class="hint">VAT is fixed at 20% for now, because changing it would alter the totals on existing quotes.</p>
+      </div>
+      <div class="settings-actions">
+        <button class="btn btn-primary" id="settingsSave" type="submit"${failed ? ' disabled' : ''}>Save settings</button>
+        <span class="settings-msg" id="settingsMsg" role="status"></span>
+      </div>
+    </form>
+    <button class="btn btn-ghost settings-logout" id="settingsLogout" type="button">Log out</button>`;
+}
+async function onSettingsSubmit(e){
+  e.preventDefault();
+  const msg = document.getElementById('settingsMsg'), btn = document.getElementById('settingsSave');
+  const val = id=> document.getElementById(id).value;
+  const fail = (text, id)=>{ msg.className = 'settings-msg err'; msg.textContent = text; if(id) document.getElementById(id).focus(); };
+  const whole = (id, lo, hi)=>{ const v = Number(val(id)); return val(id).trim() !== '' && Number.isInteger(v) && v >= lo && v <= hi ? v : null; };
+  const validDays = whole('s-valid', 1, 365), remindDays = whole('s-remind', 1, 90);
+  const email = val('s-email').trim();
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('That email address doesn\'t look right.', 's-email');
+  if(validDays === null) return fail('Default quote validity must be a whole number of days from 1 to 365.', 's-valid');
+  if(remindDays === null) return fail('Reminder days must be a whole number from 1 to 90.', 's-remind');
+  const next = { businessName: val('s-name').trim(), phone: val('s-phone').trim(), email, address: val('s-address').trim(),
+                 defaultTerms: val('s-terms'), quoteValidDays: validDays, reminderDays: remindDays };
+  btn.disabled = true; msg.className = 'settings-msg'; msg.textContent = 'Saving…';
+  const ok = await saveSettings(next);
+  btn.disabled = false;
+  if(!ok) return fail("Couldn't save your settings. Please try again.");
+  settings = next; settingsState = 'ok'; applySettings();
+  msg.className = 'settings-msg'; msg.textContent = 'Saved';
+  refreshBadge(await loadQuotes(false));          // the reminder days may have changed
+}
+document.getElementById('settingsPane').addEventListener('submit', e=>{ if(e.target.id === 'settingsForm') onSettingsSubmit(e); });
+document.getElementById('settingsPane').addEventListener('click', async e=>{
+  if(e.target.closest('#settingsLogout')) signOut();
+  if(e.target.closest('#settingsRetry')){ await loadSettings(); renderSettings(); refreshBadge(await loadQuotes(false)); }
+});
+
 /* ---------------- list-pane + global wiring ---------------- */
 document.getElementById('newQuoteBtn').addEventListener('click', async ()=>{
   if(!confirmDiscard()) return;
@@ -1322,12 +1804,11 @@ document.getElementById('newQuoteBtn').addEventListener('click', async ()=>{
   currentRef = ref;
   await saveQuote(draft, true);
   isDirty = false;
-  listTab = 'all';
+  setViewUi('quotes'); pushViewUrl('quotes');
   renderEditor(); renderList();
   document.getElementById('f-name').focus();
 });
 
-document.querySelectorAll('.list-tab').forEach(t=> t.addEventListener('click', ()=> setListTab(t.dataset.tab)));
 document.getElementById('searchInput').addEventListener('input', e=>{ searchTerm = e.target.value; renderList(false); });
 document.getElementById('filterFrom').addEventListener('change', e=>{ filterFrom = e.target.value; renderList(false); });
 document.getElementById('filterTo').addEventListener('change', e=>{ filterTo = e.target.value; renderList(false); });
@@ -1611,15 +2092,14 @@ async function route(){
     return;
   }
   loginEl.style.display = 'none';
-  if(location.pathname !== '/' && location.pathname !== '/index.html') history.replaceState(null, '', '/');
   adminEl.style.display = 'flex';
-  await renderList();
-  if(!draft){
-    const quotes = await listQuotes();
-    if(quotes.length){ openEditor(quotes[0].ref); } else { document.getElementById('editorPane').innerHTML = '<div class="empty-list" style="padding-top:60px;">Create your first quote to get started.</div>'; }
-  } else {
-    renderEditor(); renderList();
-  }
+  // the business settings load once per session and never hold the app up: after a short wait it uses the defaults
+  if(settingsState === 'idle') startSettingsLoad();
+  await Promise.race([settingsPromise, new Promise(r=> setTimeout(r, SETTINGS_WAIT_MS))]);
+  const view = viewFromHash() || 'dashboard';          // Dashboard is the landing view
+  if(location.pathname + location.hash !== '/#/' + view) history.replaceState(null, '', '/#/' + view);
+  await enterView(view);
+  firstRenderDone = true;
 }
 
 document.getElementById('loginForm').addEventListener('submit', async e=>{
@@ -1640,10 +2120,14 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
 document.getElementById('logoutBtn').addEventListener('click', signOut);
 document.getElementById('adminLink').addEventListener('click', e=>{
   e.preventDefault();
-  history.pushState(null, '', siteBase() + '/');
+  history.pushState(null, '', adminReturnUrl || '/#/quotes');
   route();
 });
-window.addEventListener('popstate', route);
+// back/forward and the sidebar links change the URL; the two events can both fire, so collapse them into one route()
+let routeTimer = null;
+function scheduleRoute(){ clearTimeout(routeTimer); routeTimer = setTimeout(route, 15); }
+window.addEventListener('popstate', scheduleRoute);
+window.addEventListener('hashchange', scheduleRoute);
 // signing in or out in another tab
 window.addEventListener('storage', e=>{
   if(e.key !== SESSION_KEY || routeMatch()) return;   // customer pages don't care
