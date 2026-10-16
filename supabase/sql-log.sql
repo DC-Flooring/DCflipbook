@@ -219,3 +219,14 @@ $$;
 
 revoke all on function public.submit_decision(text, text, text, text) from public;
 grant execute on function public.submit_decision(text, text, text, text) to anon, authenticated;
+
+-- 8. 2026-10-16: chase / snooze tracking on quotes (already run by hand in the SQL editor)
+-- last_chased_at : when someone last followed this quote up ("Chased" / "Mark as chased").
+-- snoozed_until  : the quote is kept out of Needs attention and Reminders until this moment passes.
+-- Both are nullable and admin-only. get_quote builds its output from an explicit key list (ref, customer_name,
+-- date, valid_until, line_items, notes, gallery, status, response, short_slug), so these two columns are NOT
+-- returned to customers and nothing needs to change there. The existing "authenticated users only" policy
+-- already covers the new columns for signed-in users; anonymous visitors still have no direct table access.
+alter table public.quotes add column if not exists last_chased_at timestamptz;
+alter table public.quotes add column if not exists snoozed_until  timestamptz;
+-- To undo: alter table public.quotes drop column last_chased_at, drop column snoozed_until;

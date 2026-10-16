@@ -272,6 +272,41 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .settings-notice .btn{ margin-top:8px; }
 .settings-logout{ display:none; margin-top:26px; }
 
+/* chase / snooze / extend */
+.card-actions{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.act-btn{ padding:4px 9px; background:none; border:1px solid var(--line); border-radius:4px; font-family:'Work Sans',sans-serif; font-size:11.5px; color:var(--ink); cursor:pointer; white-space:nowrap; }
+.act-btn:hover{ border-color:var(--brass); color:var(--brass); }
+.menu-wrap{ position:relative; display:inline-block; }
+.menu{ position:absolute; z-index:40; top:100%; left:0; margin-top:4px; min-width:150px; padding:4px; background:#fff; border:1px solid var(--line); border-radius:6px; box-shadow:0 8px 24px rgba(36,26,20,.18); }
+.menu[hidden]{ display:none; }
+.menu.right{ left:auto; right:0; }
+.menu button{ display:block; width:100%; padding:8px 10px; background:none; border:none; border-radius:4px; text-align:left; font-family:'Work Sans',sans-serif; font-size:12.5px; color:var(--ink); cursor:pointer; }
+.menu button:hover{ background:var(--linen); }
+.menu-date{ display:block; padding:6px 10px 8px; border-top:1px solid var(--line); margin-top:4px; font-size:11.5px; color:var(--ink-soft); }
+.menu-date input{ display:block; width:100%; margin-top:4px; padding:6px; border:1px solid var(--line); border-radius:4px; font-size:13px; font-family:'IBM Plex Mono',monospace; }
+.chased{ margin-top:4px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-soft); }
+.snz{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+.snz-toggle{ padding:0; background:none; border:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); cursor:pointer; }
+.snz-toggle:hover{ color:var(--brass); }
+.snz-list{ margin-top:6px; }
+.snz-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:var(--paper); cursor:pointer; }
+.snz-row:hover{ border-color:var(--brass); }
+.snz-info{ flex:1; min-width:0; }
+.snz-row .act-btn{ flex:none; }
+.chase-box{ margin-top:12px; }
+.chase-box .views-detail{ margin:0 0 8px; }
+.toast{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:200; display:flex; align-items:center; gap:14px; max-width:min(92vw,460px); padding:11px 14px; background:#272727; color:var(--linen); border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,.35); font-size:13px; line-height:1.4; }
+.toast[hidden]{ display:none; }
+.toast-msg{ min-width:0; overflow-wrap:anywhere; }
+.toast-undo{ flex:none; padding:5px 10px; background:none; border:1px solid var(--brass); border-radius:4px; color:var(--brass); font-size:12px; font-weight:600; cursor:pointer; }
+.toast-undo:hover{ background:var(--brass); color:#fff; }
+/* status chips above the Quotes list */
+.status-chips{ display:flex; flex-wrap:wrap; gap:6px; min-width:0; margin:0 0 12px; }
+.chip{ display:inline-flex; align-items:center; gap:6px; flex:none; padding:5px 10px; background:#fff; border:1px solid var(--line); border-radius:14px; font-family:'Work Sans',sans-serif; font-size:12px; color:var(--ink-soft); cursor:pointer; white-space:nowrap; }
+.chip:hover{ border-color:var(--brass); color:var(--ink); }
+.chip.active{ background:var(--brass); border-color:var(--brass); color:#fff; }
+.chip-n{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; opacity:.8; }
+
 /* ===== CUSTOMER (booklet) ===== */
 #customer{ display:none; min-height:100vh; align-items:center; justify-content:center; padding:48px 16px;
   background:radial-gradient(ellipse at 50% -10%, #4a372a 0%, var(--bark) 55%), var(--bark); }
@@ -427,6 +462,9 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
   .kpis{ grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:800px){
+  .status-chips{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
+  .status-chips::-webkit-scrollbar{ display:none; }
+  .toast{ bottom:calc(78px + env(safe-area-inset-bottom, 0px)); }
   /* the sidebar becomes a fixed bottom bar with the same four items */
   .admin-body{ flex-direction:column; padding-bottom:calc(66px + env(safe-area-inset-bottom, 0px)); }
   .sidebar{
@@ -514,6 +552,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
         </div>
         <label class="hidden-toggle"><input type="checkbox" id="showHiddenChk"> Show hidden</label>
       </div>
+      <div class="status-chips" id="statusChips" role="group" aria-label="Filter by status"></div>
       <div class="select-all-row" id="selectAllRow">
         <label class="hidden-toggle"><input type="checkbox" id="selectAllChk"> Select all</label>
       </div>
@@ -534,6 +573,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 <div id="customer">
   <div class="stage" id="custStage"></div>
 </div>
+ <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <a href="/" class="admin-link" id="adminLink" style="display:none;">Admin ↗</a>
 
 <script>
@@ -545,6 +585,10 @@ const WARM_MIN_VIEWS = 2;              // "Needs attention": opened at least thi
 const NEVER_OPENED_AFTER_DAYS = 2;     // "Needs attention": sent more than this many days ago and never opened
 const NEEDS_ATTENTION_MAX = 5;         // rows shown in each "Needs attention" list
 const CHART_WEEKS = 8;                 // weeks shown in the sent vs accepted chart
+const CHASE_SNOOZE_DAYS = 3;           // "Chased" keeps a quote out of Needs attention / Reminders for this many days
+const SNOOZE_OPTIONS = [[1, '1 day'], [3, '3 days'], [7, '1 week']];   // the Snooze menu
+const EXTEND_OPTIONS = [[7, '+7 days'], [14, '+14 days']];            // the Extend menu (plus "Pick a date")
+const TOAST_MS = 8000;                 // how long the "Undo" toast stays up
 const SETTINGS_WAIT_MS = 2500;         // how long the first screen waits for the settings row before using defaults
 
 // Business settings live in the `settings` table (row id 1) and are edited on the Settings page.
@@ -712,7 +756,9 @@ function fromDbRow(r){
     updatedAt: r.updated_at,
     firstViewedAt: r.first_viewed_at || null,
     lastViewedAt: r.last_viewed_at || null,
-    viewCount: r.view_count || 0
+    viewCount: r.view_count || 0,
+    lastChasedAt: r.last_chased_at || null,
+    snoozedUntil: r.snoozed_until || null
   };
 }
 
@@ -749,6 +795,21 @@ async function markSent(ref){
       method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ status:'sent' })
     });
     return res.ok;
+  }catch(e){ return false; }
+}
+// Chase / snooze / extend write just their own column(s) with a PATCH, so they never touch the rest of the quote
+// (and the editor's save never touches last_chased_at / snoozed_until). Resolves true only if a row was updated.
+const DB_FIELD = { lastChasedAt:'last_chased_at', snoozedUntil:'snoozed_until', validUntil:'valid_until' };
+async function patchQuote(ref, fields){
+  const body = {};
+  Object.keys(fields).forEach(k=>{ body[DB_FIELD[k]] = fields[k] || null; });
+  try{
+    const res = await adminFetch(`quotes?ref=eq.${encodeURIComponent(ref)}`, {
+      method:'PATCH', headers:{ 'Content-Type':'application/json', Prefer:'return=representation' }, body: JSON.stringify(body)
+    });
+    if(!res.ok) return false;
+    const rows = await res.json();
+    return Array.isArray(rows) && rows.length > 0;
   }catch(e){ return false; }
 }
 async function listQuotes(){
@@ -879,6 +940,8 @@ let filterTo = '';
 let showHidden = false;
 let searchTerm = '';
 let listTab = 'all';          // 'all' | 'reminders'
+let statusFilter = 'all';     // Quotes list chip: 'all' | 'awaiting' | 'accepted' | 'declined' | 'expired' | 'draft'
+const showSnoozed = { na:false, rem:false };   // whether the "Snoozed (n)" lists are open
 let quoteCache = null;        // last list fetched from Supabase (search/filter/tab changes reuse it)
 let selectedRefs = new Set();
 let isDirty = false;          // editor has changes that haven't been saved
@@ -890,14 +953,31 @@ async function loadQuotes(force){
   if(force || quoteCache === null) quoteCache = await listQuotes();
   return quoteCache;
 }
-function visibleQuotes(all){
+const STATUS_FILTERS = [['all','All'], ['awaiting','Awaiting reply'], ['accepted','Accepted'], ['declined','Declined'], ['expired','Expired'], ['draft','Draft']];
+function matchesStatus(q, f){
+  if(f === 'awaiting') return q.status === 'sent' && !isQuoteExpired(q);
+  if(f === 'expired') return isQuoteExpired(q);
+  if(f === 'accepted' || f === 'declined' || f === 'draft') return q.status === f;
+  return true;
+}
+// Everything the Quotes list is filtered by: Show hidden, date range, search and (unless ignoreStatus) the status chip.
+function visibleQuotes(all, ignoreStatus){
   const term = searchTerm.trim().toLowerCase();
   let quotes = all;
   if(!showHidden) quotes = quotes.filter(q=> !q.hidden);
   if(filterFrom) quotes = quotes.filter(q=> q.date && q.date >= filterFrom);
   if(filterTo) quotes = quotes.filter(q=> q.date && q.date <= filterTo);
   if(term) quotes = quotes.filter(q=> matchesSearch(q, term));
+  if(!ignoreStatus && statusFilter !== 'all') quotes = quotes.filter(q=> matchesStatus(q, statusFilter));
   return quotes;
+}
+// a plain-words description of the active filters, used in the bulk-delete confirmation
+function filterSummary(){
+  const parts = [STATUS_FILTERS.find(([k])=> k === statusFilter)[1]];
+  if(searchTerm.trim()) parts.push(`search '${searchTerm.trim()}'`);
+  if(filterFrom || filterTo) parts.push(`dates ${filterFrom || '…'} to ${filterTo || '…'}`);
+  if(showHidden) parts.push('including hidden');
+  return parts.join(', ');
 }
 function matchesSearch(q, term){
   return (q.customerName||'').toLowerCase().includes(term) || (q.ref||'').toLowerCase().includes(term);
@@ -908,11 +988,16 @@ function quoteAgeDays(q){
   const t = Date.parse(q.createdAt || q.date || '');
   return isNaN(t) ? null : (Date.now() - t) / DAY_MS;
 }
-function reminderQuotes(all){
+const isSnoozed = q => !!q.snoozedUntil && Date.parse(q.snoozedUntil) > Date.now();
+function reminderCandidates(all){
   return all
     .filter(q=>{ const age = quoteAgeDays(q); return q.status==='sent' && !q.hidden && age!==null && age > settings.reminderDays; })
     .sort((a,b)=> quoteAgeDays(b) - quoteAgeDays(a));
 }
+// snoozed quotes are left out here, so the sidebar badge and the Reminders list always agree
+function reminderQuotes(all){ return reminderCandidates(all).filter(q=> !isSnoozed(q)); }
+function snoozedReminders(all){ return reminderCandidates(all).filter(isSnoozed).sort(bySnoozeEnd); }
+function bySnoozeEnd(a, b){ return Date.parse(a.snoozedUntil) - Date.parse(b.snoozedUntil); }
 function timeAgo(iso){
   const t = Date.parse(iso || '');
   if(isNaN(t)) return '';
@@ -998,13 +1083,195 @@ function flashButton(btn, text){
   btn._flashTimer = setTimeout(()=>{ btn.textContent = btn.dataset.label; }, 1400);
 }
 
+/* ----- Chased / Snooze / Extend. Stored on the quote row in Supabase (last_chased_at, snoozed_until, valid_until),
+   so the state survives a refresh and is the same for every user. Every change shows an Undo toast. ----- */
+const EXTEND_TIP = "Extending also reopens an expired quote, because customers can't accept after the valid-until date.";
+const quoteName = q => (q.customerName || '').trim() || q.ref;
+const longDate = d => new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+function chasedLabel(q){
+  if(!q.lastChasedAt) return '';
+  const t = timeAgo(q.lastChasedAt);
+  return t ? 'Chased ' + t : '';
+}
+function chaseDetail(q){
+  const parts = [q.lastChasedAt ? `Last chased ${timeAgo(q.lastChasedAt) || 'earlier'}.` : 'Not chased yet.'];
+  if(isSnoozed(q)) parts.push(`Snoozed until ${fmtDateTime(q.snoozedUntil)}.`);
+  return parts.join(' ');
+}
+function menuHtml(kind, label, items, right, tip, extra){
+  return `<span class="menu-wrap"><button type="button" class="act-btn" data-menu="${kind}" aria-haspopup="menu" aria-expanded="false"${tip ? ` title="${escapeHtml(tip)}"` : ''}>${escapeHtml(label)} ▾</button>
+    <div class="menu${right ? ' right' : ''}" role="menu" hidden>${items}${extra || ''}</div></span>`;
+}
+// the action buttons under a Needs attention row / Reminders card; Extend is only offered in the "Expiring" list
+function cardActionsHtml(q, withExtend){
+  const ref = escapeHtml(q.ref);
+  const snooze = SNOOZE_OPTIONS.map(([d, l])=> `<button type="button" role="menuitem" data-act="snooze" data-days="${d}" data-ref="${ref}">${escapeHtml(l)}</button>`).join('');
+  let extend = '';
+  if(withExtend){
+    const items = EXTEND_OPTIONS.map(([d, l])=> `<button type="button" role="menuitem" data-act="extend" data-days="${d}" data-ref="${ref}">${escapeHtml(l)}</button>`).join('');
+    const minDate = addDays(q.validUntil && q.validUntil > todayLondon() ? q.validUntil : todayLondon(), 1);
+    const pick = `<label class="menu-date">Pick a date<input type="date" data-pick="extend" data-ref="${ref}" min="${escapeHtml(minDate)}"></label>`;
+    extend = menuHtml('extend', 'Extend', items, true, EXTEND_TIP, pick);
+  }
+  return `<div class="card-actions">
+    <button type="button" class="act-btn" data-act="chase" data-ref="${ref}" title="${escapeHtml(`Mark as chased. Keeps it out of the list for ${CHASE_SNOOZE_DAYS} days.`)}">Chased</button>
+    ${menuHtml('snooze', 'Snooze', snooze, false, 'Keep it out of the list for a while')}${extend}
+  </div>`;
+}
+function snoozedRowHtml(q){
+  return `<div class="snz-row" data-ref="${escapeHtml(q.ref)}">
+    <div class="snz-info">
+      <div class="na-top"><span class="na-name">${escapeHtml(q.customerName) || 'Unnamed customer'}</span><span class="na-value">${gbp0(quoteValue(q))}</span></div>
+      <div class="na-meta">${escapeHtml(q.ref)} · Returns ${escapeHtml(longDate(q.snoozedUntil))}</div>
+    </div>
+    <button type="button" class="act-btn" data-act="unsnooze" data-ref="${escapeHtml(q.ref)}">Bring back</button>
+  </div>`;
+}
+// the "Snoozed (n)" toggle at the bottom of Needs attention (kind "na") and of Reminders (kind "rem")
+function snoozedBlockHtml(kind, list){
+  const open = showSnoozed[kind];
+  return `<div class="snz">
+    <button type="button" class="snz-toggle" data-snz="${kind}" aria-expanded="${open}">Snoozed (${list.length}) <span aria-hidden="true">${open ? '▴' : '▾'}</span></button>
+    ${open ? `<div class="snz-list">${list.length ? list.map(snoozedRowHtml).join('') : '<div class="na-empty">Nothing is snoozed.</div>'}</div>` : ''}
+  </div>`;
+}
+
+let toastTimer = null;
+function hideToast(){ clearTimeout(toastTimer); const t = document.getElementById('toast'); t.hidden = true; t.innerHTML = ''; }
+function showToast(msg, undo){
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span class="toast-msg">${escapeHtml(msg)}</span>${undo ? '<button type="button" class="toast-undo">Undo</button>' : ''}`;
+  t.hidden = false;
+  if(undo) t.querySelector('.toast-undo').onclick = ()=>{ hideToast(); undo(); };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, TOAST_MS);
+}
+// repaint whatever is showing after a quote changed (badge, lists, editor summary)
+function afterQuoteChange(q, fields){
+  Object.assign(q, fields);
+  if(draft && draft.ref === q.ref){ Object.assign(draft, fields); refreshEditorMeta(); }
+  const all = quoteCache || [];
+  refreshBadge(all);
+  if(adminView === 'dashboard') renderDashboard(all);
+  else if(adminView === 'quotes' || adminView === 'reminders') renderList(false);
+}
+function refreshEditorMeta(){
+  if(!draft) return;
+  const v = document.getElementById('f-valid'); if(v) v.value = draft.validUntil || '';
+  const pill = document.getElementById('edPill'); if(pill) pill.innerHTML = pillHtml(draft, 'margin-left:8px;');
+  const info = document.getElementById('chaseInfo'); if(info) info.textContent = chaseDetail(draft);
+}
+// Writes `fields` to Supabase first; only when that works does the screen change. Undo writes the old values back.
+async function changeQuote(ref, fields, message){
+  const q = (quoteCache || []).find(x=> x.ref === ref);
+  if(!q) return;
+  const prev = {};
+  Object.keys(fields).forEach(k=>{ prev[k] = q[k]; });
+  if(!(await patchQuote(ref, fields))){ showToast("Couldn't save that. Please try again."); return; }
+  afterQuoteChange(q, fields);
+  showToast(message, async ()=>{
+    if(!(await patchQuote(ref, prev))){ showToast("Couldn't undo that. Please try again."); return; }
+    afterQuoteChange(q, prev);
+  });
+}
+const chaseFields = ()=>({ lastChasedAt: new Date().toISOString(), snoozedUntil: new Date(Date.now() + CHASE_SNOOZE_DAYS * DAY_MS).toISOString() });
+const markChased = q => changeQuote(q.ref, chaseFields(), `Marked ${quoteName(q)} as chased. Hidden from the lists for ${plural(CHASE_SNOOZE_DAYS, 'day')}.`);
+function extendTo(q, date){
+  return changeQuote(q.ref, { validUntil: date }, `Extended ${quoteName(q)} to ${longDate(date + 'T00:00:00')}.`);
+}
+function closeMenus(except){
+  document.querySelectorAll('.menu-wrap.open').forEach(w=>{
+    if(w === except) return;
+    w.classList.remove('open'); w.querySelector('.menu').hidden = true; w.querySelector('[data-menu]').setAttribute('aria-expanded', 'false');
+  });
+}
+// One handler for every list that carries these buttons (Needs attention, Reminders). Resolves true if the click was theirs.
+async function onCardActionClick(e){
+  const snz = e.target.closest('[data-snz]');
+  if(snz){
+    e.stopPropagation();
+    showSnoozed[snz.dataset.snz] = !showSnoozed[snz.dataset.snz];
+    const all = quoteCache || [];
+    if(adminView === 'dashboard') renderDashboard(all); else renderList(false);
+    return true;
+  }
+  const tgl = e.target.closest('[data-menu]');
+  if(tgl){
+    e.stopPropagation();
+    const w = tgl.closest('.menu-wrap'), open = !w.classList.contains('open');
+    closeMenus(w);
+    w.classList.toggle('open', open); w.querySelector('.menu').hidden = !open; tgl.setAttribute('aria-expanded', String(open));
+    return true;
+  }
+  const b = e.target.closest('[data-act]');
+  if(!b){
+    if(e.target.closest('.card-actions, .snz')){ e.stopPropagation(); return true; }     // padding / the date field: don't open the quote
+    return false;
+  }
+  e.stopPropagation();
+  closeMenus();
+  const q = (quoteCache || []).find(x=> x.ref === b.dataset.ref);
+  if(!q) return true;
+  const days = +b.dataset.days;
+  if(b.dataset.act === 'chase') await markChased(q);
+  else if(b.dataset.act === 'snooze'){
+    const label = (SNOOZE_OPTIONS.find(([d])=> d === days) || [])[1] || plural(days, 'day');
+    await changeQuote(q.ref, { snoozedUntil: new Date(Date.now() + days * DAY_MS).toISOString() }, `Snoozed ${quoteName(q)} for ${label}.`);
+  }
+  else if(b.dataset.act === 'extend') await extendTo(q, addDays(laterOf(todayLondon(), q.validUntil), days));
+  else if(b.dataset.act === 'unsnooze') await changeQuote(q.ref, { snoozedUntil: null }, `Brought ${quoteName(q)} back.`);
+  return true;
+}
+const laterOf = (a, b)=> (b && b > a) ? b : a;
+async function onPickChange(e){
+  const inp = e.target.closest('input[data-pick]');
+  if(!inp) return;
+  const q = (quoteCache || []).find(x=> x.ref === inp.dataset.ref), date = inp.value;
+  if(!q || !date) return;
+  closeMenus();
+  if(date < todayLondon() || date <= (q.validUntil || '')){
+    showToast(`Pick a date after ${longDate(laterOf(todayLondon(), q.validUntil) + 'T00:00:00')}.`);
+    renderCurrentLists();
+    return;
+  }
+  await extendTo(q, date);
+}
+function renderCurrentLists(){
+  const all = quoteCache || [];
+  if(adminView === 'dashboard') renderDashboard(all);
+  else if(adminView === 'quotes' || adminView === 'reminders') renderList(false);
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('.menu-wrap')) closeMenus(); });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeMenus(); });
+
 function emptyListHtml(){
   const term = searchTerm.trim();
   if(term) return `<div class="empty-list"><strong>No quotes found</strong><br>Nothing matches “${escapeHtml(term)}”.</div>`;
-  if(listTab === 'reminders') return `<div class="empty-list">Nothing to chase right now. Sent quotes show up here once they've been waiting more than ${settings.reminderDays} days.</div>`;
+  if(listTab === 'reminders') return `<div class="empty-list">Nothing to chase right now. Sent quotes show up here once they've been waiting more than ${settings.reminderDays} days. Quotes you've chased or snoozed stay out of the way until the snooze ends.</div>`;
+  if(statusFilter !== 'all'){
+    const msg = { awaiting:'No quotes awaiting a reply', accepted:'No accepted quotes yet', declined:'No declined quotes yet', expired:'No expired quotes', draft:'No draft quotes' }[statusFilter];
+    return `<div class="empty-list"><strong>${escapeHtml(msg)}</strong>${filterFrom || filterTo ? '<br>Try widening the date range.' : ''}</div>`;
+  }
   return '<div class="empty-list">No quotes match — create one or adjust your filters.</div>';
 }
 
+// the status chips show how many quotes each would list, given Show hidden, the date range and the search box
+function renderStatusChips(all){
+  const base = visibleQuotes(all, true);
+  document.getElementById('statusChips').innerHTML = STATUS_FILTERS.map(([k, label])=>{
+    const n = base.filter(q=> matchesStatus(q, k)).length, on = k === statusFilter;
+    return `<button type="button" class="chip${on ? ' active' : ''}" data-status="${k}" aria-pressed="${on}">${label}<span class="chip-n">${n}</span></button>`;
+  }).join('');
+}
+async function setStatusFilter(k){
+  if(k === statusFilter) return;
+  statusFilter = k;
+  selectedRefs.clear();
+  history.pushState(null, '', '/' + viewHash('quotes'));
+  await renderList(false);
+  const chip = document.querySelector(`#statusChips .chip[data-status="${k}"]`);
+  if(chip) chip.focus();
+}
 async function renderList(force = true){
   const all = await loadQuotes(force);
   const allReminders = refreshBadge(all);
@@ -1014,7 +1281,9 @@ async function renderList(force = true){
   if(listTab === 'reminders'){
     const term = searchTerm.trim().toLowerCase();
     const reminders = term ? allReminders.filter(q=> matchesSearch(q, term)) : allReminders;
-    if(!reminders.length){ el.innerHTML = emptyListHtml(); return; }
+    const snoozedList = snoozedReminders(all).filter(q=> !term || matchesSearch(q, term));
+    const snoozedHtml = snoozedBlockHtml('rem', snoozedList);
+    if(!reminders.length){ el.innerHTML = emptyListHtml() + snoozedHtml; return; }
     const reminderCard = q=>{
       const days = Math.floor(quoteAgeDays(q));
       return `<div class="qcard ${q.ref===currentRef?'active':''}" data-ref="${escapeHtml(q.ref)}">
@@ -1024,7 +1293,9 @@ async function renderList(force = true){
         </div>
         <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
         <div class="row3"><span class="total">${money(calcTotals(q).total)}</span></div>
+        ${q.lastChasedAt ? `<div class="chased">${escapeHtml(chasedLabel(q))}</div>` : ''}
         <button class="copy-fu-btn" data-ref="${escapeHtml(q.ref)}">Copy follow-up message</button>
+        ${cardActionsHtml(q, false)}
       </div>`;
     };
     const sections = [
@@ -1033,9 +1304,9 @@ async function renderList(force = true){
     ].filter(([, list])=> list.length);
     el.innerHTML = sections.map(([title, list])=>
       `<div class="list-section"><span>${title}</span><span>${list.length}</span></div>${list.map(reminderCard).join('')}`
-    ).join('');
+    ).join('') + snoozedHtml;
     Array.from(el.querySelectorAll('.qcard')).forEach(c=>{
-      c.addEventListener('click', ()=> openEditor(c.dataset.ref));
+      c.addEventListener('click', e=>{ if(!e.target.closest('.card-actions')) openEditor(c.dataset.ref); });
     });
     Array.from(el.querySelectorAll('.copy-fu-btn')).forEach(btn=>{
       btn.addEventListener('click', async e=>{
@@ -1044,9 +1315,13 @@ async function renderList(force = true){
         if(q) await copyFollowUp(q, btn);
       });
     });
+    Array.from(el.querySelectorAll('.snz-row')).forEach(r=>{
+      r.addEventListener('click', e=>{ if(!e.target.closest('button')) openEditor(r.dataset.ref); });
+    });
     return;
   }
 
+  renderStatusChips(all);
   const quotes = visibleQuotes(all);
   // drop selections for refs no longer in the visible (filtered) list
   const visibleRefs = new Set(quotes.map(q=>q.ref));
@@ -1086,7 +1361,7 @@ async function renderList(force = true){
       <div class="row3">
         <span class="total">${money(total)}</span>
         <div class="actions">
-          <button class="hide-btn" data-ref="${escapeHtml(q.ref)}" data-hidden="${q.hidden?1:0}">${q.hidden?'Unhide':'Hide'}</button>
+          <button class="hide-btn" data-ref="${escapeHtml(q.ref)}" data-hidden="${q.hidden?1:0}" title="${q.hidden ? 'Shows this quote in the list again.' : 'Hides from the list only. Still counted in dashboard figures.'}">${q.hidden?'Unhide':'Hide'}</button>
           <button class="del-btn" data-ref="${escapeHtml(q.ref)}" title="Delete permanently">Delete</button>
         </div>
       </div>
@@ -1229,7 +1504,7 @@ function renderEditor(){
   pane.innerHTML = `
     <div class="editor-header">
       <div>
-        <div class="eyebrow">${escapeHtml(draft.ref)} ${pillHtml(draft, 'margin-left:8px;')}</div>
+        <div class="eyebrow">${escapeHtml(draft.ref)} <span id="edPill">${pillHtml(draft, 'margin-left:8px;')}</span></div>
         <h2 style="font-size:22px;">${draft.customerName ? escapeHtml(draft.customerName) : 'New quote'}</h2>
       </div>
     </div>
@@ -1273,6 +1548,10 @@ function renderEditor(){
         </div>
         <div class="link-note">Anyone with this link can view and respond to this quote.</div>
         <div class="views-detail" id="viewsDetail">${escapeHtml(viewsDetail(draft))}</div>
+        ${(draft.status === 'sent' || draft.lastChasedAt) ? `<div class="chase-box">
+          <div class="views-detail" id="chaseInfo">${escapeHtml(chaseDetail(draft))}</div>
+          ${draft.status === 'sent' ? '<button class="btn btn-ghost" id="chaseBtn" type="button">Mark as chased</button>' : ''}
+        </div>` : ''}
       </aside>
     </div>
   `;
@@ -1322,6 +1601,11 @@ function renderEditor(){
     route();
   });
   document.getElementById('printBtn').addEventListener('click', printQuote);
+  const chaseBtn = document.getElementById('chaseBtn');
+  if(chaseBtn) chaseBtn.addEventListener('click', async ()=>{
+    const q = (await loadQuotes(false)).find(x=> x.ref === draft.ref);
+    if(q) await markChased(q);
+  });
   document.getElementById('copyBtn').addEventListener('click', async ()=>{
     const ok = await copyText(document.getElementById('linkOut').value);
     flashButton(document.getElementById('copyBtn'), ok ? 'Copied' : 'Copy failed');
@@ -1498,7 +1782,7 @@ function printQuote(){
 }
 
 /* ---------------- admin views: Dashboard / Quotes / Reminders / Settings ---------------- */
-const VIEW_RE = /^#\/(dashboard|quotes|reminders|settings)\/?$/;
+const VIEW_RE = /^#\/(dashboard|quotes|reminders|settings)\/?(?:\?(.*))?$/;
 let adminView = null;
 let navSeq = 0;
 let firstRenderDone = false;
@@ -1506,6 +1790,14 @@ let dashPeriod = DEFAULT_PERIOD;
 let adminReturnUrl = '/#/quotes';      // where "Admin ↗" returns to after previewing a quote
 
 function viewFromHash(){ const m = location.hash.match(VIEW_RE); return m ? m[1] : null; }
+// the Quotes status chip lives in the hash (#/quotes?status=declined) so refresh and Back keep it
+function statusFromHash(){
+  const m = location.hash.match(VIEW_RE);
+  if(!m || m[1] !== 'quotes' || !m[2]) return 'all';
+  const st = new URLSearchParams(m[2]).get('status');
+  return STATUS_FILTERS.some(([k])=> k === st) ? st : 'all';
+}
+function viewHash(view){ return '#/' + view + (view === 'quotes' && statusFilter !== 'all' ? '?status=' + statusFilter : ''); }
 
 // count badge on the sidebar's Reminders item
 function refreshBadge(all){
@@ -1520,11 +1812,13 @@ function syncListUi(){
   const isRem = listTab === 'reminders';
   document.getElementById('listFilters').style.display = isRem ? 'none' : '';
   document.getElementById('selectAllRow').style.display = isRem ? 'none' : '';
+  document.getElementById('statusChips').style.display = isRem ? 'none' : '';
   if(isRem) document.getElementById('bulkBar').style.display = 'none';
 }
 function setViewUi(view){
   adminView = view;
   listTab = view === 'reminders' ? 'reminders' : 'all';
+  if(view !== 'quotes') statusFilter = 'all';
   document.getElementById('admin').dataset.view = view;
   document.querySelectorAll('.nav-item').forEach(a=>{
     const on = a.dataset.view === view;
@@ -1534,7 +1828,7 @@ function setViewUi(view){
   syncListUi();
 }
 function pushViewUrl(view){
-  if(location.pathname !== '/' || location.hash !== '#/' + view) history.pushState(null, '', '/#/' + view);
+  if(location.pathname !== '/' || location.hash !== viewHash(view)) history.pushState(null, '', '/' + viewHash(view));
 }
 async function goView(view){ pushViewUrl(view); await enterView(view); }
 
@@ -1592,7 +1886,7 @@ const inPeriod = (q, p)=>{ const t = createdMs(q); return t === null ? p === 'al
 const SENT_STATUSES = ['sent','accepted','declined'];            // everything that has gone to a customer (not drafts)
 
 function dashboardStats(all, period){
-  const qs = all.filter(q=> !q.hidden && inPeriod(q, period));    // hidden quotes are left out of every figure
+  const qs = all.filter(q=> inPeriod(q, period));                  // hidden quotes still count: hiding only tidies the Quotes list
   const nonDraft = qs.filter(q=> SENT_STATUSES.includes(q.status));
   const open = qs.filter(q=> q.status === 'sent' && !isQuoteExpired(q));
   const won = qs.filter(q=> q.status === 'accepted');
@@ -1614,11 +1908,19 @@ function attentionLists(all){
   const sent = all.filter(q=> !q.hidden && q.status === 'sent' && !isQuoteExpired(q));
   const today = todayLondon(), soon = addDays(today, EXPIRING_SOON_DAYS);
   const age = q=> quoteAgeDays(q) || 0;
-  return {
+  const lists = {
     expiring: sent.filter(q=> q.validUntil && q.validUntil >= today && q.validUntil <= soon).sort((a, b)=> a.validUntil < b.validUntil ? -1 : a.validUntil > b.validUntil ? 1 : 0),
     warm: sent.filter(q=> (q.viewCount || 0) >= WARM_MIN_VIEWS).sort((a, b)=> (b.viewCount || 0) - (a.viewCount || 0) || Date.parse(b.lastViewedAt || 0) - Date.parse(a.lastViewedAt || 0)),
     cold: sent.filter(q=> !(q.viewCount || 0) && age(q) > NEVER_OPENED_AFTER_DAYS).sort((a, b)=> age(b) - age(a))
   };
+  // quotes that would be listed but are snoozed are held back (counted once, even if they're in two lists)
+  const held = new Map();
+  Object.keys(lists).forEach(k=>{
+    lists[k].filter(isSnoozed).forEach(q=> held.set(q.ref, q));
+    lists[k] = lists[k].filter(q=> !isSnoozed(q));
+  });
+  lists.snoozed = Array.from(held.values()).sort(bySnoozeEnd);
+  return lists;
 }
 // quotes sent (by the week they were created) vs accepted (by the week the customer accepted) for the last CHART_WEEKS weeks
 function weeklySeries(all){
@@ -1631,7 +1933,7 @@ function weeklySeries(all){
     weeks.push({ start: start.getTime(), end: end.getTime(), label: start.toLocaleDateString('en-GB', { day:'numeric', month:'short' }), sent: 0, won: 0 });
   }
   const where = t=> weeks.find(w=> t >= w.start && t < w.end);
-  all.filter(q=> !q.hidden).forEach(q=>{
+  all.forEach(q=>{
     if(SENT_STATUSES.includes(q.status)){ const t = createdMs(q); const w = t === null ? null : where(t); if(w) w.sent++; }
     if(q.status === 'accepted'){ const t = Date.parse((q.response && q.response.respondedAt) || q.updatedAt || ''); const w = isNaN(t) ? null : where(t); if(w) w.won++; }
   });
@@ -1641,18 +1943,20 @@ function sentAgo(q){
   const d = Math.floor(quoteAgeDays(q) || 0);
   return d < 1 ? 'Sent today' : `Sent ${plural(d, 'day')} ago`;
 }
-function naRow(q, extra){
+function naRow(q, extra, withExtend){
+  const chased = chasedLabel(q);
   return `<div class="na-row" data-ref="${escapeHtml(q.ref)}">
     <div class="na-top"><span class="na-name">${escapeHtml(q.customerName) || 'Unnamed customer'}</span><span class="na-value">${gbp0(quoteValue(q))}</span></div>
-    <div class="na-meta">${escapeHtml(q.ref)} · ${escapeHtml(sentAgo(q))}${extra ? '<br>' + escapeHtml(extra) : ''}</div>
+    <div class="na-meta">${escapeHtml(q.ref)} · ${escapeHtml(sentAgo(q))}${extra ? '<br>' + escapeHtml(extra) : ''}${chased ? '<br>' + escapeHtml(chased) : ''}</div>
     <button class="copy-fu-btn" type="button" data-ref="${escapeHtml(q.ref)}">Copy follow-up message</button>
+    ${cardActionsHtml(q, withExtend)}
   </div>`;
 }
-function attentionCol(title, list, empty, extraFn){
+function attentionCol(title, list, empty, extraFn, withExtend){
   const shown = list.slice(0, NEEDS_ATTENTION_MAX);
   return `<div class="att-col">
     <h3>${escapeHtml(title)} <span>${list.length}</span></h3>
-    ${shown.length ? shown.map(q=> naRow(q, extraFn(q))).join('') : `<div class="na-empty">${escapeHtml(empty)}</div>`}
+    ${shown.length ? shown.map(q=> naRow(q, extraFn(q), withExtend)).join('') : `<div class="na-empty">${escapeHtml(empty)}</div>`}
     ${list.length > shown.length ? `<div class="na-more">+ ${list.length - shown.length} more</div>` : ''}
   </div>`;
 }
@@ -1700,12 +2004,13 @@ function renderDashboard(all){
     </div>
     <section class="panel">
       <h2>Needs attention</h2>
-      <p class="cap">Open quotes only (sent, not expired, not hidden), whatever the period. Click one to open it.</p>
+      <p class="cap">Open quotes only (sent, not expired, not hidden), whatever the period. Click one to open it. Once you've dealt with one, mark it as chased or snooze it: it leaves these lists until the snooze ends, and comes back if there's still no decision.</p>
       <div class="att-grid">
-        ${attentionCol('Expiring in the next ' + EXPIRING_SOON_DAYS + ' days', att.expiring, 'Nothing is about to expire.', expText)}
+        ${attentionCol('Expiring in the next ' + EXPIRING_SOON_DAYS + ' days', att.expiring, 'Nothing is about to expire.', expText, true)}
         ${attentionCol('Opened ' + WARM_MIN_VIEWS + '+ times, no decision', att.warm, 'No warm quotes right now.', q=> viewsLabel(q))}
         ${attentionCol('Sent over ' + NEVER_OPENED_AFTER_DAYS + ' days ago, never opened', att.cold, 'Everything sent has been opened.', ()=> '')}
       </div>
+      ${snoozedBlockHtml('na', att.snoozed)}
     </section>
     <div class="kpis">${kpis}</div>
     <section class="panel">
@@ -1713,13 +2018,16 @@ function renderDashboard(all){
       <p class="cap">Last ${CHART_WEEKS} weeks (weeks start on Monday). Sent counts non-draft quotes by the week they were created; accepted counts quotes by the week the customer accepted.</p>
       ${chart}
     </section>
-    <p class="dash-foot">All money is the VAT-inclusive total. Hidden quotes and drafts aren't counted.</p>`;
+    <p class="dash-foot">All money is the VAT-inclusive total. Drafts aren't counted; hidden quotes are, because hiding only tidies the Quotes list.</p>`;
 }
 async function openFromDashboard(ref){
+  statusFilter = 'all';                                  // so the quote you clicked is in the Quotes list
   await openEditor(ref);
   if(draft && draft.ref === ref) await goView('quotes');
 }
+document.getElementById('dashboardPane').addEventListener('change', onPickChange);
 document.getElementById('dashboardPane').addEventListener('click', async e=>{
+  if(await onCardActionClick(e)) return;
   const period = e.target.closest('.period button');
   if(period){ dashPeriod = period.dataset.period; renderDashboard(await loadQuotes(false)); return; }
   const copy = e.target.closest('.copy-fu-btn');
@@ -1729,7 +2037,7 @@ document.getElementById('dashboardPane').addEventListener('click', async e=>{
     if(q) await copyFollowUp(q, copy);
     return;
   }
-  const row = e.target.closest('.na-row');
+  const row = e.target.closest('.na-row, .snz-row');
   if(row) openFromDashboard(row.dataset.ref);
 });
 
@@ -1804,14 +2112,22 @@ document.getElementById('newQuoteBtn').addEventListener('click', async ()=>{
   currentRef = ref;
   await saveQuote(draft, true);
   isDirty = false;
+  if(statusFilter !== 'all' && statusFilter !== 'draft') statusFilter = 'all';   // a new quote is a draft: make sure the list shows it
   setViewUi('quotes'); pushViewUrl('quotes');
   renderEditor(); renderList();
   document.getElementById('f-name').focus();
 });
 
-document.getElementById('searchInput').addEventListener('input', e=>{ searchTerm = e.target.value; renderList(false); });
-document.getElementById('filterFrom').addEventListener('change', e=>{ filterFrom = e.target.value; renderList(false); });
-document.getElementById('filterTo').addEventListener('change', e=>{ filterTo = e.target.value; renderList(false); });
+// changing the search, the date range or the status chip starts the selection afresh
+document.getElementById('searchInput').addEventListener('input', e=>{ searchTerm = e.target.value; selectedRefs.clear(); renderList(false); });
+document.getElementById('filterFrom').addEventListener('change', e=>{ filterFrom = e.target.value; selectedRefs.clear(); renderList(false); });
+document.getElementById('filterTo').addEventListener('change', e=>{ filterTo = e.target.value; selectedRefs.clear(); renderList(false); });
+document.getElementById('statusChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if(chip) setStatusFilter(chip.dataset.status);
+});
+document.getElementById('qList').addEventListener('change', onPickChange);
+document.getElementById('qList').addEventListener('click', onCardActionClick);
 document.getElementById('showHiddenChk').addEventListener('change', e=>{ showHidden = e.target.checked; renderList(false); });
 
 document.getElementById('selectAllChk').addEventListener('change', async e=>{
@@ -1821,9 +2137,11 @@ document.getElementById('selectAllChk').addEventListener('change', async e=>{
   renderList(false);
 });
 document.getElementById('bulkDeleteBtn').addEventListener('click', async ()=>{
-  const refs = Array.from(selectedRefs);
+  // only ever the quotes visible under the current filters, whatever is in the selection set
+  const visible = new Set(visibleQuotes(await loadQuotes(false)).map(q=> q.ref));
+  const refs = Array.from(selectedRefs).filter(r=> visible.has(r));
   if(!refs.length) return;
-  if(!confirm(`Delete ${refs.length} quote${refs.length===1?'':'s'}? This can't be undone.`)) return;
+  if(!confirm(`Delete ${refs.length} quote${refs.length===1?'':'s'} (${filterSummary()})?\n\nThis can't be undone.`)) return;
   const ok = await deleteQuoteRows(refs);
   if(!ok){ alert('Could not delete — please try again.'); return; }
   if(draft && refs.includes(draft.ref)){ draft = null; currentRef = null; setDirty(false); }
@@ -2097,7 +2415,8 @@ async function route(){
   if(settingsState === 'idle') startSettingsLoad();
   await Promise.race([settingsPromise, new Promise(r=> setTimeout(r, SETTINGS_WAIT_MS))]);
   const view = viewFromHash() || 'dashboard';          // Dashboard is the landing view
-  if(location.pathname + location.hash !== '/#/' + view) history.replaceState(null, '', '/#/' + view);
+  statusFilter = view === 'quotes' ? statusFromHash() : 'all';
+  if(location.pathname + location.hash !== '/' + viewHash(view)) history.replaceState(null, '', '/' + viewHash(view));
   await enterView(view);
   firstRenderDone = true;
 }
