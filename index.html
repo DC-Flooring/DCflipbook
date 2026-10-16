@@ -746,7 +746,13 @@ async function renderList(force = true){
   });
 }
 
+// Switching quotes (or starting a new one) would throw away edits that haven't been saved.
+function confirmDiscard(){
+  return !isDirty || confirm('You have unsaved changes to this quote. Discard them and continue?');
+}
+
 async function openEditor(ref){
+  if(!confirmDiscard()) return;
   currentRef = ref;
   draft = await getQuote(ref);
   if(!draft) draft = blankQuote(ref);
@@ -1014,6 +1020,7 @@ function printQuote(){
 
 /* ---------------- list-pane + global wiring ---------------- */
 document.getElementById('newQuoteBtn').addEventListener('click', async ()=>{
+  if(!confirmDiscard()) return;
   const ref = await nextRef();
   draft = blankQuote(ref);
   currentRef = ref;
