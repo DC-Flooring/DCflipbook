@@ -32,12 +32,12 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 
 /* ===== ADMIN ===== */
 #admin{ display:none; min-height:100vh; }
-.admin-body{ display:flex; max-width:1180px; margin:0 auto; gap:0; min-height:100vh; }
+.admin-body{ display:flex; max-width:1560px; margin:0 auto; gap:0; min-height:100vh; }
 .sidebar{
   width:200px; flex-shrink:0; background:#272727; color:var(--linen); padding:28px 20px;
   display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px;
 }
-.sidebar img{ width:100%; max-width:130px; height:auto; }
+.sidebar .sidebar-logo{ display:block; width:100%; max-width:160px; height:auto; aspect-ratio:8/5; object-fit:cover; object-position:50% 46%; mix-blend-mode:lighten; }
 .sidebar .tagline{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--brass); }
 .list-pane{ width:300px; flex-shrink:0; border-right:1px solid var(--line); padding:20px; background:var(--paper); }
 .new-btn{
@@ -45,15 +45,40 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
   font-size:13px; font-weight:600; letter-spacing:.02em; cursor:pointer; margin-bottom:16px;
 }
 .new-btn:hover{ background:var(--oak); }
+.list-tabs{ display:flex; gap:4px; margin:-4px 0 14px; border-bottom:1px solid var(--line); }
+.list-tab{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:6px; background:none; border:none;
+  border-bottom:2px solid transparent; margin-bottom:-1px; padding:8px 4px 9px; font-size:12.5px; font-weight:600;
+  color:var(--ink-soft); cursor:pointer;
+}
+.list-tab:hover{ color:var(--ink); }
+.list-tab.active{ color:var(--ink); border-bottom-color:var(--brass); }
+.tab-badge{ min-width:18px; padding:1px 6px; border-radius:10px; background:var(--brass); color:#fff; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.4; }
+.tab-badge.zero{ background:#e5dbc7; color:var(--ink-soft); }
+.list-search{
+  width:100%; padding:8px 10px; margin-bottom:12px; border:1px solid var(--line); border-radius:4px;
+  font-size:13px; font-family:'Work Sans',sans-serif; background:#fff; color:var(--ink);
+}
+.list-search:focus{ outline:none; border-color:var(--brass); }
 .qcard{
   border:1px solid var(--line); border-radius:5px; padding:12px 14px; margin-bottom:10px; cursor:pointer;
   background:#fff; transition:border-color 150ms;
 }
 .qcard:hover{ border-color:var(--brass); }
 .qcard.active{ border-color:var(--brass); box-shadow:0 0 0 1px var(--brass); }
-.qcard .row1{ display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+.qcard{ min-width:0; }
+.qcard .row1{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px 8px; margin-bottom:5px; }
+.qcard .row1-left{ display:flex; gap:6px; align-items:center; min-width:0; }
+.qcard .row3{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px 8px; margin-top:4px; }
+.qcard .actions{ display:flex; gap:6px; flex-wrap:wrap; }
+.qcard .waiting{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.04em; color:var(--bad); }
+.copy-fu-btn{
+  width:100%; margin-top:8px; padding:7px 10px; background:none; border:1px solid var(--brass); color:var(--brass);
+  border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;
+}
+.copy-fu-btn:hover{ background:var(--brass); color:#fff; }
 .qcard .ref{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); }
-.qcard .name{ font-size:14px; font-weight:600; margin-bottom:2px; }
+.qcard .name{ font-size:14px; font-weight:600; margin-bottom:2px; overflow-wrap:anywhere; }
 .qcard .total{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); }
 .qcard .reason{ font-size:11px; color:var(--bad); margin-top:6px; font-style:italic; }
 .qcard.is-hidden{ opacity:.5; }
@@ -96,7 +121,7 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 }
 .hidden-toggle input{ cursor:pointer; }
 
-.editor-pane{ flex:1; padding:28px 36px; overflow-y:auto; }
+.editor-pane{ flex:1; min-width:0; padding:28px 36px; }
 .editor-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; }
 .field{ margin-bottom:16px; }
 .field label{ display:block; font-size:11px; font-family:'IBM Plex Mono',monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
@@ -105,28 +130,52 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
   font-family:'Work Sans',sans-serif; background:#fff; color:var(--ink);
 }
 .field textarea{ resize:vertical; min-height:64px; }
-.row2{ display:flex; gap:14px; }
-.row2 .field{ flex:1; }
+.details-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+.details-grid .field-name{ grid-column:1 / -1; }
+.sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 
-.section-title{ font-size:13px; font-weight:600; margin:26px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); font-family:'Fraunces',serif;}
-.li-row{ display:grid; grid-template-columns: 2fr 90px 110px 110px 32px; gap:8px; align-items:center; margin-bottom:8px; }
-.li-row input{ padding:8px 9px; font-size:13px; }
-.li-total{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-soft); text-align:right; padding-right:4px; }
-.rm-btn{ background:none; border:none; color:var(--bad); cursor:pointer; font-size:15px; width:28px; }
-.add-row-btn{ font-size:12px; color:var(--brass); background:none; border:1px dashed var(--line); padding:8px; width:100%; border-radius:4px; cursor:pointer; margin-top:4px; }
+.section-title{ font-size:13px; font-weight:600; margin:10px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); font-family:'Fraunces',serif;}
+.li-table{ width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px; }
+.li-table col.c-qty{ width:13%; } .li-table col.c-unit{ width:20%; } .li-table col.c-total{ width:23%; } .li-table col.c-rm{ width:30px; }
+.li-table thead th{
+  background:none; border-bottom:1px solid var(--line); padding:0 4px 6px; text-align:left;
+  font-size:10px; letter-spacing:.08em; color:var(--ink-soft);
+}
+.li-table thead th.num{ text-align:right; }
+.li-table tbody td{ padding:4px; border-bottom:none; vertical-align:middle; }
+.li-table input{
+  width:100%; min-width:0; padding:8px 7px; border:1px solid var(--line); border-radius:4px; font-size:13px;
+  font-family:'Work Sans',sans-serif; background:#fff; color:var(--ink);
+}
+.li-table input.li-qty, .li-table input.li-price{ text-align:right; }
+.li-table td.li-total{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); text-align:right; white-space:nowrap; }
+.rm-btn{ background:none; border:none; color:var(--bad); cursor:pointer; font-size:16px; width:100%; padding:0; }
+.li-help{ font-size:11.5px; color:var(--ink-soft); margin:6px 4px 10px; line-height:1.5; }
+.add-row-btn{ font-size:12px; color:var(--brass); background:none; border:1px dashed var(--line); padding:8px; width:100%; border-radius:4px; cursor:pointer; }
 .add-row-btn:hover{ border-color:var(--brass); }
-.totals-box{ margin-top:12px; align-self:flex-end; width:240px; margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:13px; }
+
+.editor-grid{ display:block; }
+.editor-summary{ margin-top:24px; padding:16px 18px; background:var(--paper); border:1px solid var(--line); border-radius:6px; }
+.totals-box{ margin:0 0 12px; font-family:'IBM Plex Mono',monospace; font-size:13px; }
 .totals-box div{ display:flex; justify-content:space-between; padding:5px 0; color:var(--ink-soft); }
 .totals-box .grand{ color:var(--ink); font-weight:600; border-top:1px solid var(--line); margin-top:4px; padding-top:9px; font-size:15px; }
-
-.action-bar{ display:flex; gap:10px; margin-top:26px; align-items:center; flex-wrap:wrap; }
+.save-state{ display:flex; align-items:center; gap:10px; min-height:20px; margin-bottom:8px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; }
+.unsaved-flag{ display:inline-flex; align-items:center; gap:6px; color:#8a5a14; }
+.unsaved-flag::before{ content:""; width:7px; height:7px; border-radius:50%; background:#d19a3a; }
+.unsaved-flag[hidden]{ display:none; }
+.sum-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+.sum-actions .btn{ padding:10px 12px; }
+.sum-actions .btn-primary{ flex:1 1 100%; }
+.sum-actions .btn-ghost{ flex:1 1 130px; }
 .btn{ padding:10px 18px; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+.btn:disabled{ opacity:.6; cursor:default; }
 .btn-primary{ background:var(--brass); color:#fff; }
 .btn-primary:hover{ background:var(--oak); }
 .btn-ghost{ background:none; border-color:var(--line); color:var(--ink); }
 .btn-ghost:hover{ border-color:var(--brass); color:var(--brass); }
-.link-box{ display:flex; gap:8px; align-items:center; margin-top:6px; }
-.link-box input{ flex:1; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; border:1px solid var(--line); border-radius:4px; background:var(--paper); }
+.link-box{ display:flex; gap:8px; align-items:center; margin-top:14px; }
+.link-box input{ flex:1; min-width:0; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; border:1px solid var(--line); border-radius:4px; background:#fff; }
+.link-box .btn{ padding:8px 12px; }
 .link-note{ font-size:11px; color:var(--ink-soft); margin-top:6px; line-height:1.5; }
 .response-box{ margin-top:22px; padding:14px 16px; border-radius:5px; }
 .response-box.accepted{ background:#eaf1eb; }
@@ -274,13 +323,24 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .not-found{ color:var(--linen); text-align:center; font-family:'IBM Plex Mono',monospace; font-size:13px; }
 .admin-link{ position:fixed; bottom:14px; left:14px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7a6a52; text-decoration:none; letter-spacing:.05em; }
 
-@media (max-width:640px){
+@media (min-width:1100px){
+  .sidebar{ width:170px; padding:24px 14px; }
+  .list-pane{ width:270px; padding:18px; }
+  .editor-pane{ padding:26px clamp(22px,2.4vw,36px); }
+  .editor-grid{ display:grid; grid-template-columns:minmax(0,1fr) clamp(240px,22vw,300px); gap:clamp(22px,2vw,30px); align-items:start; }
+  .editor-summary{ position:sticky; top:20px; margin-top:0; }
+}
+@media (max-width:1099px){
+  /* side-by-side panes leave the editor too narrow below ~1100px, so stack them */
   .admin-body{ flex-direction:column; }
   .sidebar{ width:100%; flex-direction:row; justify-content:center; padding:16px 20px; gap:12px; }
-  .sidebar img{ max-width:70px; }
   .list-pane{ width:100%; border-right:none; border-bottom:1px solid var(--line); }
-  .row2{ flex-direction:column; }
-  .li-row{ grid-template-columns:1fr; }
+}
+@media (max-width:640px){
+  .editor-pane{ padding:20px 16px; }
+  .li-table col.c-qty{ width:14%; } .li-table col.c-unit{ width:22%; } .li-table col.c-total{ width:21%; } .li-table col.c-rm{ width:28px; }
+  .li-table td.li-total{ font-size:11.5px; }
+  .sidebar .sidebar-logo{ max-width:96px; }
   .page{ padding:28px 24px 28px 38px; }
   .decision-inner{ padding:28px 24px 28px 38px; }
   .cover{ padding-left:38px; }
@@ -302,12 +362,17 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 <div id="admin">
   <div class="admin-body">
     <div class="sidebar">
-      <img src="/DC%20Flooring%20Logo.png" alt="DC Flooring logo" class="sidebar-logo">
+      <img src="/floors-for-living-logo.png" alt="Floors for Living logo" class="sidebar-logo">
       <div class="tagline">Quote Builder</div>
     </div>
     <div class="list-pane">
+      <div class="list-tabs" role="tablist" aria-label="Quote lists">
+        <button class="list-tab active" role="tab" aria-selected="true" data-tab="all">All quotes</button>
+        <button class="list-tab" role="tab" aria-selected="false" data-tab="reminders">Reminders <span class="tab-badge zero" id="reminderBadge">0</span></button>
+      </div>
       <button class="new-btn" id="newQuoteBtn">+ New Quote</button>
-      <div class="list-filters">
+      <input type="search" class="list-search" id="searchInput" placeholder="Search name or quote ref" aria-label="Search quotes by customer name or quote ref" autocomplete="off">
+      <div class="list-filters" id="listFilters">
         <div class="date-filter">
           <input type="date" id="filterFrom" title="From date">
           <span class="to-sep">to</span>
@@ -315,7 +380,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
         </div>
         <label class="hidden-toggle"><input type="checkbox" id="showHiddenChk"> Show hidden</label>
       </div>
-      <div class="select-all-row">
+      <div class="select-all-row" id="selectAllRow">
         <label class="hidden-toggle"><input type="checkbox" id="selectAllChk"> Select all</label>
       </div>
       <div class="bulk-bar" id="bulkBar" style="display:none;">
@@ -335,6 +400,10 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 <a href="#admin" class="admin-link" id="adminLink" style="display:none;">Admin ↗</a>
 
 <script>
+/* ---------------- settings ---------------- */
+// A "sent" quote shows up under Reminders once it has been waiting longer than this many days.
+const REMINDER_AFTER_DAYS = 5;
+
 /* ---------------- Supabase storage ---------------- */
 const SUPABASE_URL = 'https://lpkdsdfltejgczsuvpay.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_v9LluInQJDNQmMHnbxixWQ_Otl-hvvG';
@@ -461,13 +530,135 @@ let draft = null;
 let filterFrom = '';
 let filterTo = '';
 let showHidden = false;
+let searchTerm = '';
+let listTab = 'all';          // 'all' | 'reminders'
+let quoteCache = null;        // last list fetched from Supabase (search/filter/tab changes reuse it)
 let selectedRefs = new Set();
+let isDirty = false;          // editor has changes that haven't been saved
+let editVersion = 0;          // bumps on every edit, so a save only clears "unsaved" if nothing changed meanwhile
+let saving = false;
+const DAY_MS = 86400000;
 
-async function renderList(){
-  let quotes = await listQuotes();
+async function loadQuotes(force){
+  if(force || quoteCache === null) quoteCache = await listQuotes();
+  return quoteCache;
+}
+function visibleQuotes(all){
+  const term = searchTerm.trim().toLowerCase();
+  let quotes = all;
   if(!showHidden) quotes = quotes.filter(q=> !q.hidden);
   if(filterFrom) quotes = quotes.filter(q=> q.date && q.date >= filterFrom);
   if(filterTo) quotes = quotes.filter(q=> q.date && q.date <= filterTo);
+  if(term) quotes = quotes.filter(q=> matchesSearch(q, term));
+  return quotes;
+}
+function matchesSearch(q, term){
+  return (q.customerName||'').toLowerCase().includes(term) || (q.ref||'').toLowerCase().includes(term);
+}
+
+/* reminders: sent, not hidden, created more than REMINDER_AFTER_DAYS ago, oldest first */
+function quoteAgeDays(q){
+  const t = Date.parse(q.createdAt || q.date || '');
+  return isNaN(t) ? null : (Date.now() - t) / DAY_MS;
+}
+function reminderQuotes(all){
+  return all
+    .filter(q=>{ const age = quoteAgeDays(q); return q.status==='sent' && !q.hidden && age!==null && age > REMINDER_AFTER_DAYS; })
+    .sort((a,b)=> quoteAgeDays(b) - quoteAgeDays(a));
+}
+function quoteLink(q){
+  return `${siteBase()}/${q.shortSlug ? 'q/'+encodeURIComponent(q.shortSlug) : 'quote/'+encodeURIComponent(q.ref)}`;
+}
+function followUpMessage(q){
+  const name = (q.customerName||'').trim();
+  return `Hi ${name || 'there'}, hope you're well! Just checking in to see if you've had a chance to look over your flooring quote:\n\n${quoteLink(q)}\n\nAny questions at all, just let me know. Thanks!`;
+}
+async function copyText(text){
+  try{
+    if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; }
+  }catch(e){ /* fall through to the legacy path */ }
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly','');
+    ta.style.cssText = 'position:fixed; top:0; left:0; opacity:0;';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  }catch(e){ return false; }
+}
+function flashButton(btn, text){
+  if(!btn.dataset.label) btn.dataset.label = btn.textContent;
+  btn.textContent = text;
+  clearTimeout(btn._flashTimer);
+  btn._flashTimer = setTimeout(()=>{ btn.textContent = btn.dataset.label; }, 1400);
+}
+
+function syncTabUi(){
+  const isRem = listTab === 'reminders';
+  document.querySelectorAll('.list-tab').forEach(t=>{
+    const on = t.dataset.tab === listTab;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  document.getElementById('listFilters').style.display = isRem ? 'none' : '';
+  document.getElementById('selectAllRow').style.display = isRem ? 'none' : '';
+  if(isRem) document.getElementById('bulkBar').style.display = 'none';
+}
+function setListTab(tab){
+  listTab = tab;
+  syncTabUi();
+  renderList(false);
+}
+
+function emptyListHtml(){
+  const term = searchTerm.trim();
+  if(term) return `<div class="empty-list"><strong>No quotes found</strong><br>Nothing matches “${escapeHtml(term)}”.</div>`;
+  if(listTab === 'reminders') return `<div class="empty-list">Nothing to chase right now. Sent quotes show up here once they've been waiting more than ${REMINDER_AFTER_DAYS} days.</div>`;
+  return '<div class="empty-list">No quotes match — create one or adjust your filters.</div>';
+}
+
+async function renderList(force = true){
+  const all = await loadQuotes(force);
+  const allReminders = reminderQuotes(all);
+  const badge = document.getElementById('reminderBadge');
+  badge.textContent = allReminders.length;
+  badge.classList.toggle('zero', allReminders.length === 0);
+  syncTabUi();
+
+  const el = document.getElementById('qList');
+  if(listTab === 'reminders'){
+    const term = searchTerm.trim().toLowerCase();
+    const reminders = term ? allReminders.filter(q=> matchesSearch(q, term)) : allReminders;
+    if(!reminders.length){ el.innerHTML = emptyListHtml(); return; }
+    el.innerHTML = reminders.map(q=>{
+      const days = Math.floor(quoteAgeDays(q));
+      return `<div class="qcard ${q.ref===currentRef?'active':''}" data-ref="${escapeHtml(q.ref)}">
+        <div class="row1">
+          <div class="row1-left"><span class="ref">${escapeHtml(q.ref)}</span></div>
+          <span class="waiting">Waiting ${days} day${days===1?'':'s'}</span>
+        </div>
+        <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
+        <div class="row3"><span class="total">${money(calcTotals(q).total)}</span></div>
+        <button class="copy-fu-btn" data-ref="${escapeHtml(q.ref)}">Copy follow-up message</button>
+      </div>`;
+    }).join('');
+    Array.from(el.querySelectorAll('.qcard')).forEach(c=>{
+      c.addEventListener('click', ()=> openEditor(c.dataset.ref));
+    });
+    Array.from(el.querySelectorAll('.copy-fu-btn')).forEach(btn=>{
+      btn.addEventListener('click', async e=>{
+        e.stopPropagation();
+        const q = reminders.find(r=> r.ref === btn.dataset.ref);
+        if(!q) return;
+        const ok = await copyText(followUpMessage(q));
+        flashButton(btn, ok ? 'Copied ✓' : 'Copy failed');
+      });
+    });
+    return;
+  }
+
+  const quotes = visibleQuotes(all);
   // drop selections for refs no longer in the visible (filtered) list
   const visibleRefs = new Set(quotes.map(q=>q.ref));
   Array.from(selectedRefs).forEach(r=>{ if(!visibleRefs.has(r)) selectedRefs.delete(r); });
@@ -475,7 +666,7 @@ async function renderList(){
   const bulkBar = document.getElementById('bulkBar');
   const selectAllChk = document.getElementById('selectAllChk');
   if(!quotes.length){
-    document.getElementById('qList').innerHTML = '<div class="empty-list">No quotes match — create one or adjust your filters.</div>';
+    el.innerHTML = emptyListHtml();
     bulkBar.style.display = 'none';
     selectAllChk.checked = false; selectAllChk.indeterminate = false;
     return;
@@ -486,7 +677,6 @@ async function renderList(){
   selectAllChk.checked = selectedRefs.size === quotes.length;
   selectAllChk.indeterminate = selectedRefs.size > 0 && selectedRefs.size < quotes.length;
 
-  const el = document.getElementById('qList');
   el.innerHTML = quotes.map(q=>{
     const {total} = calcTotals(q);
     let reasonHtml = '';
@@ -495,20 +685,22 @@ async function renderList(){
     }
     return `<div class="qcard ${q.ref===currentRef?'active':''} ${q.hidden?'is-hidden':''}" data-ref="${q.ref}">
       <div class="row1">
-        <div style="display:flex; gap:6px; align-items:center;">
+        <div class="row1-left">
           <label class="qcard-check" onclick="event.stopPropagation()">
             <input type="checkbox" class="sel-chk" data-ref="${q.ref}" ${selectedRefs.has(q.ref)?'checked':''}>
           </label>
           <span class="ref">${q.ref}</span>
         </div>
-        <div style="display:flex; gap:6px; align-items:center;">
-          <span class="pill ${q.status}">${q.status}</span>
+        <span class="pill ${q.status}">${q.status}</span>
+      </div>
+      <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
+      <div class="row3">
+        <span class="total">${money(total)}</span>
+        <div class="actions">
           <button class="hide-btn" data-ref="${q.ref}" data-hidden="${q.hidden?1:0}">${q.hidden?'Unhide':'Hide'}</button>
           <button class="del-btn" data-ref="${q.ref}" title="Delete permanently">Delete</button>
         </div>
       </div>
-      <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
-      <div class="total">${money(total)}</div>
       ${reasonHtml}
     </div>`;
   }).join('');
@@ -520,7 +712,7 @@ async function renderList(){
     chk.addEventListener('change', e=>{
       const ref = chk.dataset.ref;
       if(chk.checked) selectedRefs.add(ref); else selectedRefs.delete(ref);
-      renderList();
+      renderList(false);
     });
   });
   Array.from(el.querySelectorAll('.hide-btn')).forEach(btn=>{
@@ -545,7 +737,7 @@ async function renderList(){
       if(!ok){ alert('Could not delete — please try again.'); return; }
       selectedRefs.delete(ref);
       if(draft && draft.ref===ref){
-        draft = null; currentRef = null;
+        draft = null; currentRef = null; setDirty(false);
         await route();
       } else {
         renderList();
@@ -559,26 +751,52 @@ async function openEditor(ref){
   draft = await getQuote(ref);
   if(!draft) draft = blankQuote(ref);
   if(!draft.shortSlug){ draft.shortSlug = genSlug(); await saveQuote(draft); }
+  isDirty = false;
   renderEditor();
-  renderList();
+  renderList(false);
 }
 
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+function lineTotal(li){
+  const qty = parseFloat(li.qty), price = parseFloat(li.unitPrice)||0;
+  return qty ? qty*price : price;
+}
+function liRowHtml(li, i){
+  return `<tr class="li-row" data-i="${i}">
+    <td><input class="li-product" aria-label="Description" placeholder="Product / SKU" value="${escapeHtml(li.product)}"></td>
+    <td><input class="li-qty" aria-label="Qty" inputmode="decimal" placeholder="Qty" value="${escapeHtml(li.qty)}"></td>
+    <td><input class="li-price" aria-label="Unit price" inputmode="decimal" placeholder="0.00" value="${escapeHtml(li.unitPrice)}"></td>
+    <td class="li-total">${money(lineTotal(li))}</td>
+    <td><button class="rm-btn" title="Remove" aria-label="Remove line item">×</button></td>
+  </tr>`;
+}
+function renderLineItems(){
+  document.getElementById('liRows').innerHTML = draft.lineItems.map(liRowHtml).join('');
+  refreshTotalsOnly();
+}
+function addLineItem(){
+  draft.lineItems.push({product:'',qty:'',unitPrice:''});
+  markEdited();
+  renderLineItems();
+  const rows = document.querySelectorAll('#liRows .li-row');
+  const last = rows[rows.length-1];
+  if(last) last.querySelector('.li-product').focus();
+}
+
+function setDirty(v){
+  isDirty = v;
+  const flag = document.getElementById('unsavedFlag');
+  if(flag) flag.hidden = !v;
+}
+function markEdited(){
+  editVersion++; setDirty(true);
+  const flash = document.getElementById('savedFlash');
+  if(flash) flash.classList.remove('show');
+}
+
 function renderEditor(){
   const pane = document.getElementById('editorPane');
-  const {subtotal, vat, total} = calcTotals(draft);
-  const liRows = draft.lineItems.map((li,i)=>{
-    const qty = parseFloat(li.qty), price=parseFloat(li.unitPrice)||0;
-    const lt = qty ? qty*price : price;
-    return `<div class="li-row" data-i="${i}">
-      <input class="li-product" placeholder="Product / SKU" value="${escapeHtml(li.product)}">
-      <input class="li-qty" placeholder="Qty (blank=flat)" value="${escapeHtml(li.qty)}">
-      <input class="li-price" placeholder="Unit £" value="${escapeHtml(li.unitPrice)}">
-      <div class="li-total">${money(lt)}</div>
-      <button class="rm-btn" data-rm="${i}" title="Remove">×</button>
-    </div>`;
-  }).join('');
   let responseHtml = '';
   if(draft.response){
     const cls = draft.response.decision;
@@ -594,39 +812,52 @@ function renderEditor(){
         <div class="eyebrow">${draft.ref} <span class="pill ${draft.status}" style="margin-left:8px;">${draft.status}</span></div>
         <h2 style="font-size:22px;">${draft.customerName ? escapeHtml(draft.customerName) : 'New quote'}</h2>
       </div>
-      <span class="saved-flash mono" id="savedFlash">Saved</span>
     </div>
 
-    <div class="row2">
-      <div class="field"><label>Customer name</label><input id="f-name" value="${escapeHtml(draft.customerName)}"></div>
-      <div class="field"><label>Date</label><input id="f-date" type="date" value="${draft.date}"></div>
-      <div class="field"><label>Valid until</label><input id="f-valid" type="date" value="${draft.validUntil}"></div>
-    </div>
+    <div class="editor-grid">
+      <div class="editor-main">
+        <div class="details-grid">
+          <div class="field field-name"><label for="f-name">Customer name</label><input id="f-name" value="${escapeHtml(draft.customerName)}"></div>
+          <div class="field"><label for="f-date">Date</label><input id="f-date" type="date" value="${draft.date}"></div>
+          <div class="field"><label for="f-valid">Valid until</label><input id="f-valid" type="date" value="${draft.validUntil}"></div>
+        </div>
 
-    <div class="section-title">Line items</div>
-    <div id="liRows">${liRows}</div>
-    <button class="add-row-btn" id="addLi">+ Add line item</button>
-    <div class="totals-box">
-      <div><span>Subtotal</span><span>${money(subtotal)}</span></div>
-      <div><span>VAT (20%)</span><span>${money(vat)}</span></div>
-      <div class="grand"><span>Total</span><span>${money(total)}</span></div>
-    </div>
+        <div class="section-title">Line items</div>
+        <table class="li-table">
+          <colgroup><col><col class="c-qty"><col class="c-unit"><col class="c-total"><col class="c-rm"></colgroup>
+          <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Line total</th><th><span class="sr-only">Remove</span></th></tr></thead>
+          <tbody id="liRows"></tbody>
+        </table>
+        <div class="li-help">Leave Qty blank for a flat price — the unit price is then used as the line total.</div>
+        <button class="add-row-btn" id="addLi">+ Add line item</button>
 
-    <div class="field" style="margin-top:22px;"><label>Notes / terms (shown on quote)</label><textarea id="f-notes">${escapeHtml(draft.notes)}</textarea></div>
+        <div class="field" style="margin-top:22px;"><label for="f-notes">Notes / terms (shown on quote)</label><textarea id="f-notes">${escapeHtml(draft.notes)}</textarea></div>
 
-    ${responseHtml}
+        ${responseHtml}
+      </div>
 
-    <div class="action-bar">
-      <button class="btn btn-primary" id="saveBtn">Save quote</button>
-      <button class="btn btn-ghost" id="previewBtn">Preview as customer</button>
-      ${draft.status==='draft' ? '' : ''}
+      <aside class="editor-summary" aria-label="Quote summary">
+        <div class="totals-box"></div>
+        <div class="save-state">
+          <span class="unsaved-flag" id="unsavedFlag" hidden>Unsaved changes</span>
+          <span class="saved-flash" id="savedFlash">Saved</span>
+        </div>
+        <div class="sum-actions">
+          <button class="btn btn-primary" id="saveBtn">Save quote</button>
+          <button class="btn btn-ghost" id="previewBtn">Preview as customer</button>
+          <button class="btn btn-ghost" id="printBtn">Print quote</button>
+        </div>
+        <div class="link-box">
+          <input id="linkOut" readonly value="${siteBase()}/q/${draft.shortSlug || ''}">
+          <button class="btn btn-ghost" id="copyBtn">Copy link</button>
+        </div>
+        <div class="link-note">Anyone with this link can view and respond to this quote.</div>
+      </aside>
     </div>
-    <div class="link-box">
-      <input id="linkOut" readonly value="${siteBase()}/q/${draft.shortSlug || ''}">
-      <button class="btn btn-ghost" id="copyBtn">Copy link</button>
-    </div>
-    <div class="link-note">Copy this and send it however you normally do — WhatsApp, text, email. Anyone with the link and quote number can view and respond to this quote. This clean-path link only resolves once the site is deployed with the redirect/404 fallback below — while testing locally, use "Preview as customer" instead.</div>
   `;
+
+  renderLineItems();
+  setDirty(isDirty);
 
   // wire up
   document.getElementById('f-name').addEventListener('input', e=> draft.customerName = e.target.value);
@@ -634,38 +865,72 @@ function renderEditor(){
   document.getElementById('f-valid').addEventListener('input', e=> draft.validUntil = e.target.value);
   document.getElementById('f-notes').addEventListener('input', e=> draft.notes = e.target.value);
 
-  document.getElementById('addLi').addEventListener('click', ()=>{ draft.lineItems.push({product:'',qty:'',unitPrice:''}); renderEditor(); });
+  document.getElementById('addLi').addEventListener('click', addLineItem);
 
-  Array.from(document.querySelectorAll('#liRows .li-row')).forEach(row=>{
-    const i = +row.dataset.i;
-    row.querySelector('.li-product').addEventListener('input', e=> draft.lineItems[i].product = e.target.value);
-    row.querySelector('.li-qty').addEventListener('input', e=>{ draft.lineItems[i].qty = e.target.value; refreshTotalsOnly(); });
-    row.querySelector('.li-price').addEventListener('input', e=>{ draft.lineItems[i].unitPrice = e.target.value; refreshTotalsOnly(); });
-    const rm = row.querySelector('.rm-btn');
-    if(rm) rm.addEventListener('click', ()=>{ draft.lineItems.splice(i,1); if(!draft.lineItems.length) draft.lineItems.push({product:'',qty:'',unitPrice:''}); renderEditor(); });
+  const tbody = document.getElementById('liRows');
+  tbody.addEventListener('input', e=>{
+    const row = e.target.closest('.li-row'); if(!row) return;
+    const li = draft.lineItems[+row.dataset.i];
+    if(e.target.classList.contains('li-product')) li.product = e.target.value;
+    else if(e.target.classList.contains('li-qty')){ li.qty = e.target.value; refreshTotalsOnly(); }
+    else if(e.target.classList.contains('li-price')){ li.unitPrice = e.target.value; refreshTotalsOnly(); }
+  });
+  tbody.addEventListener('keydown', e=>{
+    if(e.key !== 'Enter' || e.isComposing || !e.target.matches('input')) return;
+    const row = e.target.closest('.li-row'); if(!row) return;
+    if(+row.dataset.i !== draft.lineItems.length-1) return;   // only the last row adds a new one
+    e.preventDefault();
+    addLineItem();
+  });
+  tbody.addEventListener('click', e=>{
+    const rm = e.target.closest('.rm-btn'); if(!rm) return;
+    const i = +rm.closest('.li-row').dataset.i;
+    draft.lineItems.splice(i,1);
+    if(!draft.lineItems.length) draft.lineItems.push({product:'',qty:'',unitPrice:''});
+    markEdited();
+    renderLineItems();
   });
 
-  document.getElementById('saveBtn').addEventListener('click', async ()=>{
-    if(draft.status==='draft') draft.status = 'sent';
-    try{
-      await saveQuote(draft);
-      const flash = document.getElementById('savedFlash');
-      flash.classList.add('show');
-      setTimeout(()=> flash.classList.remove('show'), 1600);
-      renderList();
-    }catch(e){ alert('Could not save — please try again.'); }
-  });
+  document.getElementById('saveBtn').addEventListener('click', saveCurrent);
   document.getElementById('previewBtn').addEventListener('click', async ()=>{
-    await saveQuote(draft);
+    const v = editVersion;
+    const ok = await saveQuote(draft);
+    if(ok && v === editVersion) setDirty(false);
     location.hash = draft.ref;
   });
-  document.getElementById('copyBtn').addEventListener('click', ()=>{
-    const val = document.getElementById('linkOut').value;
-    if(navigator.clipboard){ navigator.clipboard.writeText(val).catch(()=>{}); }
-    const btn = document.getElementById('copyBtn');
-    const old = btn.textContent; btn.textContent='Copied'; setTimeout(()=> btn.textContent = old, 1300);
+  document.getElementById('printBtn').addEventListener('click', printQuote);
+  document.getElementById('copyBtn').addEventListener('click', async ()=>{
+    const ok = await copyText(document.getElementById('linkOut').value);
+    flashButton(document.getElementById('copyBtn'), ok ? 'Copied' : 'Copy failed');
   });
 }
+
+async function saveCurrent(){
+  if(!draft || saving) return false;
+  saving = true;
+  const btn = document.getElementById('saveBtn');
+  if(btn) btn.disabled = true;
+  const prevStatus = draft.status;
+  if(prevStatus === 'draft') draft.status = 'sent';
+  const v = editVersion;
+  const ok = await saveQuote(draft);
+  saving = false;
+  const btnNow = document.getElementById('saveBtn');
+  if(btnNow) btnNow.disabled = false;
+  if(!ok){
+    draft.status = prevStatus;
+    alert('Could not save — please try again.');
+    return false;
+  }
+  if(v === editVersion) setDirty(false);
+  const pill = document.querySelector('.editor-header .pill');
+  if(pill){ pill.className = 'pill ' + draft.status; pill.textContent = draft.status; }
+  const flash = document.getElementById('savedFlash');
+  if(flash){ flash.classList.add('show'); setTimeout(()=> flash.classList.remove('show'), 1600); }
+  renderList();
+  return true;
+}
+
 function refreshTotalsOnly(){
   const {subtotal, vat, total} = calcTotals(draft);
   const box = document.querySelector('.totals-box');
@@ -676,32 +941,100 @@ function refreshTotalsOnly(){
       <div class="grand"><span>Total</span><span>${money(total)}</span></div>`;
   }
   document.querySelectorAll('#liRows .li-row').forEach((row,i)=>{
-    const li = draft.lineItems[i]; const qty=parseFloat(li.qty), price=parseFloat(li.unitPrice)||0;
-    const lt = qty ? qty*price : price;
-    row.querySelector('.li-total').textContent = money(lt);
+    row.querySelector('.li-total').textContent = money(lineTotal(draft.lineItems[i]));
   });
 }
 
+/* ---------------- print quote (A4, client-side) ---------------- */
+function buildPrintHtml(q){
+  const {subtotal, vat, total} = calcTotals(q);
+  const items = q.lineItems.filter(li=> (li.product||'').trim() || (li.unitPrice||'').toString().trim());
+  const rows = items.map(li=>{
+    const price = parseFloat(li.unitPrice)||0;
+    return `<tr><td>${escapeHtml(li.product)||'—'}</td><td class="num">${li.qty ? escapeHtml(li.qty) : '—'}</td><td class="num">${money(price)}</td><td class="num">${money(lineTotal(li))}</td></tr>`;
+  }).join('') || '<tr><td colspan="4">Line items to follow.</td></tr>';
+  const notes = (q.notes||'').trim();
+  const name = (q.customerName||'').trim();
+  const logo = siteBase() + '/floors-for-living-logo.png';
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>${escapeHtml('Quote ' + q.ref + (name ? ' – ' + name : ''))}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+@page{ size:A4; margin:14mm 15mm; }
+@page{ @bottom-right{ content:"Page " counter(page) " of " counter(pages); font:8pt Helvetica,Arial,sans-serif; color:#444; } }
+*{ box-sizing:border-box; }
+html,body{ margin:0; background:#fff; color:#000; }
+body{ font:10pt/1.4 "Helvetica Neue",Helvetica,Arial,sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.sheet{ max-width:180mm; margin:0 auto; padding:10mm 0; }
+.head{ display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:3mm; border-bottom:1.5pt solid #000; }
+.logo{ display:block; width:40mm; aspect-ratio:8/5; object-fit:cover; object-position:50% 46%; filter:invert(1) hue-rotate(180deg); }
+.head h1{ margin:0; font:600 20pt/1 "Helvetica Neue",Helvetica,Arial,sans-serif; letter-spacing:.14em; text-transform:uppercase; }
+.meta{ display:grid; grid-template-columns:1.7fr 1fr 1fr 1fr; gap:6mm; margin:5mm 0 5mm; }
+.meta .k{ font-size:7.5pt; letter-spacing:.1em; text-transform:uppercase; color:#444; margin-bottom:1mm; }
+.meta .v{ font-size:10.5pt; font-weight:600; overflow-wrap:anywhere; }
+table{ width:100%; border-collapse:collapse; }
+thead{ display:table-header-group; }
+tr{ break-inside:avoid; page-break-inside:avoid; }
+th{ text-align:left; font-size:8pt; letter-spacing:.08em; text-transform:uppercase; padding:2mm 2mm; border-bottom:1pt solid #000; }
+td{ padding:1.5mm 2mm; border-bottom:.5pt solid #bbb; vertical-align:top; overflow-wrap:anywhere; }
+th.num, td.num{ text-align:right; white-space:nowrap; }
+th:nth-child(2){ width:16mm; } th:nth-child(3){ width:27mm; } th:nth-child(4){ width:28mm; }
+.totals{ width:72mm; margin:4mm 0 0 auto; break-inside:avoid; page-break-inside:avoid; }
+.totals div{ display:flex; justify-content:space-between; padding:1.2mm 2mm; }
+.totals .grand{ margin-top:1mm; padding-top:2.2mm; border-top:1.5pt solid #000; font-size:12pt; font-weight:700; }
+.notes{ margin-top:6mm; break-inside:avoid; page-break-inside:avoid; }
+.notes h2{ margin:0 0 1.5mm; font-size:8pt; letter-spacing:.1em; text-transform:uppercase; }
+.notes p{ margin:0; font-size:9.5pt; white-space:pre-wrap; }
+@media screen{ body{ background:#e9e9e9; } .sheet{ background:#fff; max-width:210mm; min-height:297mm; padding:14mm 15mm; margin:8mm auto; box-shadow:0 2px 14px rgba(0,0,0,.25); } }
+</style></head>
+<body><div class="sheet">
+<div class="head"><img class="logo" src="${logo}" alt="Floors for Living"><h1>Quote</h1></div>
+<div class="meta">
+  <div><div class="k">Customer</div><div class="v">${escapeHtml(name) || '—'}</div></div>
+  <div><div class="k">Quote ref</div><div class="v">${escapeHtml(q.ref)}</div></div>
+  <div><div class="k">Date</div><div class="v">${fmtDate(q.date)}</div></div>
+  <div><div class="k">Valid until</div><div class="v">${fmtDate(q.validUntil)}</div></div>
+</div>
+<table><thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Line total</th></tr></thead><tbody>${rows}</tbody></table>
+<div class="totals"><div><span>Subtotal</span><span>${money(subtotal)}</span></div><div><span>VAT (20%)</span><span>${money(vat)}</span></div><div class="grand"><span>Total</span><span>${money(total)}</span></div></div>
+${notes ? `<div class="notes"><h2>Notes &amp; terms</h2><p>${escapeHtml(notes)}</p></div>` : ''}
+</div>
+<script>window.addEventListener('load', function(){ setTimeout(function(){ window.focus(); window.print(); }, 200); });<\/script>
+</body></html>`;
+}
+function printQuote(){
+  if(!draft) return;
+  const w = window.open('', '_blank');   // opened synchronously from the click so pop-up blockers allow it
+  if(!w){ alert('Your browser blocked the print window — allow pop-ups for this site and try again.'); return; }
+  w.document.open();
+  w.document.write(buildPrintHtml(draft));
+  w.document.close();
+}
+
+/* ---------------- list-pane + global wiring ---------------- */
 document.getElementById('newQuoteBtn').addEventListener('click', async ()=>{
   const ref = await nextRef();
   draft = blankQuote(ref);
   currentRef = ref;
   await saveQuote(draft);
+  isDirty = false;
+  listTab = 'all';
   renderEditor(); renderList();
+  document.getElementById('f-name').focus();
 });
 
-document.getElementById('filterFrom').addEventListener('change', e=>{ filterFrom = e.target.value; renderList(); });
-document.getElementById('filterTo').addEventListener('change', e=>{ filterTo = e.target.value; renderList(); });
-document.getElementById('showHiddenChk').addEventListener('change', e=>{ showHidden = e.target.checked; renderList(); });
+document.querySelectorAll('.list-tab').forEach(t=> t.addEventListener('click', ()=> setListTab(t.dataset.tab)));
+document.getElementById('searchInput').addEventListener('input', e=>{ searchTerm = e.target.value; renderList(false); });
+document.getElementById('filterFrom').addEventListener('change', e=>{ filterFrom = e.target.value; renderList(false); });
+document.getElementById('filterTo').addEventListener('change', e=>{ filterTo = e.target.value; renderList(false); });
+document.getElementById('showHiddenChk').addEventListener('change', e=>{ showHidden = e.target.checked; renderList(false); });
 
 document.getElementById('selectAllChk').addEventListener('change', async e=>{
-  let quotes = await listQuotes();
-  if(!showHidden) quotes = quotes.filter(q=> !q.hidden);
-  if(filterFrom) quotes = quotes.filter(q=> q.date && q.date >= filterFrom);
-  if(filterTo) quotes = quotes.filter(q=> q.date && q.date <= filterTo);
+  const quotes = visibleQuotes(await loadQuotes(false));
   if(e.target.checked){ quotes.forEach(q=> selectedRefs.add(q.ref)); }
   else { selectedRefs.clear(); }
-  renderList();
+  renderList(false);
 });
 document.getElementById('bulkDeleteBtn').addEventListener('click', async ()=>{
   const refs = Array.from(selectedRefs);
@@ -709,9 +1042,20 @@ document.getElementById('bulkDeleteBtn').addEventListener('click', async ()=>{
   if(!confirm(`Delete ${refs.length} quote${refs.length===1?'':'s'}? This can't be undone.`)) return;
   const ok = await deleteQuoteRows(refs);
   if(!ok){ alert('Could not delete — please try again.'); return; }
-  if(draft && refs.includes(draft.ref)){ draft = null; currentRef = null; }
+  if(draft && refs.includes(draft.ref)){ draft = null; currentRef = null; setDirty(false); }
   selectedRefs.clear();
   if(!draft) await route(); else renderList();
+});
+
+// any edit inside the editor marks the quote as having unsaved changes
+document.getElementById('editorPane').addEventListener('input', ()=>{ if(draft) markEdited(); });
+
+// Ctrl/Cmd + S saves the quote being edited
+document.addEventListener('keydown', e=>{
+  if(!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== 's') return;
+  if(!draft || getComputedStyle(document.getElementById('admin')).display === 'none') return;
+  e.preventDefault();
+  saveCurrent();
 });
 
 /* ---------------- CUSTOMER render ---------------- */
