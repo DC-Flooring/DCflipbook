@@ -302,7 +302,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 <div id="admin">
   <div class="admin-body">
     <div class="sidebar">
-      <img src="DC Flooring Logo.png" alt="DC Flooring logo" class="sidebar-logo">
+      <img src="/DC%20Flooring%20Logo.png" alt="DC Flooring logo" class="sidebar-logo">
       <div class="tagline">Quote Builder</div>
     </div>
     <div class="list-pane">
@@ -873,10 +873,8 @@ function wireBook(){
 
 /* ---------------- routing ---------------- */
 function siteBase(){
-  // Strips index.html / trailing quote or short-link path so links work whether the site
-  // sits at a domain root (Netlify) or a subfolder like /repo-name/ (GitHub Pages).
-  let base = location.pathname.replace(/\/(quote|q)\/[^\/?#]+\/?$/i, '').replace(/\/(index\.html|404\.html)?$/i, '');
-  return location.origin + base;
+  // Site is served from a custom domain root (quotes.benchcreative.co.uk).
+  return location.origin;
 }
 function routeMatch(){
   const pathMatch = location.pathname.match(/\/quote\/([^\/?#]+)\/?$/i);
