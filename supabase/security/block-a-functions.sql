@@ -42,7 +42,11 @@ as $$
            'notes',         q.notes,
            'gallery',       q.gallery,
            'status',        q.status,
-           'response',      q.response,
+           'response',      case when jsonb_typeof(q.response) = 'object' then
+                              (select coalesce(jsonb_object_agg(r.key, r.value), '{}'::jsonb)
+                                 from jsonb_each(q.response) r
+                                where r.key in ('decision', 'respondedAt', 'reason', 'reason_category', 'source'))
+                            else null end,   -- allowlist: staff_note / method / recorded_by never reach customers
            'short_slug',    q.short_slug)
     from public.quotes q
    where q.short_slug = p_slug

@@ -230,3 +230,43 @@ grant execute on function public.submit_decision(text, text, text, text) to anon
 alter table public.quotes add column if not exists last_chased_at timestamptz;
 alter table public.quotes add column if not exists snoozed_until  timestamptz;
 -- To undo: alter table public.quotes drop column last_chased_at, drop column snoozed_until;
+
+-- 9. 2026-10-16: get_quote returns only an allowlist of the response keys
+-- Staff can now record a decision on a customer's behalf, and that response object carries internal keys
+-- (method, staff_note, recorded_by). The customer page is reached with just the short link, so get_quote must never
+-- hand those over. The response is now built from an allowlist: decision, respondedAt, reason, reason_category,
+-- source. These are every response key the customer pages read or that a customer's own submit_decision writes
+-- (the pages themselves read only decision and reason). Anything else stored in response stays admin-only.
+-- Same signature, same grants, same other keys as section 4 (ref, customer_name, date, valid_until, line_items, notes,
+-- gallery, status, short_slug); last_chased_at / snoozed_until are still not returned.
+-- To undo: run the get_quote definition from section 4 again.
+create or replace function public.get_quote(p_slug text)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+           'ref',           q.ref,
+           'customer_name', q.customer_name,
+           'date',          q.date,
+           'valid_until',   q.valid_until,
+           'line_items',    q.line_items,
+           'notes',         q.notes,
+           'gallery',       q.gallery,
+           'status',        q.status,
+           'response',      case when jsonb_typeof(q.response) = 'object' then
+                              (select coalesce(jsonb_object_agg(r.key, r.value), '{}'::jsonb)
+                                 from jsonb_each(q.response) r
+                                where r.key in ('decision', 'respondedAt', 'reason', 'reason_category', 'source'))
+                            else null end,
+           'short_slug',    q.short_slug)
+    from public.quotes q
+   where q.short_slug = p_slug
+     and length(p_slug) >= 6
+   limit 1;
+$$;
+
+revoke all on function public.get_quote(text) from public;
+grant execute on function public.get_quote(text) to anon, authenticated;

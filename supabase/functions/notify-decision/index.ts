@@ -49,6 +49,11 @@ Deno.serve(async (req: Request) => {
       return new Response("status unchanged, ignoring", { status: 200 });
     }
 
+    // a decision that staff recorded themselves in the admin (phone call, in the shop...) needs no email
+    if (record.response && typeof record.response === "object" && record.response.source === "staff") {
+      return new Response("recorded by staff, ignoring", { status: 200 });
+    }
+
     const ref = record.ref ?? "(no ref)";
     const customerName = record.customer_name || "Unnamed customer";
     const response = record.response && typeof record.response === "object" ? record.response : {};

@@ -272,6 +272,37 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .settings-notice .btn{ margin-top:8px; }
 .settings-logout{ display:none; margin-top:26px; }
 
+/* mobile: list, then one quote full screen */
+.editor-back{ display:none; align-items:center; gap:6px; margin:0 0 14px; padding:8px 12px 8px 8px; background:none; border:1px solid var(--line); border-radius:6px; font-family:'Work Sans',sans-serif; font-size:14px; font-weight:600; color:var(--ink); cursor:pointer; }
+.editor-back span{ font-size:20px; line-height:1; }
+.list-head h2{ margin:0 0 4px; font-size:17px; }
+.list-head .cap{ margin-bottom:12px; }
+/* decision recorded by staff */
+.staff-tag{ display:inline-block; margin-top:6px; padding:2px 8px; border:1px solid var(--line); border-radius:10px; background:var(--linen); font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.03em; color:var(--ink-soft); }
+.decision-box{ margin-top:12px; }
+.decision-box .views-detail{ margin-top:8px; padding-top:0; border-top:none; }
+.decision-box .staff-tag{ margin-top:0; }
+.decision-box .staff-note{ font-style:italic; overflow-wrap:anywhere; }
+.rec-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.rec-btns .btn{ flex:1 1 130px; padding:9px 10px; font-size:12.5px; }
+.modal-back{ position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(36,26,20,.55); }
+.modal{ width:100%; max-width:420px; max-height:100%; overflow:auto; padding:20px 22px; background:var(--paper); border-radius:10px; box-shadow:0 20px 50px rgba(0,0,0,.4); }
+.modal h3{ margin:0 0 2px; font-family:'Fraunces',serif; font-size:20px; }
+.modal-sub{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); overflow-wrap:anywhere; }
+.modal-q{ margin:16px 0 8px; font-size:14px; font-weight:600; }
+.method-row{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.method{ display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff; border:1px solid var(--line); border-radius:6px; font-size:14px; cursor:pointer; }
+.method:has(input:checked){ border-color:var(--brass); box-shadow:0 0 0 1px var(--brass); }
+.modal-note{ display:block; margin:14px 0 6px; font-size:12px; color:var(--ink-soft); }
+.modal textarea{ width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:4px; font-family:'Work Sans',sans-serif; font-size:14px; resize:vertical; }
+.modal-err{ min-height:18px; margin-top:6px; font-size:12.5px; color:var(--bad); }
+.modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:8px; }
+/* Needs attention header: a plain heading on desktop, a collapse toggle on phones */
+.na-head{ display:flex; align-items:center; gap:10px; width:100%; margin:0; padding:0; background:none; border:none; font:inherit; font-size:16px; font-weight:700; color:inherit; text-align:left; cursor:default; }
+.na-head:disabled{ color:inherit; }
+.na-total, .na-head .chev{ display:none; }
+.na-total{ min-width:22px; padding:1px 7px; border-radius:10px; background:var(--brass); color:#fff; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500; text-align:center; }
+.na-head .chev{ width:20px; height:20px; margin-left:auto; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform .15s; }
 /* chase / snooze / extend */
 .card-actions{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
 .act-btn{ padding:4px 9px; background:none; border:1px solid var(--line); border-radius:4px; font-family:'Work Sans',sans-serif; font-size:11.5px; color:var(--ink); cursor:pointer; white-space:nowrap; }
@@ -462,6 +493,16 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
   .kpis{ grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:800px){
+  #admin[data-screen="list"] .editor-pane{ display:none; }
+  #admin[data-screen="detail"] .list-pane{ display:none; }
+  .editor-back{ display:inline-flex; }
+  .na-help, .rem-help{ display:none; }
+  .na-head{ cursor:pointer; }
+  .na-total, .na-head .chev{ display:inline-block; }
+  .na-head .chev{ display:block; }
+  .na-panel.collapsed .na-body{ display:none; }
+  .na-panel.collapsed .chev{ transform:rotate(-90deg); }
+  .na-panel .na-body{ margin-top:10px; }
   .status-chips{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
   .status-chips::-webkit-scrollbar{ display:none; }
   .toast{ bottom:calc(78px + env(safe-area-inset-bottom, 0px)); }
@@ -543,6 +584,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
     <div class="admin-main">
     <div class="list-pane">
       <button class="new-btn" id="newQuoteBtn">+ New Quote</button>
+      <div class="list-head" id="remHead" style="display:none;"><h2>Reminders</h2><p class="cap rem-help" id="remHelp"></p></div>
       <input type="search" class="list-search" id="searchInput" placeholder="Search name or quote ref" aria-label="Search quotes by customer name or quote ref" autocomplete="off">
       <div class="list-filters" id="listFilters">
         <div class="date-filter">
@@ -625,8 +667,27 @@ function setSession(s){
   session = s;
   try{ if(s) localStorage.setItem(SESSION_KEY, JSON.stringify(s)); else localStorage.removeItem(SESSION_KEY); }catch(e){ /* private mode: stay signed in for this tab only */ }
 }
-function toSession(j){
-  return { access_token:j.access_token, refresh_token:j.refresh_token, expires_at: j.expires_at || (nowSec() + (j.expires_in || 3600)) };
+function jwtEmail(token){
+  try{ return JSON.parse(atob(String(token).split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).email || ''; }catch(e){ return ''; }
+}
+function toSession(j, old){
+  return { access_token:j.access_token, refresh_token:j.refresh_token, expires_at: j.expires_at || (nowSec() + (j.expires_in || 3600)),
+           email: (j.user && j.user.email) || jwtEmail(j.access_token) || (old && old.email) || '' };
+}
+// the signed-in user's email, for "recorded by". Falls back to the token, then to asking Supabase Auth.
+async function currentUserEmail(){
+  await getAccessToken();
+  if(!session) return '';
+  if(session.email) return session.email;
+  let email = jwtEmail(session.access_token);
+  if(!email){
+    try{
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer ' + session.access_token } });
+      if(res.ok){ const j = await res.json(); email = (j && j.email) || ''; }
+    }catch(e){ /* handled by the caller */ }
+  }
+  if(email) setSession({ ...session, email });
+  return email;
 }
 async function authCall(path, body){
   const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, { method:'POST', headers:{ apikey:SUPABASE_KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) });
@@ -658,7 +719,7 @@ async function getAccessToken(force = false){
     refreshPromise = (async()=>{
       try{
         const r = await authCall('token?grant_type=refresh_token', { refresh_token: session.refresh_token });
-        if(r.ok && r.json && r.json.access_token){ setSession(toSession(r.json)); return session.access_token; }
+        if(r.ok && r.json && r.json.access_token){ setSession(toSession(r.json, session)); return session.access_token; }
         if(r.status >= 400 && r.status < 500){ setSession(null); return null; }   // refresh token rejected
         return undefined;
       }catch(e){ return undefined; }
@@ -1083,6 +1144,110 @@ function flashButton(btn, text){
   btn._flashTimer = setTimeout(()=>{ btn.textContent = btn.dataset.label; }, 1400);
 }
 
+/* ----- Recording a decision for the customer (they rang, or came into the shop). Written with the signed-in admin's
+   session, never through the customer functions. ----- */
+const RECORD_METHODS = [['phone', 'Phone'], ['in_shop', 'In shop'], ['email', 'Email'], ['other', 'Other']];
+const isStaffRecorded = q => !!q.response && q.response.source === 'staff';
+function staffLabel(q){
+  const m = RECORD_METHODS.find(([k])=> k === (q.response && q.response.method));
+  return 'Recorded by staff' + (m ? ` (${m[1].toLowerCase()})` : '');
+}
+const staffNote = q => isStaffRecorded(q) ? String(q.response.staff_note || '') : '';
+// the "Decision" block in the editor's summary panel: record buttons while the quote is open, the recorded answer (and Reopen) once it isn't
+function decisionBoxHtml(q){
+  if(q.status === 'sent'){
+    return `<div class="decision-box">
+      <div class="views-detail">Customer rang or called in? Record their answer for them.</div>
+      <div class="rec-btns"><button class="btn btn-ghost" id="recAcceptBtn" type="button">Record as accepted</button><button class="btn btn-ghost" id="recDeclineBtn" type="button">Record as declined</button></div>
+    </div>`;
+  }
+  if(q.status !== 'accepted' && q.status !== 'declined') return '';
+  const r = q.response || {}, when = r.respondedAt ? fmtDateTime(r.respondedAt) : '';
+  const lines = [];
+  if(isStaffRecorded(q)){
+    lines.push(`<div class="staff-tag">${escapeHtml(staffLabel(q))}</div>`);
+    lines.push(`<div class="views-detail">${escapeHtml(`${q.status === 'accepted' ? 'Accepted' : 'Declined'}${when ? ' on ' + when : ''}${r.recorded_by ? ' · recorded by ' + r.recorded_by : ''}`)}</div>`);
+    if(staffNote(q)) lines.push(`<div class="views-detail staff-note">Note: “${escapeHtml(staffNote(q))}”</div>`);
+  }else{
+    lines.push(`<div class="views-detail">${escapeHtml(`Customer ${q.status}${when ? ' on ' + when : ''}.`)}</div>`);
+  }
+  return `<div class="decision-box">${lines.join('')}<div class="rec-btns"><button class="btn btn-ghost" id="reopenBtn" type="button">Reopen quote</button></div></div>`;
+}
+function closeRecordDialog(){
+  const m = document.getElementById('recordModal');
+  if(m) m.remove();
+  document.removeEventListener('keydown', recordKeys);
+}
+function recordKeys(e){ if(e.key === 'Escape') closeRecordDialog(); }
+function openRecordDialog(decision){
+  if(!draft) return;
+  closeRecordDialog();
+  const acc = decision === 'accepted', ref = draft.ref;
+  const wrap = document.createElement('div');
+  wrap.id = 'recordModal'; wrap.className = 'modal-back';
+  wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="recTitle">
+    <h3 id="recTitle">Record as ${acc ? 'accepted' : 'declined'}</h3>
+    <div class="modal-sub">${escapeHtml(quoteName(draft))} · ${escapeHtml(draft.ref)}</div>
+    <p class="modal-q">How did they tell you?</p>
+    <div class="method-row" role="radiogroup" aria-label="How did they tell you?">${RECORD_METHODS.map(([k, l], i)=>
+      `<label class="method"><input type="radio" name="recMethod" value="${k}"${i === 0 ? ' checked' : ''}><span>${escapeHtml(l)}</span></label>`).join('')}</div>
+    <label class="modal-note" for="recNote">${acc ? 'Note (optional)' : 'Reason (optional)'}</label>
+    <textarea id="recNote" maxlength="1000" rows="3"></textarea>
+    <div class="modal-err" id="recErr" role="alert"></div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="recCancel">Cancel</button><button type="button" class="btn btn-primary" id="recConfirm">Confirm</button></div>
+  </div>`;
+  document.body.appendChild(wrap);
+  document.addEventListener('keydown', recordKeys);
+  wrap.addEventListener('click', e=>{ if(e.target === wrap) closeRecordDialog(); });
+  document.getElementById('recCancel').addEventListener('click', closeRecordDialog);
+  wrap.querySelector('input[name=recMethod]:checked').focus();
+  document.getElementById('recConfirm').addEventListener('click', async ()=>{
+    const btn = document.getElementById('recConfirm'), err = document.getElementById('recErr');
+    const method = wrap.querySelector('input[name=recMethod]:checked').value;
+    const note = document.getElementById('recNote').value.trim();
+    err.textContent = ''; btn.disabled = true; btn.textContent = 'Saving…';
+    const email = await currentUserEmail();
+    if(!email){ err.textContent = "Couldn't tell who you're signed in as. Please sign in again."; btn.disabled = false; btn.textContent = 'Confirm'; return; }
+    const now = new Date().toISOString();
+    const saved = await patchQuoteWhere(ref, {
+      status: decision,
+      response: { decision, respondedAt: now, source: 'staff', method, staff_note: note, recorded_by: email },
+      updated_at: now
+    }, 'status=eq.sent');
+    if(saved === null){ err.textContent = "Couldn't save that. Please try again."; btn.disabled = false; btn.textContent = 'Confirm'; return; }
+    closeRecordDialog();
+    if(saved === false){ showToast('This quote has already been answered, so nothing was changed.'); }
+    else showToast(`Recorded ${quoteName(saved)} as ${decision} (${(RECORD_METHODS.find(([k])=> k === method) || [])[1].toLowerCase()}).`);
+    await afterDecisionChange(ref, saved || await getQuote(ref));
+  });
+}
+async function reopenQuote(){
+  if(!draft) return;
+  const q = draft;
+  if(!confirm(`Reopen quote ${q.ref}?\n\nIt goes back to "sent" and the recorded ${q.status === 'accepted' ? 'acceptance' : 'decline'} is cleared, so the customer link works again.` + (isExpired(q) ? '\n\nIt is past its valid-until date, so the customer still won\'t be able to answer until you extend it.' : ''))) return;
+  const saved = await patchQuoteWhere(q.ref, { status:'sent', response:null, updated_at:new Date().toISOString() }, 'status=in.(accepted,declined)');
+  if(saved === null){ alert("Couldn't reopen the quote. Please try again."); return; }
+  showToast(saved ? `Reopened ${quoteName(saved)}.` : 'This quote has already been reopened.');
+  await afterDecisionChange(q.ref, saved || await getQuote(q.ref));
+}
+// the editor and the lists pick up the new status / response (unsaved edits in the editor are kept)
+async function afterDecisionChange(ref, fresh){
+  if(fresh && draft && draft.ref === ref){ draft.status = fresh.status; draft.response = fresh.response; renderEditor(); }
+  await renderList(true);
+}
+// PATCH with an extra filter, so a stale screen can never overwrite a newer state. Resolves the updated quote, false if no row
+// matched the filter, or null if the request failed.
+async function patchQuoteWhere(ref, body, filter){
+  try{
+    const res = await adminFetch(`quotes?ref=eq.${encodeURIComponent(ref)}&${filter}`, {
+      method:'PATCH', headers:{ 'Content-Type':'application/json', Prefer:'return=representation' }, body: JSON.stringify(body)
+    });
+    if(!res.ok) return null;
+    const rows = await res.json();
+    return Array.isArray(rows) && rows.length ? fromDbRow(rows[0]) : false;
+  }catch(e){ return null; }
+}
+
 /* ----- Chased / Snooze / Extend. Stored on the quote row in Supabase (last_chased_at, snoozed_until, valid_until),
    so the state survives a refresh and is the same for every user. Every change shows an Undo toast. ----- */
 const EXTEND_TIP = "Extending also reopens an expired quote, because customers can't accept after the valid-until date.";
@@ -1274,6 +1439,7 @@ async function setStatusFilter(k){
 }
 async function renderList(force = true){
   const all = await loadQuotes(force);
+  if(adminView === null) return;                        // signed out while this was loading
   const allReminders = refreshBadge(all);
   syncListUi();
 
@@ -1306,7 +1472,7 @@ async function renderList(force = true){
       `<div class="list-section"><span>${title}</span><span>${list.length}</span></div>${list.map(reminderCard).join('')}`
     ).join('') + snoozedHtml;
     Array.from(el.querySelectorAll('.qcard')).forEach(c=>{
-      c.addEventListener('click', e=>{ if(!e.target.closest('.card-actions')) openEditor(c.dataset.ref); });
+      c.addEventListener('click', e=>{ if(!e.target.closest('.card-actions')) openQuote(c.dataset.ref); });
     });
     Array.from(el.querySelectorAll('.copy-fu-btn')).forEach(btn=>{
       btn.addEventListener('click', async e=>{
@@ -1316,7 +1482,7 @@ async function renderList(force = true){
       });
     });
     Array.from(el.querySelectorAll('.snz-row')).forEach(r=>{
-      r.addEventListener('click', e=>{ if(!e.target.closest('button')) openEditor(r.dataset.ref); });
+      r.addEventListener('click', e=>{ if(!e.target.closest('button')) openQuote(r.dataset.ref); });
     });
     return;
   }
@@ -1346,7 +1512,10 @@ async function renderList(force = true){
     let reasonHtml = '';
     if(q.status==='declined' && reasonLine(q.response)){
       reasonHtml = `<div class="reason" title="${escapeHtml(reasonPlain(q.response))}">${reasonLine(q.response)}</div>`;
+    }else if(q.status==='declined' && staffNote(q)){
+      reasonHtml = `<div class="reason" title="${escapeHtml(staffNote(q))}">“${escapeHtml(staffNote(q))}”</div>`;
     }
+    const staffHtml = isStaffRecorded(q) ? `<div class="staff-tag">${escapeHtml(staffLabel(q))}</div>` : '';
     return `<div class="qcard ${q.ref===currentRef?'active':''} ${q.hidden?'is-hidden':''}" data-ref="${escapeHtml(q.ref)}">
       <div class="row1">
         <div class="row1-left">
@@ -1365,11 +1534,11 @@ async function renderList(force = true){
           <button class="del-btn" data-ref="${escapeHtml(q.ref)}" title="Delete permanently">Delete</button>
         </div>
       </div>
-      ${reasonHtml}
+      ${staffHtml}${reasonHtml}
     </div>`;
   }).join('');
   Array.from(el.querySelectorAll('.qcard')).forEach(c=>{
-    c.addEventListener('click', ()=> openEditor(c.dataset.ref));
+    c.addEventListener('click', ()=> openQuote(c.dataset.ref));
   });
   Array.from(el.querySelectorAll('.sel-chk')).forEach(chk=>{
     chk.addEventListener('click', e=> e.stopPropagation());
@@ -1401,7 +1570,7 @@ async function renderList(force = true){
       if(!ok){ alert('Could not delete — please try again.'); return; }
       selectedRefs.delete(ref);
       if(draft && draft.ref===ref){
-        draft = null; currentRef = null; setDirty(false);
+        draft = null; currentRef = null; setDirty(false); dropDetailUrl();
         await route();
       } else {
         renderList();
@@ -1496,12 +1665,13 @@ function renderEditor(){
   if(draft.response){
     const cls = decisionClass(draft.response.decision);
     responseHtml = `<div class="response-box ${cls}">
-      <div class="rt">Customer ${cls==='accepted'?'accepted this quote':'declined this quote'} — ${escapeHtml(new Date(draft.response.respondedAt).toLocaleDateString('en-GB'))}</div>
+      <div class="rt">${isStaffRecorded(draft) ? `${escapeHtml(staffLabel(draft))} — ${cls==='accepted'?'accepted':'declined'}` : `Customer ${cls==='accepted'?'accepted this quote':'declined this quote'}`} — ${escapeHtml(new Date(draft.response.respondedAt).toLocaleDateString('en-GB'))}</div>
       ${reasonLine(draft.response) ? `<div class="rr">${reasonLine(draft.response)}</div>` : ''}
     </div>`;
   }
 
   pane.innerHTML = `
+    <button class="editor-back" id="backBtn" type="button"><span aria-hidden="true">‹</span> Back</button>
     <div class="editor-header">
       <div>
         <div class="eyebrow">${escapeHtml(draft.ref)} <span id="edPill">${pillHtml(draft, 'margin-left:8px;')}</span></div>
@@ -1548,6 +1718,7 @@ function renderEditor(){
         </div>
         <div class="link-note">Anyone with this link can view and respond to this quote.</div>
         <div class="views-detail" id="viewsDetail">${escapeHtml(viewsDetail(draft))}</div>
+        ${decisionBoxHtml(draft)}
         ${(draft.status === 'sent' || draft.lastChasedAt) ? `<div class="chase-box">
           <div class="views-detail" id="chaseInfo">${escapeHtml(chaseDetail(draft))}</div>
           ${draft.status === 'sent' ? '<button class="btn btn-ghost" id="chaseBtn" type="button">Mark as chased</button>' : ''}
@@ -1601,6 +1772,11 @@ function renderEditor(){
     route();
   });
   document.getElementById('printBtn').addEventListener('click', printQuote);
+  document.getElementById('backBtn').addEventListener('click', backToList);
+  const recAcc = document.getElementById('recAcceptBtn'), recDec = document.getElementById('recDeclineBtn'), reopen = document.getElementById('reopenBtn');
+  if(recAcc) recAcc.addEventListener('click', ()=> openRecordDialog('accepted'));
+  if(recDec) recDec.addEventListener('click', ()=> openRecordDialog('declined'));
+  if(reopen) reopen.addEventListener('click', reopenQuote);
   const chaseBtn = document.getElementById('chaseBtn');
   if(chaseBtn) chaseBtn.addEventListener('click', async ()=>{
     const q = (await loadQuotes(false)).find(x=> x.ref === draft.ref);
@@ -1782,7 +1958,11 @@ function printQuote(){
 }
 
 /* ---------------- admin views: Dashboard / Quotes / Reminders / Settings ---------------- */
-const VIEW_RE = /^#\/(dashboard|quotes|reminders|settings)\/?(?:\?(.*))?$/;
+// #/quotes, #/quotes/DCF-1234 (a quote open), #/quotes?status=declined, #/reminders, #/reminders/DCF-1234, #/dashboard, #/settings
+const VIEW_RE = /^#\/(dashboard|quotes|reminders|settings)(?:\/([^/?#]+))?\/?(?:\?(.*))?$/;
+const mobileMq = window.matchMedia('(max-width:800px)');
+const isMobile = ()=> mobileMq.matches;
+const scrollMemo = new Map();          // list / dashboard scroll position, restored when Back returns to it
 let adminView = null;
 let navSeq = 0;
 let firstRenderDone = false;
@@ -1791,13 +1971,20 @@ let adminReturnUrl = '/#/quotes';      // where "Admin ↗" returns to after pre
 
 function viewFromHash(){ const m = location.hash.match(VIEW_RE); return m ? m[1] : null; }
 // the Quotes status chip lives in the hash (#/quotes?status=declined) so refresh and Back keep it
+function refFromHash(){
+  const m = location.hash.match(VIEW_RE);
+  if(!m || !m[2] || (m[1] !== 'quotes' && m[1] !== 'reminders')) return null;
+  try{ return decodeURIComponent(m[2]); }catch(e){ return null; }
+}
 function statusFromHash(){
   const m = location.hash.match(VIEW_RE);
-  if(!m || m[1] !== 'quotes' || !m[2]) return 'all';
-  const st = new URLSearchParams(m[2]).get('status');
+  if(!m || m[1] !== 'quotes' || !m[3]) return 'all';
+  const st = new URLSearchParams(m[3]).get('status');
   return STATUS_FILTERS.some(([k])=> k === st) ? st : 'all';
 }
-function viewHash(view){ return '#/' + view + (view === 'quotes' && statusFilter !== 'all' ? '?status=' + statusFilter : ''); }
+function viewHash(view, ref){
+  return '#/' + view + (ref ? '/' + encodeURIComponent(ref) : '') + (view === 'quotes' && statusFilter !== 'all' ? '?status=' + statusFilter : '');
+}
 
 // count badge on the sidebar's Reminders item
 function refreshBadge(all){
@@ -1810,16 +1997,19 @@ function refreshBadge(all){
 // the list panel is shared by Quotes and Reminders; Reminders has no date/hidden filters or bulk select
 function syncListUi(){
   const isRem = listTab === 'reminders';
+  document.getElementById('remHead').style.display = isRem ? '' : 'none';
+  document.getElementById('remHelp').textContent = `Sent quotes that have waited more than ${settings.reminderDays} days with no answer. Quotes you've chased or snoozed stay out of the way until the snooze ends.`;
   document.getElementById('listFilters').style.display = isRem ? 'none' : '';
   document.getElementById('selectAllRow').style.display = isRem ? 'none' : '';
   document.getElementById('statusChips').style.display = isRem ? 'none' : '';
   if(isRem) document.getElementById('bulkBar').style.display = 'none';
 }
-function setViewUi(view){
+function setViewUi(view, ref){
   adminView = view;
   listTab = view === 'reminders' ? 'reminders' : 'all';
   if(view !== 'quotes') statusFilter = 'all';
   document.getElementById('admin').dataset.view = view;
+  document.getElementById('admin').dataset.screen = ref ? 'detail' : 'list';      // on a phone: one quote full screen, or the list
   document.querySelectorAll('.nav-item').forEach(a=>{
     const on = a.dataset.view === view;
     a.classList.toggle('active', on);
@@ -1832,14 +2022,18 @@ function pushViewUrl(view){
 }
 async function goView(view){ pushViewUrl(view); await enterView(view); }
 
-async function enterView(view){
+async function enterView(view, ref){
   const seq = ++navSeq;
-  setViewUi(view);
-  window.scrollTo(0, 0);
+  setViewUi(view, ref);
+  const back = ref ? undefined : scrollMemo.get(viewHash(view));      // coming Back to a list / the dashboard: same scroll position
+  const memoKey = viewHash(view);
+  if(back !== undefined) setTimeout(()=> scrollMemo.delete(memoKey), 1500);   // (popstate + hashchange can route twice)
+  if(back === undefined) window.scrollTo(0, 0);
+  const restore = ()=>{ if(back !== undefined) requestAnimationFrame(()=> window.scrollTo(0, back)); };
   if(view === 'dashboard'){
     const all = await loadQuotes(true);
     if(seq !== navSeq) return;
-    refreshBadge(all); renderDashboard(all);
+    refreshBadge(all); renderDashboard(all); restore();
     return;
   }
   if(view === 'settings'){
@@ -1850,11 +2044,69 @@ async function enterView(view){
   }
   await renderList();                                   // Quotes / Reminders: list + editor
   if(seq !== navSeq) return;
+  if(ref){ await showQuote(ref, seq); return; }
+  restore();
+  if(isMobile()) return;                                // phones: the list is a screen of its own, nothing opens by itself
   if(draft){ renderEditor(); renderList(false); return; }
   const all = await loadQuotes(false);
   const first = (view === 'reminders' ? reminderQuotes(all) : visibleQuotes(all))[0];
   if(first) openEditor(first.ref);
   else document.getElementById('editorPane').innerHTML = `<div class="empty-list" style="padding-top:60px;">${all.length ? 'Select a quote from the list.' : 'Create your first quote to get started.'}</div>`;
+}
+// the quote named in the URL (a full screen of its own on a phone)
+async function showQuote(ref, seq){
+  if(!draft || draft.ref !== ref){
+    if(draft && isDirty && !confirmDiscard()){          // the URL moved on, but there are unsaved edits: stay on that quote
+      history.replaceState(null, '', '/' + viewHash(adminView, draft.ref)); setViewUi(adminView, draft.ref); return;
+    }
+    const loaded = await getQuote(ref);
+    if(seq !== navSeq) return;
+    if(!loaded){
+      showToast("That quote isn't there any more.");
+      history.replaceState(null, '', '/' + viewHash(adminView)); setViewUi(adminView, null);
+      document.getElementById('editorPane').innerHTML = '<div class="empty-list" style="padding-top:60px;">Select a quote from the list.</div>';
+      return;
+    }
+    draft = loaded; currentRef = ref; isDirty = false;
+    if(!draft.shortSlug){ draft.shortSlug = genSlug(); await saveQuote(draft); }
+    renderEditor();
+  }else{
+    // the same quote again (coming Back to it): pick up anything that changed meanwhile, keeping unsaved edits
+    const fresh = await getQuote(ref);
+    if(seq !== navSeq) return;
+    if(fresh && draft && draft.ref === ref){
+      ['status','response','viewCount','firstViewedAt','lastViewedAt','lastChasedAt','snoozedUntil'].forEach(k=>{ draft[k] = fresh[k]; });
+      if(!isDirty) draft.validUntil = fresh.validUntil;
+    }
+    renderEditor();
+  }
+  renderList(false);
+}
+// Opening a quote from a list. On a phone it is a new screen (its own history entry, so Back returns to the same list);
+// on a desktop the editor just swaps in beside the list.
+async function openQuote(ref){
+  const same = !!draft && draft.ref === ref;
+  const view = adminView === 'reminders' ? 'reminders' : 'quotes';
+  if(!isMobile() && adminView === view){
+    await openEditor(ref);
+    if(draft && draft.ref === ref) history.replaceState(null, '', '/' + viewHash(view, ref));
+    return;
+  }
+  if(!same && !confirmDiscard()) return;
+  if(!same) isDirty = false;
+  scrollMemo.set(viewHash(adminView), window.scrollY);
+  history.pushState({ dcfDetail:true }, '', '/' + viewHash(view, ref));
+  await enterView(view, ref);
+}
+function backToList(){
+  if(history.state && history.state.dcfDetail){ history.back(); return; }
+  const view = adminView === 'reminders' ? 'reminders' : 'quotes';
+  history.replaceState(null, '', '/' + viewHash(view));
+  enterView(view);
+}
+// the open quote was deleted: drop it from the URL so nothing tries to show it again
+function dropDetailUrl(){
+  if(refFromHash()) history.replaceState(null, '', '/' + viewHash(adminView === 'reminders' ? 'reminders' : 'quotes'));
 }
 // settings are loaded once per session, and never hold the app up
 function startSettingsLoad(){
@@ -1966,6 +2218,8 @@ function kpiCard(label, value, sub, cap, dim){
 function renderDashboard(all){
   const el = document.getElementById('dashboardPane');
   const st = dashboardStats(all, dashPeriod), att = attentionLists(all), today = todayLondon();
+  const mobile = isMobile(), collapsed = mobile && naCollapsed;
+  const naTotal = new Set([...att.expiring, ...att.warm, ...att.cold].map(q=> q.ref)).size;   // each quote counted once
   const pct = x=> Math.round(x * 100) + '%';
   const expText = q=>{
     const d = (Date.parse(q.validUntil + 'T00:00:00Z') - Date.parse(today + 'T00:00:00Z')) / DAY_MS;
@@ -2002,15 +2256,19 @@ function renderDashboard(all){
       <h1>Dashboard</h1>
       <div class="period" role="group" aria-label="Period">${PERIODS.map(([k, label])=> `<button type="button" data-period="${k}" class="${k === dashPeriod ? 'active' : ''}" aria-pressed="${k === dashPeriod}">${label}</button>`).join('')}</div>
     </div>
-    <section class="panel">
-      <h2>Needs attention</h2>
-      <p class="cap">Open quotes only (sent, not expired, not hidden), whatever the period. Click one to open it. Once you've dealt with one, mark it as chased or snooze it: it leaves these lists until the snooze ends, and comes back if there's still no decision.</p>
+    <section class="panel na-panel${collapsed ? ' collapsed' : ''}">
+      <h2><button type="button" class="na-head" id="naToggle" aria-expanded="${!collapsed}" aria-controls="naBody"${mobile ? '' : ' disabled'}>
+        <span class="na-title">Needs attention</span> <span class="na-total" title="Quotes that need attention">${naTotal}</span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button></h2>
+      <div id="naBody" class="na-body">
+      <p class="cap na-help">Open quotes only (sent, not expired, not hidden), whatever the period. Click one to open it. Once you've dealt with one, mark it as chased or snooze it: it leaves these lists until the snooze ends, and comes back if there's still no decision.</p>
       <div class="att-grid">
         ${attentionCol('Expiring in the next ' + EXPIRING_SOON_DAYS + ' days', att.expiring, 'Nothing is about to expire.', expText, true)}
         ${attentionCol('Opened ' + WARM_MIN_VIEWS + '+ times, no decision', att.warm, 'No warm quotes right now.', q=> viewsLabel(q))}
         ${attentionCol('Sent over ' + NEVER_OPENED_AFTER_DAYS + ' days ago, never opened', att.cold, 'Everything sent has been opened.', ()=> '')}
       </div>
       ${snoozedBlockHtml('na', att.snoozed)}
+      </div>
     </section>
     <div class="kpis">${kpis}</div>
     <section class="panel">
@@ -2020,13 +2278,29 @@ function renderDashboard(all){
     </section>
     <p class="dash-foot">All money is the VAT-inclusive total. Drafts aren't counted; hidden quotes are, because hiding only tidies the Quotes list.</p>`;
 }
+const NA_KEY = 'dcf.naCollapsed';
+let naCollapsed = (()=>{ try{ return localStorage.getItem(NA_KEY) === '1'; }catch(e){ return false; } })();
+function toggleNeedsAttention(){
+  naCollapsed = !naCollapsed;
+  try{ localStorage.setItem(NA_KEY, naCollapsed ? '1' : '0'); }catch(e){ /* private mode: just for this visit */ }
+  renderDashboard(quoteCache || []);
+  const t = document.getElementById('naToggle'); if(t) t.focus();
+}
+// rotating a phone / resizing across the breakpoint redraws the dashboard so the collapse control matches
+const onBreakpoint = ()=>{ if(adminView === 'dashboard' && quoteCache) renderDashboard(quoteCache); };
+if(mobileMq.addEventListener) mobileMq.addEventListener('change', onBreakpoint); else mobileMq.addListener(onBreakpoint);
 async function openFromDashboard(ref){
   statusFilter = 'all';                                  // so the quote you clicked is in the Quotes list
-  await openEditor(ref);
-  if(draft && draft.ref === ref) await goView('quotes');
+  const same = !!draft && draft.ref === ref;
+  if(!same && !confirmDiscard()) return;
+  if(!same) isDirty = false;
+  scrollMemo.set('#/dashboard', window.scrollY);
+  history.pushState({ dcfDetail:true }, '', '/' + viewHash('quotes', ref));
+  await enterView('quotes', ref);
 }
 document.getElementById('dashboardPane').addEventListener('change', onPickChange);
 document.getElementById('dashboardPane').addEventListener('click', async e=>{
+  if(e.target.closest('#naToggle')){ if(isMobile()) toggleNeedsAttention(); return; }
   if(await onCardActionClick(e)) return;
   const period = e.target.closest('.period button');
   if(period){ dashPeriod = period.dataset.period; renderDashboard(await loadQuotes(false)); return; }
@@ -2113,7 +2387,9 @@ document.getElementById('newQuoteBtn').addEventListener('click', async ()=>{
   await saveQuote(draft, true);
   isDirty = false;
   if(statusFilter !== 'all' && statusFilter !== 'draft') statusFilter = 'all';   // a new quote is a draft: make sure the list shows it
-  setViewUi('quotes'); pushViewUrl('quotes');
+  setViewUi('quotes', ref);
+  if(isMobile()) history.pushState({ dcfDetail:true }, '', '/' + viewHash('quotes', ref));
+  else history.replaceState(null, '', '/' + viewHash('quotes', ref));
   renderEditor(); renderList();
   document.getElementById('f-name').focus();
 });
@@ -2144,7 +2420,7 @@ document.getElementById('bulkDeleteBtn').addEventListener('click', async ()=>{
   if(!confirm(`Delete ${refs.length} quote${refs.length===1?'':'s'} (${filterSummary()})?\n\nThis can't be undone.`)) return;
   const ok = await deleteQuoteRows(refs);
   if(!ok){ alert('Could not delete — please try again.'); return; }
-  if(draft && refs.includes(draft.ref)){ draft = null; currentRef = null; setDirty(false); }
+  if(draft && refs.includes(draft.ref)){ draft = null; currentRef = null; setDirty(false); dropDetailUrl(); }
   selectedRefs.clear();
   if(!draft) await route(); else renderList();
 });
@@ -2416,8 +2692,9 @@ async function route(){
   await Promise.race([settingsPromise, new Promise(r=> setTimeout(r, SETTINGS_WAIT_MS))]);
   const view = viewFromHash() || 'dashboard';          // Dashboard is the landing view
   statusFilter = view === 'quotes' ? statusFromHash() : 'all';
-  if(location.pathname + location.hash !== '/' + viewHash(view)) history.replaceState(null, '', '/' + viewHash(view));
-  await enterView(view);
+  const ref = refFromHash();
+  if(location.pathname + location.hash !== '/' + viewHash(view, ref)) history.replaceState(history.state, '', '/' + viewHash(view, ref));
+  await enterView(view, ref);
   firstRenderDone = true;
 }
 
