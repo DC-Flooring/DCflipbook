@@ -30,6 +30,17 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .pill.accepted{ background:#dbe6dc; color:var(--ok); }
 .pill.declined{ background:#f0dcd9; color:var(--bad); }
 
+/* ===== LOGIN ===== */
+#login{ display:none; min-height:100vh; align-items:center; justify-content:center; padding:24px 16px; background:#272727; color:var(--linen); }
+.login-card{ width:100%; max-width:360px; display:flex; flex-direction:column; gap:6px; }
+.login-logo{ display:block; width:150px; align-self:center; aspect-ratio:8/5; object-fit:cover; object-position:50% 46%; mix-blend-mode:lighten; }
+.login-title{ margin:2px 0 20px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--brass); }
+.login-card label{ margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--linen-soft); }
+.login-card input{ width:100%; padding:11px 12px; border:1px solid #4a4a4a; border-radius:4px; background:#1d1d1d; color:var(--linen); font-family:'Work Sans',sans-serif; font-size:16px; }
+.login-card input:focus{ outline:none; border-color:var(--brass); }
+.login-error{ min-height:20px; margin:10px 0 6px; font-size:13px; line-height:1.4; color:#e8a398; }
+.login-card .btn{ width:100%; padding:12px; }
+
 /* ===== ADMIN ===== */
 #admin{ display:none; min-height:100vh; }
 .admin-body{ display:flex; max-width:1560px; margin:0 auto; gap:0; min-height:100vh; }
@@ -38,6 +49,9 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
   display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px;
 }
 .sidebar .sidebar-logo{ display:block; width:100%; max-width:160px; height:auto; aspect-ratio:8/5; object-fit:cover; object-position:50% 46%; mix-blend-mode:lighten; }
+.sidebar-meta{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.logout-link{ padding:0; background:none; border:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--linen-soft); text-decoration:underline; cursor:pointer; }
+.logout-link:hover{ color:var(--brass); }
 .sidebar .tagline{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--brass); }
 .list-pane{ width:300px; flex-shrink:0; border-right:1px solid var(--line); padding:20px; background:var(--paper); }
 .new-btn{
@@ -265,6 +279,8 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .decline-form{ margin-top:20px; width:100%; max-width:380px; }
 .decline-form textarea{ width:100%; min-height:80px; padding:10px 12px; border:1px solid var(--line); border-radius:4px; font-family:'Work Sans',sans-serif; font-size:13px; }
 .decline-form .btn{ margin-top:10px; }
+.decision-error{ margin-top:14px; max-width:38ch; font-size:12.5px; line-height:1.45; color:#df9c90; }
+.decided-note{ margin-top:12px; font-size:12px; color:var(--linen-soft); }
 .decided-state{ text-align:center; }
 .decided-state .badge{ font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.1em; text-transform:uppercase; padding:6px 14px; border-radius:20px; display:inline-block; margin-bottom:12px; }
 .decided-state.accepted .badge{ background:#dbe6dc; color:var(--ok); }
@@ -362,12 +378,29 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 </head>
 <body>
 
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <form class="login-card" id="loginForm" novalidate>
+    <img class="login-logo" src="/floors-for-living-logo.png" alt="Floors for Living">
+    <div class="login-title">Quote Builder</div>
+    <label for="loginEmail">Email</label>
+    <input id="loginEmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false">
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" type="password" autocomplete="current-password">
+    <div class="login-error" id="loginError" role="alert"></div>
+    <button class="btn btn-primary" id="loginBtn" type="submit">Sign in</button>
+  </form>
+</div>
+
 <!-- ============ ADMIN ============ -->
 <div id="admin">
   <div class="admin-body">
     <div class="sidebar">
       <img src="/floors-for-living-logo.png" alt="Floors for Living logo" class="sidebar-logo">
-      <div class="tagline">Quote Builder</div>
+      <div class="sidebar-meta">
+        <div class="tagline">Quote Builder</div>
+        <button class="logout-link" id="logoutBtn" type="button">Log out</button>
+      </div>
     </div>
     <div class="list-pane">
       <div class="list-tabs" role="tablist" aria-label="Quote lists">
@@ -401,7 +434,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 <div id="customer">
   <div class="stage" id="custStage"></div>
 </div>
-<a href="#admin" class="admin-link" id="adminLink" style="display:none;">Admin ↗</a>
+<a href="/" class="admin-link" id="adminLink" style="display:none;">Admin ↗</a>
 
 <script>
 /* ---------------- settings ---------------- */
@@ -414,10 +447,121 @@ const BUSINESS = { businessName:'', phone:'', email:'', address:'' };
 /* ---------------- Supabase storage ---------------- */
 const SUPABASE_URL = 'https://lpkdsdfltejgczsuvpay.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_v9LluInQJDNQmMHnbxixWQ_Otl-hvvG';
-const SB_HEADERS = { apikey: SUPABASE_KEY, Authorization: 'Bearer '+SUPABASE_KEY };
+// The anon key is public by design. It can only sign in and call the customer functions
+// (get_quote / record_view / submit_decision); the tables themselves need a signed-in user.
+const ANON_HEADERS = { apikey: SUPABASE_KEY, Authorization: 'Bearer '+SUPABASE_KEY };
 
-function toDbRow(q){
-  return {
+/* ---------------- admin sign-in (Supabase Auth, email + password) ---------------- */
+const SESSION_KEY = 'dcf.session';
+let session = null;            // { access_token, refresh_token, expires_at (unix seconds) }
+let signedOutNotice = '';      // shown on the login screen after an expired session
+let refreshPromise = null;
+const nowSec = ()=> Math.floor(Date.now()/1000);
+function readStoredSession(){
+  try{
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    return (s && s.access_token && s.refresh_token) ? s : null;
+  }catch(e){ return null; }
+}
+function setSession(s){
+  session = s;
+  try{ if(s) localStorage.setItem(SESSION_KEY, JSON.stringify(s)); else localStorage.removeItem(SESSION_KEY); }catch(e){ /* private mode: stay signed in for this tab only */ }
+}
+function toSession(j){
+  return { access_token:j.access_token, refresh_token:j.refresh_token, expires_at: j.expires_at || (nowSec() + (j.expires_in || 3600)) };
+}
+async function authCall(path, body){
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, { method:'POST', headers:{ apikey:SUPABASE_KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+  let json = null; try{ json = await res.json(); }catch(e){}
+  return { ok:res.ok, status:res.status, json };
+}
+async function signIn(email, password){
+  try{
+    const r = await authCall('token?grant_type=password', { email, password });
+    if(r.ok && r.json && r.json.access_token){ setSession(toSession(r.json)); sessionEnded = false; return { ok:true }; }
+    const code = (r.json && (r.json.error_code || r.json.error)) || '';
+    if(r.status === 429 || code === 'over_request_rate_limit') return { ok:false, message:'Too many attempts. Please wait a minute and try again.' };
+    if(code === 'email_not_confirmed') return { ok:false, message:'Please confirm your email address before signing in.' };
+    if(r.status >= 400 && r.status < 500) return { ok:false, message:"That email or password isn't right. Please try again." };
+    return { ok:false, message:"Sorry, we couldn't sign you in just now. Please try again in a moment." };
+  }catch(e){
+    return { ok:false, message:"Couldn't reach the server. Check your connection and try again." };
+  }
+}
+/* Returns an access token, null (not signed in / session ended) or undefined (couldn't reach the server,
+   session kept). Refreshes shortly before expiry; if another tab already refreshed, uses its token. */
+async function getAccessToken(force = false){
+  if(!session) session = readStoredSession();
+  if(!session) return null;
+  if(!force && session.expires_at - 30 > nowSec()) return session.access_token;
+  const stored = readStoredSession();
+  if(stored && stored.access_token !== session.access_token && stored.expires_at - 30 > nowSec()){ session = stored; return session.access_token; }
+  if(!refreshPromise){
+    refreshPromise = (async()=>{
+      try{
+        const r = await authCall('token?grant_type=refresh_token', { refresh_token: session.refresh_token });
+        if(r.ok && r.json && r.json.access_token){ setSession(toSession(r.json)); return session.access_token; }
+        if(r.status >= 400 && r.status < 500){ setSession(null); return null; }   // refresh token rejected
+        return undefined;
+      }catch(e){ return undefined; }
+      finally{ refreshPromise = null; }
+    })();
+  }
+  return refreshPromise;
+}
+/* Every admin request goes through here and carries the signed-in user's token, never the anon key. */
+async function adminFetch(path, opts = {}){
+  const send = token => fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers:{ apikey:SUPABASE_KEY, ...(opts.headers || {}), Authorization:'Bearer '+token } });
+  let token = await getAccessToken();
+  if(token === null){ endSession(); throw new Error('signed out'); }
+  if(!token) throw new Error('could not reach the sign-in service');
+  let res = await send(token);
+  if(res.status === 401){
+    token = await getAccessToken(true);
+    if(token === null){ endSession(); throw new Error('signed out'); }
+    if(!token) throw new Error('could not reach the sign-in service');
+    res = await send(token);
+    if(res.status === 401){ endSession(); throw new Error('signed out'); }
+  }
+  return res;
+}
+let sessionEnded = false;
+function endSession(){
+  if(sessionEnded) return;   // several requests can fail at once; only react once
+  sessionEnded = true;
+  setSession(null);
+  signedOutNotice = 'Your session has ended. Please sign in again.';
+  resetAdminState();
+  route();
+}
+function resetAdminState(){
+  draft = null; currentRef = null; quoteCache = null; selectedRefs = new Set();
+  searchTerm = ''; filterFrom = ''; filterTo = ''; showHidden = false; listTab = 'all';
+  isDirty = false;
+  ['qList','editorPane'].forEach(id=>{ const el = document.getElementById(id); if(el) el.innerHTML = ''; });
+  ['searchInput','filterFrom','filterTo'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+  ['showHiddenChk','selectAllChk'].forEach(id=>{ const el = document.getElementById(id); if(el){ el.checked = false; el.indeterminate = false; } });
+}
+function signOut(){
+  if(!confirmDiscard()) return;
+  const token = session && session.access_token;
+  setSession(null);
+  signedOutNotice = '';
+  resetAdminState();
+  if(token) fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, { method:'POST', headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+token } }).catch(()=>{});
+  route();
+}
+
+/* Customer pages call these database functions with the anon key; they take the random short slug only. */
+async function rpc(fn, args){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, { method:'POST', headers:{ ...ANON_HEADERS, 'Content-Type':'application/json' }, body: JSON.stringify(args) });
+  if(!res.ok) throw new Error(`${fn} failed (${res.status})`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+function toDbRow(q, full){
+  const row = {
     ref: q.ref,
     customer_name: q.customerName || '',
     date: q.date || null,
@@ -425,12 +569,14 @@ function toDbRow(q){
     line_items: q.lineItems || [],
     notes: q.notes || '',
     gallery: q.gallery || [],
-    status: q.status || 'draft',
-    response: q.response || null,
     hidden: !!q.hidden,
     short_slug: q.shortSlug || null,
     updated_at: new Date().toISOString()
   };
+  // status/response are only written when a quote is first created. After that the customer's decision
+  // is owned by submit_decision(), and an open editor must never be able to overwrite it.
+  if(full){ row.status = q.status || 'draft'; row.response = q.response || null; }
+  return row;
 }
 function fromDbRow(r){
   return {
@@ -455,35 +601,42 @@ function fromDbRow(r){
 
 async function getQuote(ref){
   try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?ref=eq.${encodeURIComponent(ref)}&select=*`, { headers: SB_HEADERS });
+    const res = await adminFetch(`quotes?ref=eq.${encodeURIComponent(ref)}&select=*`);
     if(!res.ok) return null;
     const rows = await res.json();
     return rows[0] ? fromDbRow(rows[0]) : null;
   }catch(e){ return null; }
 }
+// Customer pages: one quote by its random short slug, via get_quote(). Returns null when there is no such quote
+// and throws when the server can't be reached, so "not found" is never shown for a network problem.
 async function getQuoteBySlug(slug){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?short_slug=eq.${encodeURIComponent(slug)}&select=*`, { headers: SB_HEADERS });
-    if(!res.ok) return null;
-    const rows = await res.json();
-    return rows[0] ? fromDbRow(rows[0]) : null;
-  }catch(e){ return null; }
+  const r = await rpc('get_quote', { p_slug: slug });
+  return r ? fromDbRow(r) : null;
 }
-async function saveQuote(q){
-  const row = toDbRow(q);
+async function saveQuote(q, full = false){
+  const row = toDbRow(q, full);
   q.updatedAt = row.updated_at;
   try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?on_conflict=ref`, {
+    const res = await adminFetch('quotes?on_conflict=ref', {
       method:'POST',
-      headers:{ ...SB_HEADERS, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates' },
+      headers:{ 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates' },
       body: JSON.stringify(row)
+    });
+    return res.ok;
+  }catch(e){ return false; }
+}
+// draft -> sent, only while it is still a draft (never touches a quote the customer has already decided)
+async function markSent(ref){
+  try{
+    const res = await adminFetch(`quotes?ref=eq.${encodeURIComponent(ref)}&status=eq.draft`, {
+      method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ status:'sent' })
     });
     return res.ok;
   }catch(e){ return false; }
 }
 async function listQuotes(){
   try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?select=*&order=updated_at.desc`, { headers: SB_HEADERS });
+    const res = await adminFetch('quotes?select=*&order=updated_at.desc');
     if(!res.ok) return [];
     const rows = await res.json();
     return rows.map(fromDbRow);
@@ -491,52 +644,40 @@ async function listQuotes(){
 }
 async function deleteQuoteRow(ref){
   try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?ref=eq.${encodeURIComponent(ref)}`, { method:'DELETE', headers: SB_HEADERS });
+    const res = await adminFetch(`quotes?ref=eq.${encodeURIComponent(ref)}`, { method:'DELETE' });
     return res.ok;
   }catch(e){ return false; }
 }
 async function deleteQuoteRows(refs){
   try{
     const list = refs.map(r=>encodeURIComponent(r)).join(',');
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?ref=in.(${list})`, { method:'DELETE', headers: SB_HEADERS });
+    const res = await adminFetch(`quotes?ref=in.(${list})`, { method:'DELETE' });
     return res.ok;
   }catch(e){ return false; }
 }
-/* Customer view tracking. Fire-and-forget: any failure is swallowed so the customer always sees their quote.
-   The PATCH is filtered on the view_count we read, so two near-simultaneous opens can't overwrite each other:
-   if someone else got in first it matches no row, and we re-read and retry once. first_viewed_at is only
-   sent while it is still empty. */
-const trackedThisLoad = new Set();
-async function trackView(q){
-  try{
-    if(trackedThisLoad.has(q.ref)) return;
-    trackedThisLoad.add(q.ref);
-    const now = new Date().toISOString();
-    let count = q.viewCount || 0, first = q.firstViewedAt;
-    for(let attempt=0; attempt<2; attempt++){
-      const body = { view_count: count+1, last_viewed_at: now };
-      if(!first) body.first_viewed_at = now;
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?ref=eq.${encodeURIComponent(q.ref)}&view_count=eq.${count}`, {
-        method:'PATCH',
-        headers:{ ...SB_HEADERS, 'Content-Type':'application/json', Prefer:'return=representation' },
-        body: JSON.stringify(body)
-      });
-      if(!res.ok) return;
-      const rows = await res.json();
-      if(rows.length) return;
-      const fresh = await getQuote(q.ref);
-      if(!fresh) return;
-      count = fresh.viewCount; first = fresh.firstViewedAt;
-    }
-  }catch(e){ /* tracking is best-effort */ }
+/* Customer view tracking: one record_view() call per page load. Best-effort, a failure never reaches the customer. */
+const viewedThisLoad = new Set();
+function recordView(slug){
+  if(viewedThisLoad.has(slug)) return;
+  viewedThisLoad.add(slug);
+  rpc('record_view', { p_slug: slug }).catch(()=>{});
 }
 async function nextRef(){
   return 'DCF-' + Date.now().toString().slice(-6);
 }
-function genSlug(len=6){
+// The short slug is the only thing that gives a customer access to a quote, so it has to be unguessable:
+// 10 characters from crypto.getRandomValues (about 58 bits), with rejection sampling so every character is
+// equally likely. Older quotes keep their existing slugs.
+const SLUG_LENGTH = 10;
+function genSlug(len = SLUG_LENGTH){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const limit = 256 - (256 % chars.length);
   let s = '';
-  for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  while(s.length < len){
+    for(const b of crypto.getRandomValues(new Uint8Array(len * 2))){
+      if(b < limit && s.length < len) s += chars[b % chars.length];
+    }
+  }
   return s;
 }
 
@@ -626,7 +767,7 @@ function viewsHtml(q){
   return `<div class="views ${q.viewCount ? 'opened' : ''}">${escapeHtml(viewsLabel(q))}</div>`;
 }
 function quoteLink(q){
-  return `${siteBase()}/${q.shortSlug ? 'q/'+encodeURIComponent(q.shortSlug) : 'quote/'+encodeURIComponent(q.ref)}`;
+  return `${siteBase()}/q/${encodeURIComponent(q.shortSlug || '')}`;
 }
 function followUpMessage(q){
   const name = (q.customerName||'').trim();
@@ -718,6 +859,10 @@ async function renderList(force = true){
         e.stopPropagation();
         const q = reminders.find(r=> r.ref === btn.dataset.ref);
         if(!q) return;
+        if(!q.shortSlug){   // very old quote without a short link yet
+          q.shortSlug = genSlug();
+          if(!(await saveQuote(q))){ flashButton(btn, 'Copy failed'); return; }
+        }
         const ok = await copyText(followUpMessage(q));
         flashButton(btn, ok ? 'Copied ✓' : 'Copy failed');
       });
@@ -821,9 +966,10 @@ function confirmDiscard(){
 
 async function openEditor(ref){
   if(!confirmDiscard()) return;
+  const loaded = await getQuote(ref);
+  if(!loaded){ if(session || readStoredSession()) alert("Couldn't load that quote. Please try again."); return; }
   currentRef = ref;
-  draft = await getQuote(ref);
-  if(!draft) draft = blankQuote(ref);
+  draft = loaded;
   if(!draft.shortSlug){ draft.shortSlug = genSlug(); await saveQuote(draft); }
   isDirty = false;
   renderEditor();
@@ -970,7 +1116,7 @@ function renderEditor(){
     const v = editVersion;
     const ok = await saveQuote(draft);
     if(ok && v === editVersion) setDirty(false);
-    history.pushState(null, '', `${siteBase()}/?preview=1#${encodeURIComponent(draft.ref)}`);
+    history.pushState(null, '', `${siteBase()}/q/${encodeURIComponent(draft.shortSlug)}?preview=1`);
     route();
   });
   document.getElementById('printBtn').addEventListener('click', printQuote);
@@ -985,18 +1131,22 @@ async function saveCurrent(){
   saving = true;
   const btn = document.getElementById('saveBtn');
   if(btn) btn.disabled = true;
-  const prevStatus = draft.status;
-  if(prevStatus === 'draft') draft.status = 'sent';
   const v = editVersion;
-  const ok = await saveQuote(draft);
+  let ok = await saveQuote(draft);
+  if(ok && draft.status === 'draft'){
+    ok = await markSent(draft.ref);
+    if(ok) draft.status = 'sent';
+  }
   saving = false;
   const btnNow = document.getElementById('saveBtn');
   if(btnNow) btnNow.disabled = false;
   if(!ok){
-    draft.status = prevStatus;
     alert('Could not save — please try again.');
     return false;
   }
+  // pick up a decision the customer may have made while this editor was open
+  const fresh = await getQuote(draft.ref);
+  if(fresh){ draft.status = fresh.status; draft.response = fresh.response; }
   if(v === editVersion) setDirty(false);
   const pill = document.querySelector('.editor-header .pill');
   if(pill){ pill.className = 'pill ' + draft.status; pill.textContent = draft.status; }
@@ -1151,7 +1301,7 @@ document.getElementById('newQuoteBtn').addEventListener('click', async ()=>{
   const ref = await nextRef();
   draft = blankQuote(ref);
   currentRef = ref;
-  await saveQuote(draft);
+  await saveQuote(draft, true);
   isDirty = false;
   listTab = 'all';
   renderEditor(); renderList();
@@ -1197,12 +1347,17 @@ const PAGE_TABS = ['Cover','About','Quote','Service','Decision'];
 
 async function renderCustomer(routeInfo){
   const stage = document.getElementById('custStage');
-  const q = routeInfo.type === 'slug' ? await getQuoteBySlug(routeInfo.value) : await getQuote(routeInfo.value);
+  let q;
+  try{ q = await getQuoteBySlug(routeInfo.value); }
+  catch(e){
+    stage.innerHTML = `<div class="not-found">We couldn't load your quote just now.<br>Please check your connection and refresh the page.</div>`;
+    return;
+  }
   if(!q){
     stage.innerHTML = `<div class="not-found">Quote <strong>${escapeHtml(routeInfo.value)}</strong> couldn't be found.<br>Double check the link, or ask DC Flooring to resend it.</div>`;
     return;
   }
-  if(!isPreview()) trackView(q);   // not awaited, errors swallowed inside
+  if(!isPreview()) recordView(routeInfo.value);   // not awaited, errors swallowed inside
   const {subtotal, vat, total} = calcTotals(q);
   const liRows = q.lineItems.filter(li=>li.product).map(li=>{
     const qty = parseFloat(li.qty), price=parseFloat(li.unitPrice)||0;
@@ -1290,6 +1445,7 @@ function renderDecisionPage(q){
         <textarea id="declineReason" placeholder="Tell us why — price, timing, changed your mind about the product..."></textarea>
         <button class="btn btn-primary">Submit</button>
       </div>
+      <div class="decision-error" id="decisionError" role="alert"></div>
     </div>
   `;
   document.getElementById('acceptBtn').addEventListener('click', ()=> submitDecision(q, 'accepted', ''));
@@ -1303,10 +1459,35 @@ function renderDecisionPage(q){
 }
 
 async function submitDecision(q, decision, reason){
-  q.status = decision;
-  q.response = { decision, reason, respondedAt: new Date().toISOString() };
-  try{ await saveQuote(q); }catch(e){ /* still show confirmation locally */ }
+  const busy = on=>{
+    ['acceptBtn','declineBtn'].forEach(id=>{ const b = document.getElementById(id); if(b) b.disabled = on; });
+    document.querySelectorAll('#declineForm .btn').forEach(b=> b.disabled = on);
+  };
+  const fail = text=>{ const e = document.getElementById('decisionError'); if(e) e.textContent = text; };
+  fail(''); busy(true);
+  let recorded = false;
+  try{
+    recorded = await rpc('submit_decision', { p_slug: q.shortSlug, p_decision: decision, p_reason: reason || null, p_reason_category: null });
+  }catch(e){
+    busy(false);
+    fail("Sorry, we couldn't send that. Please check your connection and try again.");
+    return;
+  }
+  // show what is actually stored: this also covers a quote that was already decided
+  let fresh = null;
+  try{ fresh = await getQuoteBySlug(q.shortSlug); }catch(e){}
+  if(fresh){ q.status = fresh.status; q.response = fresh.response; }
+  else if(recorded){ q.status = decision; q.response = { decision, reason, respondedAt: new Date().toISOString() }; }
+  if(q.status === 'sent'){   // nothing was recorded and it is still open
+    busy(false);
+    fail('Sorry, something went wrong. Please try again.');
+    return;
+  }
   renderDecisionPage(q);
+  if(!recorded && q.response && q.response.decision !== decision){
+    const el = document.querySelector('#decisionPage .decided-state') || document.querySelector('.decided-state');
+    if(el){ const n = document.createElement('div'); n.className = 'decided-note'; n.textContent = `This quote had already been ${q.response.decision}, so your response wasn't changed.`; el.appendChild(n); }
+  }
 }
 
 /* ---------------- book (StPageFlip) ---------------- */
@@ -1359,34 +1540,88 @@ function siteBase(){
   // Site is served from a custom domain root (quotes.benchcreative.co.uk).
   return location.origin;
 }
+// The only public URL is a customer link: /q/<slug>. Everything else is the admin area and needs a login.
 function routeMatch(){
-  const pathMatch = location.pathname.match(/\/quote\/([^\/?#]+)\/?$/i);
-  if(pathMatch) return { type:'ref', value: decodeURIComponent(pathMatch[1]) };
-  const slugMatch = location.pathname.match(/\/q\/([^\/?#]+)\/?$/i);
-  if(slugMatch) return { type:'slug', value: decodeURIComponent(slugMatch[1]) };
-  const hash = location.hash.replace('#','').trim();
-  if(hash && hash.toLowerCase() !== 'admin') return { type:'ref', value: hash };
-  return null;
+  const m = location.pathname.match(/^\/q\/([^\/?#]+)\/?$/i);
+  if(!m) return null;
+  let value = m[1];
+  try{ value = decodeURIComponent(value); }catch(e){}
+  return { type:'slug', value };
+}
+function showLogin(){
+  const login = document.getElementById('login');
+  login.style.display = 'flex';
+  document.getElementById('loginError').textContent = signedOutNotice;
+  signedOutNotice = '';
+  document.getElementById('loginPassword').value = '';
+  const email = document.getElementById('loginEmail');
+  if(document.activeElement !== document.getElementById('loginPassword')) email.focus();
 }
 async function route(){
+  const adminEl = document.getElementById('admin');
+  const customerEl = document.getElementById('customer');
+  const loginEl = document.getElementById('login');
+  const adminLink = document.getElementById('adminLink');
   const match = routeMatch();
-  const isAdmin = !match;
-  document.getElementById('admin').style.display = isAdmin ? 'flex' : 'none';
-  document.getElementById('customer').style.display = isAdmin ? 'none' : 'flex';
-  document.getElementById('adminLink').style.display = isAdmin ? 'none' : 'block';
-  if(isAdmin){
-    await renderList();
-    if(!draft){
-      const quotes = await listQuotes();
-      if(quotes.length){ openEditor(quotes[0].ref); } else { document.getElementById('editorPane').innerHTML = '<div class="empty-list" style="padding-top:60px;">Create your first quote to get started.</div>'; }
-    } else {
-      renderEditor(); renderList();
-    }
-  } else {
+
+  if(match){
+    adminEl.style.display = 'none'; loginEl.style.display = 'none';
+    customerEl.style.display = 'flex';
+    adminLink.style.display = (isPreview() || session || readStoredSession()) ? 'block' : 'none';
     await renderCustomer(match);
+    return;
+  }
+
+  // admin area: nothing at all is shown until there is a valid session
+  customerEl.style.display = 'none'; adminLink.style.display = 'none';
+  const token = await getAccessToken();
+  if(!token){
+    adminEl.style.display = 'none';
+    if(token === undefined && !signedOutNotice) signedOutNotice = "Couldn't reach the server. Check your connection and try again.";
+    showLogin();
+    return;
+  }
+  loginEl.style.display = 'none';
+  if(location.pathname !== '/' && location.pathname !== '/index.html') history.replaceState(null, '', '/');
+  adminEl.style.display = 'flex';
+  await renderList();
+  if(!draft){
+    const quotes = await listQuotes();
+    if(quotes.length){ openEditor(quotes[0].ref); } else { document.getElementById('editorPane').innerHTML = '<div class="empty-list" style="padding-top:60px;">Create your first quote to get started.</div>'; }
+  } else {
+    renderEditor(); renderList();
   }
 }
-window.addEventListener('hashchange', route);
+
+document.getElementById('loginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  if(!email || !password){ err.textContent = 'Enter your email and password.'; return; }
+  err.textContent = ''; btn.disabled = true; btn.textContent = 'Signing in…';
+  const r = await signIn(email, password);
+  btn.disabled = false; btn.textContent = 'Sign in';
+  const pw = document.getElementById('loginPassword');
+  if(!r.ok){ err.textContent = r.message; pw.value = ''; pw.focus(); return; }
+  pw.value = '';
+  route();
+});
+document.getElementById('logoutBtn').addEventListener('click', signOut);
+document.getElementById('adminLink').addEventListener('click', e=>{
+  e.preventDefault();
+  history.pushState(null, '', siteBase() + '/');
+  route();
+});
+window.addEventListener('popstate', route);
+// signing in or out in another tab
+window.addEventListener('storage', e=>{
+  if(e.key !== SESSION_KEY || routeMatch()) return;   // customer pages don't care
+  session = readStoredSession();
+  if(!session) resetAdminState();
+  route();
+});
 route();
 
 // StPageFlip's loadFromHTML() clones the page content into its own managed DOM structure

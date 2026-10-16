@@ -65,9 +65,16 @@ only sends an email when it actually *changed* to `accepted` or `declined`
 
 ## 6. Test it
 
-Easiest: open the admin panel, open any quote, click **Preview as customer**,
-go to the Decision page, and click Accept (or Decline with a reason). Check
-alex.j@mdf-uk.com for the email — it should arrive within a few seconds.
+The webhook fires on any UPDATE to `quotes`. Customer accept/decline now goes
+through the `submit_decision()` database function (see `supabase/security/`),
+which performs that UPDATE, so the email still fires. Nothing about this
+function or the webhook changes.
+
+Easiest: sign in to the admin, open a quote whose status is **sent** (a draft or
+an already-decided quote can't be accepted/declined), click **Preview as
+customer**, go to the Decision page, and click Accept (or Decline with a
+reason). Check alex.j@mdf-uk.com for the email; it should arrive within a few
+seconds. Use a throwaway test quote: the decision is real and can't be undone.
 
 If it doesn't arrive:
 - Check **Supabase Dashboard → Edge Functions → notify-decision → Logs** for
