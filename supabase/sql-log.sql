@@ -166,3 +166,56 @@ end $$;
 
 select tablename, policyname, roles, cmd from pg_policies
  where schemaname = 'public' and tablename in ('quotes', 'settings') order by 1, 2;
+
+-- 7. 2026-10-16: tighter submit_decision (replaces the version in section 5)
+-- Same signature and grants. It now:
+--   * accepts only 'accepted' or 'declined',
+--   * accepts a reason_category only if it exactly matches an entry in v_allowed (or is null),
+--   * trims the reason and caps it at 1000 characters,
+--   * refuses (returns false) once valid_until has passed, comparing against today's date in Europe/London
+--     (a quote is valid up to and including its valid_until date),
+--   * still only works while the quote's status is 'sent'.
+-- get_quote is unchanged, so expired quotes are still returned and the page can say they have expired.
+--
+-- v_allowed is EMPTY because the decline form has no category chips yet, so right now only a null category is
+-- accepted (which is all the page sends). When chips are added, put their labels in v_allowed exactly as the
+-- page sends them (for example array['Price', 'Timing', ...]) and run this section again.
+-- To undo this section, run the submit_decision definition from section 5 again.
+create or replace function public.submit_decision(
+  p_slug text, p_decision text, p_reason text default null, p_reason_category text default null)
+returns boolean language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_allowed constant text[] := array[]::text[];   -- <- the decline chip labels go here
+  v_reason  text;
+begin
+  if p_slug is null or length(p_slug) < 6 then
+    return false;
+  end if;
+  if p_decision is null or p_decision not in ('accepted', 'declined') then
+    return false;
+  end if;
+  if p_reason_category is not null and not (p_reason_category = any (v_allowed)) then
+    return false;
+  end if;
+
+  v_reason := left(btrim(coalesce(p_reason, ''), E' \t\r\n'), 1000);
+
+  update public.quotes q
+     set status = p_decision,
+         response = jsonb_build_object(
+           'decision', p_decision,
+           'reason', v_reason,
+           'reason_category', p_reason_category,
+           'respondedAt', to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')),
+         updated_at = now()
+   where q.short_slug = p_slug
+     and q.status = 'sent'
+     and (q.valid_until is null or q.valid_until >= (now() at time zone 'Europe/London')::date);
+
+  return found;
+end;
+$$;
+
+revoke all on function public.submit_decision(text, text, text, text) from public;
+grant execute on function public.submit_decision(text, text, text, text) to anon, authenticated;

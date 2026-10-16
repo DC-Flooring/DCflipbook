@@ -19,3 +19,9 @@ second line of defence).
 
 The `notify-decision` Edge Function and its database webhook are unchanged: `submit_decision()`
 updates `quotes.status` and `quotes.response` exactly as the old code did, which fires the webhook.
+
+## Later changes
+
+`submit_decision` was tightened on 2026-10-16 (allowed decisions and categories, reason length, expiry against the
+Europe/London date). The current definition is the last section of `../sql-log.sql`, which supersedes the version in
+`block-a-functions.sql`.

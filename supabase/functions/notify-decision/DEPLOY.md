@@ -44,6 +44,10 @@ supabase functions deploy notify-decision
 supabase secrets set RESEND_API_KEY=re_your_key_here
 ```
 
+The function also needs a `WEBHOOK_SECRET` (see **Securing the webhook** below). Without it the function
+rejects every request with a 401, so it can never be triggered by anyone else, but it also won't send
+your emails until the secret and the webhook header are set.
+
 ## 5. Wire it up with a Database Webhook
 
 In the Supabase Dashboard:
@@ -54,8 +58,8 @@ In the Supabase Dashboard:
 4. Events: **Update** only (leave Insert/Delete unchecked)
 5. Type: **Supabase Edge Functions**
 6. Edge Function: `notify-decision`
-7. HTTP Method: POST, HTTP Headers: leave defaults (the dashboard signs the
-   request automatically)
+7. HTTP Method: POST, HTTP Headers: keep the defaults (the dashboard signs the
+   request automatically) **and add `x-webhook-secret`** (see **Securing the webhook** below).
 8. Save.
 
 That's it — no SQL needed. The webhook fires on every update to the `quotes`
@@ -90,3 +94,67 @@ address, edit `NOTIFY_TO` in `index.ts` and redeploy:
 ```bash
 supabase functions deploy notify-decision
 ```
+
+## Securing the webhook (WEBHOOK_SECRET)
+
+The function only does anything for a request that carries the shared secret in an `x-webhook-secret`
+header (compared in constant time); everything else gets `401 unauthorized`. If you are adding this to a
+webhook that is already working, do the three steps **in this order**, so emails never stop in between:
+
+**(a) Generate a random value and store it as the `WEBHOOK_SECRET` secret**
+
+1. In any browser tab press F12, open the **Console** and run:
+
+   ```js
+   crypto.randomUUID()
+   ```
+
+   (For a longer one:
+   `Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')`.)
+   Copy the value without the quotes. Keep it out of the repo, chat and screenshots.
+2. In a terminal, in the project folder (the same place you ran `supabase link`):
+
+   ```bash
+   supabase secrets set WEBHOOK_SECRET=paste-the-value-here
+   ```
+
+   Or in the Dashboard: **Edge Functions → Secrets → Add new secret**, name `WEBHOOK_SECRET`, paste the value.
+   (The Dashboard avoids leaving the value in your shell history.) `supabase secrets list` should now show it.
+
+   Nothing changes yet: the function that is currently deployed doesn't read it.
+
+**(b) Add the header to the database webhook**
+
+1. Dashboard → **Database → Webhooks** → open `notify-decision` → edit.
+2. Under **HTTP Headers** click **Add a new header**: name `x-webhook-secret`, value = the same value as in (a)
+   (no quotes, no spaces). Leave the existing headers as they are.
+3. Save.
+
+The old function ignores the extra header, so emails keep working.
+
+**(c) Deploy the updated function**
+
+```bash
+supabase functions deploy notify-decision
+```
+
+**Check it**
+
+- Open the admin, **Preview as customer** on a throwaway quote whose status is **sent**, accept it, and check
+  alex.j@mdf-uk.com for the email.
+- Dashboard → **Edge Functions → notify-decision → Logs**: you should see the invocation succeed, not a 401.
+- A request without the header must not send anything. For example, this must not result in an email (it
+  should answer 401; depending on your project's JWT settings the 401 may come from Supabase's gateway rather
+  than from the function itself):
+
+  ```bash
+  curl -i -X POST "https://<project-ref>.supabase.co/functions/v1/notify-decision" \
+    -H "Content-Type: application/json" -d '{"record":{"status":"accepted"}}'
+  ```
+
+**If emails stop after this**: the secret and the header value don't match. Re-set both from the same value
+(a) and (b). To go back to the previous function while you sort it out, check out the previous
+`index.ts` (`git log -- supabase/functions/notify-decision/index.ts`) and run the deploy command again.
+
+To rotate the secret later, set a new value in the same three steps (there is a short window between
+(a)-then-(c) and (b) where emails are rejected, so do it when no quotes are about to be answered).

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>DC Flooring — Quotes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Poppins:wght@500;600&display=swap');
 /* "Garet" isn't available on Google Fonts or Fontshare (checked both — it's a commercial font,
@@ -374,7 +375,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
   .quote .note{ margin-top:6px; font-size:9px; }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script src="/vendor/page-flip.browser.js"></script>
 </head>
 <body>
 
@@ -892,25 +893,25 @@ async function renderList(force = true){
   el.innerHTML = quotes.map(q=>{
     const {total} = calcTotals(q);
     let reasonHtml = '';
-    if(q.status==='declined' && q.response && q.response.reason){
-      reasonHtml = `<div class="reason">"${escapeHtml(q.response.reason)}"</div>`;
+    if(q.status==='declined' && reasonLine(q.response)){
+      reasonHtml = `<div class="reason">${reasonLine(q.response)}</div>`;
     }
-    return `<div class="qcard ${q.ref===currentRef?'active':''} ${q.hidden?'is-hidden':''}" data-ref="${q.ref}">
+    return `<div class="qcard ${q.ref===currentRef?'active':''} ${q.hidden?'is-hidden':''}" data-ref="${escapeHtml(q.ref)}">
       <div class="row1">
         <div class="row1-left">
           <label class="qcard-check" onclick="event.stopPropagation()">
-            <input type="checkbox" class="sel-chk" data-ref="${q.ref}" ${selectedRefs.has(q.ref)?'checked':''}>
+            <input type="checkbox" class="sel-chk" data-ref="${escapeHtml(q.ref)}" ${selectedRefs.has(q.ref)?'checked':''}>
           </label>
-          <span class="ref">${q.ref}</span>
+          <span class="ref">${escapeHtml(q.ref)}</span>
         </div>
-        <span class="pill ${q.status}">${q.status}</span>
+        <span class="pill ${statusClass(q.status)}">${escapeHtml(q.status)}</span>
       </div>
       <div class="name">${escapeHtml(q.customerName)||'Unnamed customer'}</div>
       <div class="row3">
         <span class="total">${money(total)}</span>
         <div class="actions">
-          <button class="hide-btn" data-ref="${q.ref}" data-hidden="${q.hidden?1:0}">${q.hidden?'Unhide':'Hide'}</button>
-          <button class="del-btn" data-ref="${q.ref}" title="Delete permanently">Delete</button>
+          <button class="hide-btn" data-ref="${escapeHtml(q.ref)}" data-hidden="${q.hidden?1:0}">${q.hidden?'Unhide':'Hide'}</button>
+          <button class="del-btn" data-ref="${escapeHtml(q.ref)}" title="Delete permanently">Delete</button>
         </div>
       </div>
       ${viewsHtml(q)}
@@ -976,7 +977,25 @@ async function openEditor(ref){
   renderList(false);
 }
 
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// Every piece of text that comes from the database (customer name, notes, line items, decline reason and
+// category, refs, slugs, dates, status) goes through this before it is put into an HTML string. It escapes
+// quotes too, so it is safe inside attribute values, and it copes with numbers / null.
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"'`]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
+}
+// Values that end up in a CSS class (never the raw database value).
+const KNOWN_STATUSES = ['draft','sent','accepted','declined'];
+const statusClass = s=> KNOWN_STATUSES.includes(s) ? s : 'draft';
+const decisionClass = d=> d === 'accepted' ? 'accepted' : 'declined';
+// New rows store reason_category; older rows may have reasonCategory.
+const responseCategory = r=> (r && (r.reason_category || r.reasonCategory)) || '';
+// "Category · "reason"" as escaped HTML ('' when there is neither)
+function reasonLine(r){
+  if(!r) return '';
+  const cat = responseCategory(r), reason = r.reason || '';
+  if(!cat && !reason) return '';
+  return (cat ? escapeHtml(cat) : '') + (cat && reason ? ' · ' : '') + (reason ? `"${escapeHtml(reason)}"` : '');
+}
 
 function lineTotal(li){
   const qty = parseFloat(li.qty), price = parseFloat(li.unitPrice)||0;
@@ -1019,17 +1038,17 @@ function renderEditor(){
   const pane = document.getElementById('editorPane');
   let responseHtml = '';
   if(draft.response){
-    const cls = draft.response.decision;
+    const cls = decisionClass(draft.response.decision);
     responseHtml = `<div class="response-box ${cls}">
-      <div class="rt">Customer ${cls==='accepted'?'accepted this quote':'declined this quote'} — ${new Date(draft.response.respondedAt).toLocaleDateString('en-GB')}</div>
-      ${draft.response.reason ? `<div class="rr">"${escapeHtml(draft.response.reason)}"</div>` : ''}
+      <div class="rt">Customer ${cls==='accepted'?'accepted this quote':'declined this quote'} — ${escapeHtml(new Date(draft.response.respondedAt).toLocaleDateString('en-GB'))}</div>
+      ${reasonLine(draft.response) ? `<div class="rr">${reasonLine(draft.response)}</div>` : ''}
     </div>`;
   }
 
   pane.innerHTML = `
     <div class="editor-header">
       <div>
-        <div class="eyebrow">${draft.ref} <span class="pill ${draft.status}" style="margin-left:8px;">${draft.status}</span></div>
+        <div class="eyebrow">${escapeHtml(draft.ref)} <span class="pill ${statusClass(draft.status)}" style="margin-left:8px;">${escapeHtml(draft.status)}</span></div>
         <h2 style="font-size:22px;">${draft.customerName ? escapeHtml(draft.customerName) : 'New quote'}</h2>
       </div>
     </div>
@@ -1038,8 +1057,8 @@ function renderEditor(){
       <div class="editor-main">
         <div class="details-grid">
           <div class="field field-name"><label for="f-name">Customer name</label><input id="f-name" value="${escapeHtml(draft.customerName)}"></div>
-          <div class="field"><label for="f-date">Date</label><input id="f-date" type="date" value="${draft.date}"></div>
-          <div class="field"><label for="f-valid">Valid until</label><input id="f-valid" type="date" value="${draft.validUntil}"></div>
+          <div class="field"><label for="f-date">Date</label><input id="f-date" type="date" value="${escapeHtml(draft.date)}"></div>
+          <div class="field"><label for="f-valid">Valid until</label><input id="f-valid" type="date" value="${escapeHtml(draft.validUntil)}"></div>
         </div>
 
         <div class="section-title">Line items</div>
@@ -1068,7 +1087,7 @@ function renderEditor(){
           <button class="btn btn-ghost" id="printBtn">Print quote</button>
         </div>
         <div class="link-box">
-          <input id="linkOut" readonly value="${siteBase()}/q/${draft.shortSlug || ''}">
+          <input id="linkOut" readonly value="${escapeHtml(siteBase())}/q/${escapeHtml(encodeURIComponent(draft.shortSlug || ''))}">
           <button class="btn btn-ghost" id="copyBtn">Copy link</button>
         </div>
         <div class="link-note">Anyone with this link can view and respond to this quote.</div>
@@ -1149,7 +1168,7 @@ async function saveCurrent(){
   if(fresh){ draft.status = fresh.status; draft.response = fresh.response; }
   if(v === editVersion) setDirty(false);
   const pill = document.querySelector('.editor-header .pill');
-  if(pill){ pill.className = 'pill ' + draft.status; pill.textContent = draft.status; }
+  if(pill){ pill.className = 'pill ' + statusClass(draft.status); pill.textContent = draft.status; }
   const flash = document.getElementById('savedFlash');
   if(flash){ flash.classList.add('show'); setTimeout(()=> flash.classList.remove('show'), 1600); }
   renderList();
@@ -1263,8 +1282,8 @@ table.items{ width:100%; border-collapse:collapse; }
     <div><div class="label">Prepared for</div><div class="who">${escapeHtml(name) || '—'}</div></div>
     <div class="facts">
       <div><span>Quote no:</span> <b>${escapeHtml(q.ref)}</b></div>
-      <div><span>Date:</span> <b>${fmtDate(q.date)}</b></div>
-      <div><span>Valid until:</span> <b>${fmtDate(q.validUntil)}</b></div>
+      <div><span>Date:</span> <b>${escapeHtml(fmtDate(q.date))}</b></div>
+      <div><span>Valid until:</span> <b>${escapeHtml(fmtDate(q.validUntil))}</b></div>
     </div>
   </div>
   <table class="items"><thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Total</th></tr></thead><tbody>${rows}</tbody></table>
@@ -1376,7 +1395,7 @@ async function renderCustomer(routeInfo){
           <div class="cover-fields">
             <div class="cf-name">${escapeHtml(q.customerName)||'—'}</div>
             <div class="cf-ref">Ref: ${escapeHtml(q.ref)}</div>
-            <div class="cf-date">${fmtDate(q.date)}</div>
+            <div class="cf-date">${escapeHtml(fmtDate(q.date))}</div>
           </div>
         </div>
 
@@ -1418,12 +1437,17 @@ async function renderCustomer(routeInfo){
   wireBook();
 }
 
+// "Today" in the UK, as YYYY-MM-DD: a quote is valid up to and including its valid-until date.
+function todayLondon(){
+  return new Intl.DateTimeFormat('en-CA', { timeZone:'Europe/London', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
+}
+function isExpired(q){ return !!q.validUntil && q.validUntil < todayLondon(); }
 function fmtDate(s){ if(!s) return '—'; const d = new Date(s+'T00:00:00'); return isNaN(d) ? s : d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
 
 function renderDecisionPage(q){
   const el = document.getElementById('decisionPage');
   if(q.response){
-    const cls = q.response.decision;
+    const cls = decisionClass(q.response.decision);
     el.innerHTML = `<div class="decision-inner"><div class="decided-state ${cls}">
       <div class="badge">${cls==='accepted'?'Quote accepted':'Quote declined'}</div>
       <div class="decided-msg">
@@ -1476,11 +1500,16 @@ async function submitDecision(q, decision, reason){
   // show what is actually stored: this also covers a quote that was already decided
   let fresh = null;
   try{ fresh = await getQuoteBySlug(q.shortSlug); }catch(e){}
-  if(fresh){ q.status = fresh.status; q.response = fresh.response; }
+  if(fresh){ q.status = fresh.status; q.response = fresh.response; q.validUntil = fresh.validUntil; }
   else if(recorded){ q.status = decision; q.response = { decision, reason, respondedAt: new Date().toISOString() }; }
-  if(q.status === 'sent'){   // nothing was recorded and it is still open
-    busy(false);
-    fail('Sorry, something went wrong. Please try again.');
+  const decided = !!q.response && (q.status === 'accepted' || q.status === 'declined');
+  if(!decided){   // nothing was recorded and the quote is still unanswered
+    if(q.status === 'sent' && isExpired(q)){
+      fail('This quote has expired, please contact us');   // buttons stay disabled: it can't be answered any more
+    }else{
+      busy(false);
+      fail("Sorry, we couldn't record your response. Please try again, or contact us if it keeps happening.");
+    }
     return;
   }
   renderDecisionPage(q);
