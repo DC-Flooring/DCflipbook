@@ -270,3 +270,77 @@ $$;
 
 revoke all on function public.get_quote(text) from public;
 grant execute on function public.get_quote(text) to anon, authenticated;
+
+-- 10. 2026-10-16: quotes.sent_at (already added and filled by hand in the SQL editor)
+-- sent_at = when the quote was first shared with the customer. The admin app now sets it when a draft is marked as sent
+-- (Copy link / Mark as sent), when staff record a decision on a draft, and the two customer functions below set it too.
+-- The page falls back to created_at where sent_at is empty. get_quote builds its output from an explicit key list that
+-- does not include sent_at, so customers never receive it (section 9 shows the list).
+-- The backfill below is the equivalent of what was run by hand: it only touches rows where sent_at is still empty.
+alter table public.quotes add column if not exists sent_at timestamptz;
+update public.quotes set sent_at = created_at
+ where sent_at is null and status in ('sent', 'accepted', 'declined');
+-- To undo: alter table public.quotes drop column sent_at;
+
+-- 11. 2026-10-16: a draft becomes "sent" when the customer opens it, and drafts can be answered
+-- RUN THIS BEFORE the admin changes are merged: the admin no longer flips a draft to sent on Save.
+-- record_view: unchanged view tracking, plus a draft that is opened through its link becomes 'sent' and gets sent_at
+--   (an existing sent_at is kept). Quotes with any other status are only tracked.
+-- submit_decision: replaces section 7. Identical rules (allowed decision, reason_category list, reason trimmed and capped at
+--   1000, refuses after valid_until in Europe/London) except that status 'draft' is accepted as well as 'sent', and
+--   sent_at is set to coalesce(sent_at, now()) when the decision is recorded.
+-- Signatures, grants and search_path are unchanged. To undo: run record_view from section 5 and submit_decision from
+-- section 7 again.
+create or replace function public.record_view(p_slug text)
+returns void language sql security definer set search_path = ''
+as $$
+  update public.quotes
+     set view_count = view_count + 1,
+         last_viewed_at = now(),
+         first_viewed_at = coalesce(first_viewed_at, now()),
+         status = case when status = 'draft' then 'sent' else status end,
+         sent_at = case when status = 'draft' then coalesce(sent_at, now()) else sent_at end
+   where short_slug = p_slug and length(p_slug) >= 6;
+$$;
+
+create or replace function public.submit_decision(
+  p_slug text, p_decision text, p_reason text default null, p_reason_category text default null)
+returns boolean language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_allowed constant text[] := array[]::text[];   -- <- the decline chip labels go here
+  v_reason  text;
+begin
+  if p_slug is null or length(p_slug) < 6 then
+    return false;
+  end if;
+  if p_decision is null or p_decision not in ('accepted', 'declined') then
+    return false;
+  end if;
+  if p_reason_category is not null and not (p_reason_category = any (v_allowed)) then
+    return false;
+  end if;
+
+  v_reason := left(btrim(coalesce(p_reason, ''), E' \t\r\n'), 1000);
+
+  update public.quotes q
+     set status = p_decision,
+         response = jsonb_build_object(
+           'decision', p_decision,
+           'reason', v_reason,
+           'reason_category', p_reason_category,
+           'respondedAt', to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')),
+         sent_at = coalesce(q.sent_at, now()),
+         updated_at = now()
+   where q.short_slug = p_slug
+     and q.status in ('draft', 'sent')
+     and (q.valid_until is null or q.valid_until >= (now() at time zone 'Europe/London')::date);
+
+  return found;
+end;
+$$;
+
+revoke all on function public.record_view(text) from public;
+revoke all on function public.submit_decision(text, text, text, text) from public;
+grant execute on function public.record_view(text) to anon, authenticated;
+grant execute on function public.submit_decision(text, text, text, text) to anon, authenticated;
