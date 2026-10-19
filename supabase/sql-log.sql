@@ -270,3 +270,27 @@ $$;
 
 revoke all on function public.get_quote(text) from public;
 grant execute on function public.get_quote(text) to anon, authenticated;
+
+-- 12. 2026-10-19: get_business(): the public business details for the customer pages and the notification email
+-- The customer pages (and the notify-decision function) show the business name from the Settings page. Customers can't read
+-- the settings table, so this function hands over just the four fields that already appear on printed quotes:
+-- business_name, phone, email, address. It never returns default_terms or any other setting. If it is missing or fails the
+-- pages fall back to "Floors for Living". To undo: drop function public.get_business();
+create or replace function public.get_business()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+           'business_name', s.business_name,
+           'phone',         s.phone,
+           'email',         s.email,
+           'address',       s.address)
+    from public.settings s
+   where s.id = 1;
+$$;
+
+revoke all on function public.get_business() from public;
+grant execute on function public.get_business() to anon, authenticated;

@@ -20,7 +20,30 @@
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const NOTIFY_TO = "alex.j@mdf-uk.com"; // temporary routing for testing — swap for Dave's real address later
-const FROM_ADDRESS = "DC Flooring <onboarding@resend.dev>"; // Resend's shared sandbox sender; works with no domain setup. Swap once a sending domain is verified in Resend.
+const SENDER_EMAIL = "onboarding@resend.dev"; // Resend's shared sandbox sender; works with no domain setup. Swap once a sending domain is verified in Resend.
+const BRAND_FALLBACK = "Floors for Living"; // used when no business name has been saved on the Settings page
+
+// The business name from the Settings page, read through the public get_business() function (run section 12 of
+// supabase/sql-log.sql once). Any problem, or an empty name, falls back to BRAND_FALLBACK: the email is never held up by it.
+async function businessName(): Promise<string> {
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!url || !key) return BRAND_FALLBACK;
+    const res = await fetch(`${url}/rest/v1/rpc/get_business`, {
+      method: "POST",
+      headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: "{}",
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return BRAND_FALLBACK;
+    const b = await res.json();
+    const name = b && typeof b.business_name === "string" ? oneLine(b.business_name) : "";
+    return name ? name.slice(0, 100) : BRAND_FALLBACK;
+  } catch {
+    return BRAND_FALLBACK;
+  }
+}
 
 Deno.serve(async (req: Request) => {
   // Reject anything that doesn't carry the shared secret. If WEBHOOK_SECRET isn't configured this
@@ -61,6 +84,9 @@ Deno.serve(async (req: Request) => {
     // new rows store reason_category; older rows may have reasonCategory
     const category = response.reason_category || response.reasonCategory || null;
 
+    const brand = await businessName();
+    // the sender's display name goes in a header: keep it to plain characters
+    const fromName = brand.replace(/[<>"\\,;:@()\[\]]/g, "").trim() || BRAND_FALLBACK;
     const subject = oneLine(`Quote ${ref} ${decision} — ${customerName}`).slice(0, 150);
     const html = `
       <div style="font-family:sans-serif; max-width:480px;">
@@ -72,6 +98,7 @@ Deno.serve(async (req: Request) => {
           ${category ? `<tr><td style="padding:4px 0; color:#666;">Category</td><td style="padding:4px 0;">${escapeHtml(category)}</td></tr>` : ""}
           ${reason ? `<tr><td style="padding:4px 0; color:#666; vertical-align:top;">Reason</td><td style="padding:4px 0;">${escapeHtml(reason)}</td></tr>` : ""}
         </table>
+        <p style="margin:14px 0 0; color:#999; font-size:12px;">${escapeHtml(brand)} quote notification</p>
       </div>
     `.trim();
 
@@ -82,7 +109,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: FROM_ADDRESS,
+        from: `${fromName} <${SENDER_EMAIL}>`,
         to: [NOTIFY_TO],
         subject,
         html,

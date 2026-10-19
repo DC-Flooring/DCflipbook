@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DC Flooring — Quotes</title>
+<title>Floors for Living — Quotes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <style>
@@ -631,6 +631,8 @@ const CHASE_SNOOZE_DAYS = 3;           // "Chased" keeps a quote out of Needs at
 const SNOOZE_OPTIONS = [[1, '1 day'], [3, '3 days'], [7, '1 week']];   // the Snooze menu
 const EXTEND_OPTIONS = [[7, '+7 days'], [14, '+14 days']];            // the Extend menu (plus "Pick a date")
 const TOAST_MS = 8000;                 // how long the "Undo" toast stays up
+const IMG_VERSION = 2;                 // bump when 1.png / 2.png / 3.png are replaced, so browsers fetch the new pictures
+const BRAND_FALLBACK = 'Floors for Living';   // used wherever the business name from Settings is empty
 const SETTINGS_WAIT_MS = 2500;         // how long the first screen waits for the settings row before using defaults
 
 // Business settings live in the `settings` table (row id 1) and are edited on the Settings page.
@@ -643,6 +645,11 @@ const DEFAULT_SETTINGS = {
 };
 // The business details printed on quotes (header contact row and sign-off), kept in step with the settings.
 const BUSINESS = { businessName:'', phone:'', email:'', address:'' };
+// The business name shown to staff and on printed quotes: Settings first, then "Floors for Living".
+const brandName = ()=> (BUSINESS.businessName || '').trim() || BRAND_FALLBACK;
+// What the customer pages show. Customers can't read the settings table, so this comes from get_business() (name, phone, email, address only).
+const CUSTOMER_BUSINESS = { businessName:'', phone:'', email:'', address:'' };
+const customerBrand = ()=> (CUSTOMER_BUSINESS.businessName || '').trim() || BRAND_FALLBACK;
 
 /* ---------------- Supabase storage ---------------- */
 const SUPABASE_URL = 'https://lpkdsdfltejgczsuvpay.supabase.co';
@@ -833,6 +840,15 @@ async function getQuote(ref){
 }
 // Customer pages: one quote by its random short slug, via get_quote(). Returns null when there is no such quote
 // and throws when the server can't be reached, so "not found" is never shown for a network problem.
+// The public business details for the customer pages (name, phone, email, address): never fails the page.
+async function loadCustomerBusiness(){
+  try{
+    const b = await rpc('get_business', {});
+    if(b && typeof b === 'object'){
+      ['businessName','phone','email','address'].forEach(k=>{ CUSTOMER_BUSINESS[k] = String(b[{businessName:'business_name'}[k] || k] || '').trim(); });
+    }
+  }catch(e){ /* keep the "Floors for Living" fallback */ }
+}
 async function getQuoteBySlug(slug){
   const r = await rpc('get_quote', { p_slug: slug });
   return r ? fromDbRow(r) : null;
@@ -916,6 +932,7 @@ function toSettingsRow(x){
 function applySettings(){
   BUSINESS.businessName = settings.businessName; BUSINESS.phone = settings.phone;
   BUSINESS.email = settings.email; BUSINESS.address = settings.address;
+  if(!routeMatch()) document.title = `${brandName()} — Quotes`;
 }
 async function loadSettings(){
   settingsState = 'loading';
@@ -1842,7 +1859,7 @@ function buildPrintHtml(q){
   }).join('') || '<tr><td colspan="4">Line items to follow.</td></tr>';
   const notes = (q.notes||'').trim();
   const name = (q.customerName||'').trim();
-  const biz = (BUSINESS.businessName||'').trim();
+  const biz = brandName();
   const link = quoteLink(q);
   const linkText = link.replace(/^https?:\/\//, '');
   const logo = siteBase() + '/floors-for-living-logo.png';
@@ -1916,7 +1933,7 @@ table.items{ width:100%; border-collapse:collapse; }
 <div class="band">
   <div class="band-top">
     <h1><span class="a">Your flooring</span><span class="w">Quote</span></h1>
-    <div class="logo-panel"><img class="logo" src="${logo}" alt="Floors for Living"></div>
+    <div class="logo-panel"><img class="logo" src="${logo}" alt="${escapeHtml(biz)}"></div>
   </div>
   ${contact ? `<div class="contact">${contact}</div>` : ''}
 </div>
@@ -1934,7 +1951,7 @@ table.items{ width:100%; border-collapse:collapse; }
     <div class="totals"><div><span>Subtotal</span><span>${money(subtotal)}</span></div><div><span>VAT (20%)</span><span>${money(vat)}</span></div><div class="grand"><span>Total</span><span>${money(total)}</span></div></div>
     ${notes ? `<div class="terms"><div class="label">Terms</div><p>${escapeHtml(notes)}</p></div>` : ''}
     <div class="accept"><h3>Ready to go ahead?</h3><p>You can accept or decline online at <a href="${escapeHtml(link)}">${escapeHtml(linkText)}</a>. Or just reply to the message we sent you.</p></div>
-    <div class="signoff">Thank you for choosing ${escapeHtml(biz) || 'us'}</div>
+    <div class="signoff">Thank you for choosing ${escapeHtml(biz)}</div>
   </div>
 </div>
 </div>
@@ -2442,16 +2459,24 @@ const PAGE_TABS = ['Cover','About','Quote','Service','Decision'];
 async function renderCustomer(routeInfo){
   const stage = document.getElementById('custStage');
   let q;
+  const bizLoaded = loadCustomerBusiness();
   try{ q = await getQuoteBySlug(routeInfo.value); }
   catch(e){
     stage.innerHTML = `<div class="not-found">We couldn't load your quote just now.<br>Please check your connection and refresh the page.</div>`;
     return;
   }
+  await bizLoaded;
+  const brand = customerBrand();
+  document.title = `${brand} — Your quote`;
   if(!q){
-    stage.innerHTML = `<div class="not-found">Quote <strong>${escapeHtml(routeInfo.value)}</strong> couldn't be found.<br>Double check the link, or ask DC Flooring to resend it.</div>`;
+    stage.innerHTML = `<div class="not-found">Quote <strong>${escapeHtml(routeInfo.value)}</strong> couldn't be found.<br>Double check the link, or ask ${escapeHtml(brand)} to resend it.</div>`;
     return;
   }
   if(!isPreview()) recordView(routeInfo.value);   // not awaited, errors swallowed inside
+  // Service page contact line: the business name from Settings (or "Floors for Living"), then whatever details have been filled in
+  const cb = CUSTOMER_BUSINESS;
+  const contactLines = `<b>${escapeHtml(brand)}</b>${cb.address ? ' — ' + escapeHtml(cb.address) : ''}`
+    + ([cb.phone, cb.email].filter(Boolean).length ? '<br>' + [cb.phone, cb.email].filter(Boolean).map(escapeHtml).join(' · ') : '');
   const {subtotal, vat, total} = calcTotals(q);
   const liRows = q.lineItems.filter(li=>li.product).map(li=>{
     const qty = parseFloat(li.qty), price=parseFloat(li.unitPrice)||0;
@@ -2466,7 +2491,7 @@ async function renderCustomer(routeInfo){
       <div id="book">
 
         <div class="page img-page" data-density="hard">
-          <img class="page-bg" src="${siteBase()}/1.png" alt="DC Flooring — cover">
+          <img class="page-bg" src="${siteBase()}/1.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — cover">
           <div class="cover-fields">
             <div class="cf-name">${escapeHtml(q.customerName)||'—'}</div>
             <div class="cf-ref">Ref: ${escapeHtml(q.ref)}</div>
@@ -2475,11 +2500,11 @@ async function renderCustomer(routeInfo){
         </div>
 
         <div class="page img-page" data-density="hard">
-          <img class="page-bg" src="${siteBase()}/2.png" alt="DC Flooring — about">
+          <img class="page-bg" src="${siteBase()}/2.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — about">
         </div>
 
         <div class="page img-page" data-density="hard">
-          <img class="page-bg" src="${siteBase()}/3.png" alt="DC Flooring — how we work">
+          <img class="page-bg" src="${siteBase()}/3.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — how we work">
         </div>
 
         <div class="page quote dark-page" data-density="hard">
@@ -2495,7 +2520,7 @@ async function renderCustomer(routeInfo){
             <div class="svc-col"><h3>Included</h3><ul><li>Delivery to site or collection</li><li>Professional fitting</li><li>Aftercare guidance</li><li>Standard warranty</li></ul></div>
             <div class="svc-col"><h3>Next steps</h3><ul><li>Confirm your order</li><li>Book your fitting date</li><li>Site measure if required</li><li>Installation day</li></ul></div>
           </div>
-          <div class="contact"><b>DC Flooring</b> — [Address line, placeholder]<br>[Phone number] · [Email address] · [Website]</div>
+          <div class="contact">${contactLines}</div>
         <div class="pageno">05</div></div>
 
         <div class="page decision dark-page" id="decisionPage" data-density="hard"></div>
