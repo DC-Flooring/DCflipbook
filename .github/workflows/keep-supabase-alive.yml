@@ -1,0 +1,46 @@
+# Keeps the free Supabase project from pausing after a week of inactivity by making a harmless
+# request to it twice a week. get_quote returns null for an unknown slug, so nothing is read or changed.
+# If the request fails, the job fails and GitHub emails you.
+name: Keep Supabase alive
+
+on:
+  schedule:
+    - cron: "0 9 * * 1,4"   # Monday and Thursday, 09:00 UTC
+  workflow_dispatch:         # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo (to read the publishable key from index.html)
+        uses: actions/checkout@v4
+
+      - name: Call get_quote with a slug that does not exist
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # The publishable key is read from index.html so it is not copied into a second place.
+          KEY="$(grep -oE "sb_publishable_[A-Za-z0-9_-]+" index.html | head -n 1)"
+          if [ -z "$KEY" ]; then
+            echo "Could not find the publishable key in index.html"
+            exit 1
+          fi
+          echo "::add-mask::$KEY"   # keep it out of the log even if something prints it
+
+          STATUS="$(curl -sS -o /dev/null -w '%{http_code}' \
+            --max-time 30 --retry 2 --retry-delay 5 --retry-all-errors \
+            -X POST "https://lpkdsdfltejgczsuvpay.supabase.co/rest/v1/rpc/get_quote" \
+            -H "Content-Type: application/json" \
+            -H "apikey: ${KEY}" \
+            -H "Authorization: Bearer ${KEY}" \
+            -d '{"p_slug":"keepalive-check"}')"
+
+          echo "Supabase responded with HTTP ${STATUS}"
+          if [ "$STATUS" != "200" ]; then
+            echo "Expected HTTP 200, so the job is failing."
+            exit 1
+          fi
