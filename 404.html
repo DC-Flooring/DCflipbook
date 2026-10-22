@@ -26,7 +26,7 @@ button{ font-family:inherit; }
 .mono{ font-family:'IBM Plex Mono',monospace; }
 h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .pill{ display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
-.pill.draft{ background:#e5dbc7; color:var(--ink-soft); }
+.pill.draft{ background:transparent; border:1px dashed #b3a68f; padding:2px 8px; color:#8a7d6b; }
 .pill.sent{ background:#e0d3ba; color:var(--walnut); }
 .pill.accepted{ background:#dbe6dc; color:var(--ok); }
 .pill.declined{ background:#f0dcd9; color:var(--bad); }
@@ -205,7 +205,11 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .btn-primary:hover{ background:var(--oak); }
 .btn-ghost{ background:none; border-color:var(--line); color:var(--ink); }
 .btn-ghost:hover{ border-color:var(--brass); color:var(--brass); }
-.link-box{ display:flex; gap:8px; align-items:center; margin-top:14px; }
+.link-box{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:14px; }
+.link-box .btn{ flex:none; }
+.link-box.is-draft input{ flex:1 1 100%; }
+.link-box.is-draft .btn{ flex:1 1 0; }
+.draft-note{ margin-top:8px; padding:7px 10px; border:1px dashed #b3a68f; border-radius:4px; background:#faf6ee; font-size:11.5px; line-height:1.5; color:#6f6354; }
 .link-box input{ flex:1; min-width:0; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; border:1px solid var(--line); border-radius:4px; background:#fff; }
 .link-box .btn{ padding:8px 12px; }
 .views-detail{ margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:11.5px; line-height:1.55; color:var(--ink-soft); }
@@ -821,6 +825,7 @@ function fromDbRow(r){
     hidden: !!r.hidden,
     shortSlug: r.short_slug || null,
     createdAt: r.created_at,
+    sentAt: r.sent_at || null,
     updatedAt: r.updated_at,
     firstViewedAt: r.first_viewed_at || null,
     lastViewedAt: r.last_viewed_at || null,
@@ -861,15 +866,6 @@ async function saveQuote(q, full = false){
       method:'POST',
       headers:{ 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates' },
       body: JSON.stringify(row)
-    });
-    return res.ok;
-  }catch(e){ return false; }
-}
-// draft -> sent, only while it is still a draft (never touches a quote the customer has already decided)
-async function markSent(ref){
-  try{
-    const res = await adminFetch(`quotes?ref=eq.${encodeURIComponent(ref)}&status=eq.draft`, {
-      method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ status:'sent' })
     });
     return res.ok;
   }catch(e){ return false; }
@@ -997,7 +993,7 @@ function blankQuote(ref){
     notes: settings.defaultTerms,
     gallery: [{name:'', ref:'', tex:'t1'}],
     status:'draft', response:null, hidden:false, shortSlug: genSlug(),
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    createdAt: new Date().toISOString(), sentAt: null, updatedAt: new Date().toISOString()
   };
 }
 function money(n){ return '£' + (isNaN(n)?0:n).toFixed(2); }
@@ -1061,10 +1057,12 @@ function matchesSearch(q, term){
   return (q.customerName||'').toLowerCase().includes(term) || (q.ref||'').toLowerCase().includes(term);
 }
 
-/* reminders: sent, not hidden, created more than settings.reminderDays ago, oldest first */
+/* reminders: sent, not hidden, sent more than settings.reminderDays ago, oldest first */
+// when a quote went to the customer: sent_at, or created_at for older rows that have no sent_at
+function sentMs(q){ const t = Date.parse(q.sentAt || q.createdAt || q.date || ''); return isNaN(t) ? null : t; }
 function quoteAgeDays(q){
-  const t = Date.parse(q.createdAt || q.date || '');
-  return isNaN(t) ? null : (Date.now() - t) / DAY_MS;
+  const t = sentMs(q);
+  return t === null ? null : (Date.now() - t) / DAY_MS;
 }
 const isSnoozed = q => !!q.snoozedUntil && Date.parse(q.snoozedUntil) > Date.now();
 function reminderCandidates(all){
@@ -1172,7 +1170,7 @@ function staffLabel(q){
 const staffNote = q => isStaffRecorded(q) ? String(q.response.staff_note || '') : '';
 // the "Decision" block in the editor's summary panel: record buttons while the quote is open, the recorded answer (and Reopen) once it isn't
 function decisionBoxHtml(q){
-  if(q.status === 'sent'){
+  if(q.status === 'sent' || q.status === 'draft'){
     return `<div class="decision-box">
       <div class="views-detail">Customer rang or called in? Record their answer for them.</div>
       <div class="rec-btns"><button class="btn btn-ghost" id="recAcceptBtn" type="button">Record as accepted</button><button class="btn btn-ghost" id="recDeclineBtn" type="button">Record as declined</button></div>
@@ -1226,11 +1224,13 @@ function openRecordDialog(decision){
     const email = await currentUserEmail();
     if(!email){ err.textContent = "Couldn't tell who you're signed in as. Please sign in again."; btn.disabled = false; btn.textContent = 'Confirm'; return; }
     const now = new Date().toISOString();
-    const saved = await patchQuoteWhere(ref, {
+    const body = {
       status: decision,
       response: { decision, respondedAt: now, source: 'staff', method, staff_note: note, recorded_by: email },
       updated_at: now
-    }, 'status=eq.sent');
+    };
+    let saved = await patchQuoteWhere(ref, body, 'status=in.(draft,sent)');
+    if(saved) saved = await fillSentAt(ref, saved);                               // a draft that gets an answer counts as sent now
     if(saved === null){ err.textContent = "Couldn't save that. Please try again."; btn.disabled = false; btn.textContent = 'Confirm'; return; }
     closeRecordDialog();
     if(saved === false){ showToast('This quote has already been answered, so nothing was changed.'); }
@@ -1242,14 +1242,15 @@ async function reopenQuote(){
   if(!draft) return;
   const q = draft;
   if(!confirm(`Reopen quote ${q.ref}?\n\nIt goes back to "sent" and the recorded ${q.status === 'accepted' ? 'acceptance' : 'decline'} is cleared, so the customer link works again.` + (isExpired(q) ? '\n\nIt is past its valid-until date, so the customer still won\'t be able to answer until you extend it.' : ''))) return;
-  const saved = await patchQuoteWhere(q.ref, { status:'sent', response:null, updated_at:new Date().toISOString() }, 'status=in.(accepted,declined)');
+  let saved = await patchQuoteWhere(q.ref, { status:'sent', response:null, updated_at:new Date().toISOString() }, 'status=in.(accepted,declined)');
+  if(saved) saved = await fillSentAt(q.ref, saved);
   if(saved === null){ alert("Couldn't reopen the quote. Please try again."); return; }
   showToast(saved ? `Reopened ${quoteName(saved)}.` : 'This quote has already been reopened.');
   await afterDecisionChange(q.ref, saved || await getQuote(q.ref));
 }
 // the editor and the lists pick up the new status / response (unsaved edits in the editor are kept)
 async function afterDecisionChange(ref, fresh){
-  if(fresh && draft && draft.ref === ref){ draft.status = fresh.status; draft.response = fresh.response; renderEditor(); }
+  if(fresh && draft && draft.ref === ref){ draft.status = fresh.status; draft.response = fresh.response; draft.sentAt = fresh.sentAt; renderEditor(); }
   await renderList(true);
 }
 // PATCH with an extra filter, so a stale screen can never overwrite a newer state. Resolves the updated quote, false if no row
@@ -1729,10 +1730,12 @@ function renderEditor(){
           <button class="btn btn-ghost" id="previewBtn">Preview as customer</button>
           <button class="btn btn-ghost" id="printBtn">Print quote</button>
         </div>
-        <div class="link-box">
+        <div class="link-box${draft.status === 'draft' ? ' is-draft' : ''}">
           <input id="linkOut" readonly value="${escapeHtml(siteBase())}/q/${escapeHtml(encodeURIComponent(draft.shortSlug || ''))}">
           <button class="btn btn-ghost" id="copyBtn">Copy link</button>
+          ${draft.status === 'draft' ? '<button class="btn btn-ghost" id="markSentBtn" type="button">Mark as sent</button>' : ''}
         </div>
+        ${draft.status === 'draft' ? '<div class="draft-note" id="draftNote">Draft: not shared yet. Copying the link marks it as sent.</div>' : ''}
         <div class="link-note">Anyone with this link can view and respond to this quote.</div>
         <div class="views-detail" id="viewsDetail">${escapeHtml(viewsDetail(draft))}</div>
         ${decisionBoxHtml(draft)}
@@ -1802,7 +1805,38 @@ function renderEditor(){
   document.getElementById('copyBtn').addEventListener('click', async ()=>{
     const ok = await copyText(document.getElementById('linkOut').value);
     flashButton(document.getElementById('copyBtn'), ok ? 'Copied' : 'Copy failed');
+    if(ok) await shareDraft();                 // copying the link of a draft is what marks it as sent
   });
+  const markSentBtn = document.getElementById('markSentBtn');
+  if(markSentBtn) markSentBtn.addEventListener('click', shareDraft);   // for a link that is shared another way
+}
+// A draft becomes "sent" when staff share it. Unsaved edits are saved first, because the customer sees what is stored.
+async function shareDraft(){
+  if(!draft || draft.status !== 'draft') return;
+  if(isDirty && !(await saveCurrent())) return;
+  await markDraftAsSent();
+}
+async function markDraftAsSent(){
+  const ref = draft.ref;
+  let saved = await patchQuoteWhere(ref, { status:'sent', updated_at:new Date().toISOString() }, 'status=eq.draft');
+  if(saved === null){ showToast("Couldn't mark it as sent. Please try again."); return; }
+  if(saved === false){ showToast('This quote has already moved on, so nothing was changed.'); await afterDecisionChange(ref, await getQuote(ref)); return; }
+  const setSentAt = !saved.sentAt;
+  saved = await fillSentAt(ref, saved);                // sent_at only when it is empty, decided by the database
+  await afterDecisionChange(ref, saved);
+  showToast('Marked as sent', async ()=>{
+    const back = await patchQuoteWhere(ref, setSentAt ? { status:'draft', sent_at:null, updated_at:new Date().toISOString() } : { status:'draft', updated_at:new Date().toISOString() }, 'status=eq.sent');
+    if(back === null){ showToast("Couldn't undo that. Please try again."); return; }
+    await afterDecisionChange(ref, back || await getQuote(ref));
+  });
+}
+// sets sent_at to now, but only on a row where it is still empty (the filter makes the database decide, so a stale screen can't overwrite it)
+async function fillSentAt(ref, saved){
+  if(saved && !saved.sentAt){
+    const again = await patchQuoteWhere(ref, { sent_at:new Date().toISOString() }, 'sent_at=is.null');
+    if(again) return again;
+  }
+  return saved;
 }
 
 async function saveCurrent(){
@@ -1811,11 +1845,7 @@ async function saveCurrent(){
   const btn = document.getElementById('saveBtn');
   if(btn) btn.disabled = true;
   const v = editVersion;
-  let ok = await saveQuote(draft);
-  if(ok && draft.status === 'draft'){
-    ok = await markSent(draft.ref);
-    if(ok) draft.status = 'sent';
-  }
+  const ok = await saveQuote(draft);       // saving never changes the status: a draft stays a draft until it is shared
   saving = false;
   const btnNow = document.getElementById('saveBtn');
   if(btnNow) btnNow.disabled = false;
@@ -1825,7 +1855,7 @@ async function saveCurrent(){
   }
   // pick up a decision the customer may have made while this editor was open
   const fresh = await getQuote(draft.ref);
-  if(fresh){ draft.status = fresh.status; draft.response = fresh.response; }
+  if(fresh){ draft.status = fresh.status; draft.response = fresh.response; draft.sentAt = fresh.sentAt; }
   if(v === editVersion) setDirty(false);
   const pill = document.querySelector('.editor-header .pill');
   if(pill){ const st = displayStatus(draft); pill.className = 'pill ' + st.cls; pill.textContent = st.label; pill.title = st.tip; }
@@ -2161,7 +2191,7 @@ function dashboardStats(all, period){
   const won = qs.filter(q=> q.status === 'accepted');
   const lost = qs.filter(q=> q.status === 'declined');
   const decided = [...won, ...lost].map(q=>{
-    const a = createdMs(q), b = Date.parse(q.response && q.response.respondedAt || '');
+    const a = sentMs(q), b = Date.parse(q.response && q.response.respondedAt || '');
     return (a === null || isNaN(b)) ? null : Math.max(0, (b - a) / DAY_MS);
   }).filter(x=> x !== null);
   const nonDraftValue = sumValue(nonDraft), wonValue = sumValue(won);
@@ -2203,7 +2233,7 @@ function weeklySeries(all){
   }
   const where = t=> weeks.find(w=> t >= w.start && t < w.end);
   all.forEach(q=>{
-    if(SENT_STATUSES.includes(q.status)){ const t = createdMs(q); const w = t === null ? null : where(t); if(w) w.sent++; }
+    if(SENT_STATUSES.includes(q.status)){ const t = sentMs(q); const w = t === null ? null : where(t); if(w) w.sent++; }
     if(q.status === 'accepted'){ const t = Date.parse((q.response && q.response.respondedAt) || q.updatedAt || ''); const w = isNaN(t) ? null : where(t); if(w) w.won++; }
   });
   return weeks;
@@ -2256,7 +2286,7 @@ function renderDashboard(all){
       'Average total (inc. VAT) of non-draft quotes created in this period.', st.avgValue === null),
     kpiCard('Average time to decision', st.avgDays === null ? '—' : (st.avgDays < 1 ? 'Under a day' : `${st.avgDays.toFixed(1)} days`),
       escapeHtml(st.avgDays === null ? 'No decisions yet' : `From ${plural(st.decidedCount, 'decided quote')}`),
-      'Average time from creating a quote to the customer accepting or declining it.', st.avgDays === null),
+      'Average time from sending a quote to the customer accepting or declining it.', st.avgDays === null),
     kpiCard('Lost', gbp0(st.lostValue), escapeHtml(st.lost.length ? plural(st.lost.length, 'declined quote') : 'No declined quotes'),
       'Declined quotes created in this period.', !st.lost.length)
   ].join('');
@@ -2290,7 +2320,7 @@ function renderDashboard(all){
     <div class="kpis">${kpis}</div>
     <section class="panel">
       <h2>Quotes sent vs accepted</h2>
-      <p class="cap">Last ${CHART_WEEKS} weeks (weeks start on Monday). Sent counts non-draft quotes by the week they were created; accepted counts quotes by the week the customer accepted.</p>
+      <p class="cap">Last ${CHART_WEEKS} weeks (weeks start on Monday). Sent counts quotes by the week they were sent; accepted counts quotes by the week the customer accepted.</p>
       ${chart}
     </section>
     <p class="dash-foot">All money is the VAT-inclusive total. Drafts aren't counted; hidden quotes are, because hiding only tidies the Quotes list.</p>`;
@@ -2604,7 +2634,7 @@ async function submitDecision(q, decision, reason){
   else if(recorded){ q.status = decision; q.response = { decision, reason, respondedAt: new Date().toISOString() }; }
   const decided = !!q.response && (q.status === 'accepted' || q.status === 'declined');
   if(!decided){   // nothing was recorded and the quote is still unanswered
-    if(q.status === 'sent' && isExpired(q)){
+    if((q.status === 'sent' || q.status === 'draft') && isExpired(q)){
       fail('This quote has expired, please contact us');   // buttons stay disabled: it can't be answered any more
     }else{
       busy(false);
