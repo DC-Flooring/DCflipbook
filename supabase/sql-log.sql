@@ -1,4 +1,4 @@
--- ==============================================================
+-- =====================================================================
 -- sql-log.sql: everything run in the Supabase SQL Editor, in order.
 -- Run top to bottom on an empty project to rebuild the backend.
 -- The old open anon policies (read, insert, update, delete) are left out
@@ -344,7 +344,7 @@ revoke all on function public.record_view(text) from public;
 revoke all on function public.submit_decision(text, text, text, text) from public;
 grant execute on function public.record_view(text) to anon, authenticated;
 grant execute on function public.submit_decision(text, text, text, text) to anon, authenticated;
-=======
+
 -- 12. 2026-10-19: get_business(): the public business details for the customer pages and the notification email
 -- The customer pages (and the notify-decision function) show the business name from the Settings page. Customers can't read
 -- the settings table, so this function hands over just the four fields that already appear on printed quotes:
