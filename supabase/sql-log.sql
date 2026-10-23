@@ -368,3 +368,115 @@ $$;
 
 revoke all on function public.get_business() from public;
 grant execute on function public.get_business() to anon, authenticated;
+
+-- 13. 2026-10-23: e-signature on the last page of the quote (quote_signatures, sign_quote(), get_signature())
+-- RUN THIS BEFORE the e-signature page code goes live: "Sign to accept this quote" calls sign_quote().
+-- quote_signatures holds one row per quote: the quote ref, the typed full name, the drawn signature as a PNG data URL, when it was
+-- signed and a snapshot of the quote lines and total at that moment. Nothing else about the customer is stored.
+-- Access: row level security is on and anonymous visitors get NO direct table access (no insert policy, no grants). The only
+-- way in is sign_quote(p_slug, ...), which needs the quote's secret short link, so a signature can only be added for the quote
+-- you are viewing, and only once: the function accepts a quote that is still draft/sent and not past valid_until, and the primary key on
+-- quote_ref allows one row per quote. Signed-in admins can read the table (the policy blocks anonymous sessions).
+-- sign_quote() does what submit_decision(..., 'accepted') does (status 'accepted', the same response keys, sent_at kept or set,
+-- updated_at) and writes the signature row in the same transaction, so a quote is never accepted without its signature, or the
+-- other way round. The snapshot is built here from the stored quote (same sums as the page: qty x unit price, or just the price when
+-- there is no qty, plus 20% VAT), never from numbers sent by the browser.
+-- Decline is untouched: it still goes through submit_decision(). If staff reopen a signed quote (admin "Reopen quote") and the customer
+-- signs again, the earlier signature row is replaced.
+-- get_signature(p_slug): the signed-page display. Returns the name, signature and signed_at for an accepted quote, by short link only.
+-- To undo: drop function public.sign_quote(text, text, text); drop function public.get_signature(text); drop table public.quote_signatures;
+create table if not exists public.quote_signatures (
+  quote_ref text primary key references public.quotes (ref) on delete cascade,
+  full_name text not null check (char_length(full_name) between 2 and 100),
+  signature text not null check (signature like 'data:image/png;base64,%' and char_length(signature) <= 400000),
+  signed_at timestamptz not null default now(),
+  snapshot jsonb not null
+);
+alter table public.quote_signatures enable row level security;
+revoke all on table public.quote_signatures from public, anon;
+grant select on table public.quote_signatures to authenticated;
+drop policy if exists "authenticated users can read signatures" on public.quote_signatures;
+create policy "authenticated users can read signatures" on public.quote_signatures
+  for select to authenticated
+  using (coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) = false);
+
+create or replace function public.sign_quote(p_slug text, p_name text, p_signature text)
+returns boolean language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_name  text := left(btrim(coalesce(p_name, ''), E' \t\r\n'), 100);
+  v_at    timestamptz := now();
+  v_ref   text;
+  v_lines jsonb;
+  v_li    jsonb;
+  v_qty   numeric;
+  v_price numeric;
+  v_sub   numeric := 0;
+begin
+  if p_slug is null or length(p_slug) < 6 then
+    return false;
+  end if;
+  if char_length(v_name) < 2 then
+    return false;
+  end if;
+  if p_signature is null or char_length(p_signature) > 400000
+     or p_signature !~ '^data:image/png;base64,iVBORw0KGgo[A-Za-z0-9+/]+=*$' then
+    return false;
+  end if;
+
+  update public.quotes q
+     set status = 'accepted',
+         response = jsonb_build_object(
+           'decision', 'accepted',
+           'reason', '',
+           'reason_category', null,
+           'respondedAt', to_char(v_at at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')),
+         sent_at = coalesce(q.sent_at, v_at),
+         updated_at = v_at
+   where q.short_slug = p_slug
+     and q.status in ('draft', 'sent')
+     and (q.valid_until is null or q.valid_until >= (v_at at time zone 'Europe/London')::date)
+  returning q.ref, q.line_items into v_ref, v_lines;
+
+  if v_ref is null then
+    return false;
+  end if;
+
+  v_lines := case when jsonb_typeof(v_lines) = 'array' then v_lines else '[]'::jsonb end;
+  for v_li in select * from jsonb_array_elements(v_lines) loop
+    v_qty   := nullif(substring(v_li ->> 'qty' from '^\s*([+-]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)'), '')::numeric;
+    v_price := coalesce(nullif(substring(v_li ->> 'unitPrice' from '^\s*([+-]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)'), '')::numeric, 0);
+    v_sub   := v_sub + case when coalesce(v_qty, 0) <> 0 then v_qty * v_price else v_price end;
+  end loop;
+
+  insert into public.quote_signatures (quote_ref, full_name, signature, signed_at, snapshot)
+  values (v_ref, v_name, p_signature, v_at, jsonb_build_object(
+            'lines',    v_lines,
+            'subtotal', round(v_sub, 2),
+            'vat',      round(v_sub * 0.2, 2),
+            'total',    round(v_sub * 1.2, 2)))
+  on conflict (quote_ref) do update
+    set full_name = excluded.full_name, signature = excluded.signature,
+        signed_at = excluded.signed_at, snapshot = excluded.snapshot;
+
+  return true;
+end;
+$$;
+
+create or replace function public.get_signature(p_slug text)
+returns jsonb language sql stable security definer set search_path = ''
+as $$
+  select jsonb_build_object('full_name', s.full_name, 'signature', s.signature, 'signed_at', s.signed_at)
+    from public.quotes q
+    join public.quote_signatures s on s.quote_ref = q.ref
+   where q.short_slug = p_slug
+     and length(p_slug) >= 6
+     and q.status = 'accepted'
+   limit 1;
+$$;
+
+revoke all on function public.sign_quote(text, text, text) from public;
+revoke all on function public.get_signature(text) from public;
+grant execute on function public.sign_quote(text, text, text) to anon, authenticated;
+grant execute on function public.get_signature(text) to anon, authenticated;
+notify pgrst, 'reload schema';
