@@ -562,16 +562,17 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
    Sideways swipes are handled by installSwipe() (one finger, mostly horizontal); the book keeps touch-action:pan-y, so a pinch on the book
    does nothing. Zooming is done with the magnifier button on each page, which opens the zoom view below. */
 #custStage .stf__parent, #custStage .page{ touch-action:pan-y; }
-.zoom-btn{ position:absolute; top:10px; right:10px; z-index:3; display:flex; align-items:center; justify-content:center; width:48px; height:48px; padding:0; border:1px solid var(--brass); border-radius:5px; background:var(--bark); color:var(--linen); cursor:pointer; }
-.zoom-btn svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.zoom-btn{ align-self:flex-end; margin-bottom:-14px; display:flex; align-items:center; justify-content:center; width:38px; height:38px; padding:0; border:1px solid var(--brass); border-radius:5px; background:var(--bark); color:var(--linen); cursor:pointer; }   /* sits above the book, top right (80% of the old 48px) */
+.zoom-btn svg{ width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
 .zoom-btn:hover{ background:var(--brass); color:var(--bark); }
 .zoom-btn:focus-visible{ outline:3px solid var(--brass); outline-offset:2px; }
 .zv{ position:fixed; inset:0; z-index:9000; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); font-family:'Work Sans',sans-serif; font-size:18px; }
 .zv-scroll{ flex:1 1 auto; min-height:0; display:flex; padding:16px; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y pinch-zoom; }
 .zv-scroll:focus-visible{ outline:3px solid var(--brass); outline-offset:-3px; }
 .zv-stage{ position:relative; flex:none; margin:auto; }   /* auto margins centre a small page and still let a big one scroll */
-.zv-sheet{ position:absolute; left:0; top:0; transform-origin:0 0; box-shadow:0 10px 25px -10px rgba(0,0,0,.5); }
-.zv-sheet .page{ width:100%; height:100%; margin:0; }
+.zv-sheet{ position:absolute; left:0; top:0; display:flex; transform-origin:0 0; box-shadow:0 10px 25px -10px rgba(0,0,0,.5); }
+.zv-sheet .page{ flex:none; margin:0; overflow:visible; }   /* the copy must not be a scroll box of its own, or it swallows the drag */
+.zv-sheet .decision-inner{ overflow:visible; }
 .zv-sheet .decision-btns, .zv-sheet .decline-form, .zv-sheet .decision-error, .zv-sheet .dbtn{ display:none; }   /* the buttons only work on the real page */
 .zv-bar{ flex:none; display:flex; align-items:center; gap:8px; padding:10px 12px; border-top:2px solid var(--line); background:var(--paper); }
 .zv-bar .sg-btn{ width:auto; }
@@ -2652,13 +2653,13 @@ async function renderCustomer(routeInfo){
   }).join('') || '<tr><td colspan="4" style="color:var(--ink-soft);">Line items to follow.</td></tr>';
 
   stage.innerHTML = `
+    ${ZOOM_BTN_HTML}
     <div class="book-wrap">
       <div class="spine-shadow"></div>
       <div class="book-back"></div>
       <div id="book">
 
         <div class="page img-page" data-density="hard">
-          ${ZOOM_BTN_HTML}
           <img class="page-bg" src="${siteBase()}/1.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — cover">
           <div class="cover-fields">
             <div class="cf-name">${escapeHtml(q.customerName)||'—'}</div>
@@ -2668,17 +2669,14 @@ async function renderCustomer(routeInfo){
         </div>
 
         <div class="page img-page" data-density="hard">
-          ${ZOOM_BTN_HTML}
           <img class="page-bg" src="${siteBase()}/2.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — about">
         </div>
 
         <div class="page img-page" data-density="hard">
-          ${ZOOM_BTN_HTML}
           <img class="page-bg" src="${siteBase()}/3.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — how we work">
         </div>
 
         <div class="page quote dark-page" data-density="hard">
-          ${ZOOM_BTN_HTML}
           <div class="eyebrow">Your Quote</div><h2 class="title">Itemised breakdown</h2>
           <div class="quotebox"><table><thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Unit Price</th><th class="num">Total</th></tr></thead><tbody>${liRows}</tbody></table></div>
           <div class="totals"><div><span>Subtotal</span><span>${money(subtotal)}</span></div><div><span>VAT (20%)</span><span>${money(vat)}</span></div><div class="grand"><span>Total</span><span>${money(total)}</span></div></div>
@@ -2686,7 +2684,6 @@ async function renderCustomer(routeInfo){
         <div class="pageno">04</div></div>
 
         <div class="page service dark-page" data-density="hard">
-          ${ZOOM_BTN_HTML}
           <div class="eyebrow">Service</div><h2 class="title">What's included &amp; next steps</h2>
           <div class="svc-grid">
             <div class="svc-col"><h3>Included</h3><ul><li>Delivery to site or collection</li><li>Professional fitting</li><li>Aftercare guidance</li><li>Standard warranty</li></ul></div>
@@ -2735,7 +2732,7 @@ function renderDecisionPage(q, signed){
   const el = document.getElementById('decisionPage');
   if(q.response){
     const cls = decisionClass(q.response.decision);
-    el.innerHTML = `${ZOOM_BTN_HTML}<div class="decision-inner"><div class="decided-state ${cls}" id="decidedState" tabindex="-1">
+    el.innerHTML = `<div class="decision-inner"><div class="decided-state ${cls}" id="decidedState" tabindex="-1">
       <div class="badge">${cls==='accepted'?'Quote accepted':'Quote declined'}</div>
       <div class="decided-msg">
         ${cls==='accepted' ? "Thanks — we've got your confirmation. We'll be in touch to get things booked in." : "Thanks for letting us know."}
@@ -2747,7 +2744,6 @@ function renderDecisionPage(q, signed){
     return;
   }
   el.innerHTML = `
-    ${ZOOM_BTN_HTML}
     <div class="decision-inner">
       <h2 class="title">What would you like to do?</h2>
       <p class="lead">Happy with the quote? Sign below and we'll get your fitting booked in. If it's not quite right, let us know why.</p>
@@ -3092,6 +3088,7 @@ function wireBook(){
     mobileScrollSupport: true
   });
   installSwipe(pageFlip);
+  zoomBook = { pageFlip, pages };
   pageFlip.loadFromHTML(pages);
 
   function updateControls(){
@@ -3116,6 +3113,12 @@ const SWIPE_MIN_PX = 40;       // a swipe has to travel at least this far sidewa
 const SWIPE_MAX_MS = 800;      // ...within this time...
 const SWIPE_MAX_SLOPE = 0.5;   // ...and move up or down by no more than half of the sideways distance
 let swipePageFlip = null, swipeOn = false;
+// StPageFlip also listens for touchmove / touchend on the whole window and calls preventDefault() whenever it thinks a page is mid-turn,
+// which stops the zoom view (or the signing dialog) from scrolling. These listeners are registered at load, before the library adds its
+// own, so they run first and hide every touch that is not on the book from it.
+['touchmove', 'touchend', 'touchcancel'].forEach(t=> window.addEventListener(t, e=>{
+  if(!(e.target && e.target.closest && e.target.closest('#book'))) e.stopImmediatePropagation();
+}));
 function installSwipe(pageFlip){
   swipePageFlip = pageFlip;
   if(swipeOn) return;
@@ -3152,24 +3155,28 @@ function installSwipe(pageFlip){
 }
 
 /* ---------------- zoom button and zoom view ---------------- */
-// The magnifier in the corner of each page opens that page, larger, full screen. Inside it the page is scrolled or pinched like any
-// web page and never turns. Close returns to the same page of the flipbook.
+// The magnifier above the book (top right) opens the page being read, larger, full screen.
+// Inside it the page is scrolled or pinched like any web page and never turns. Close returns to the same page of the flipbook.
 const ZOOM_LEVELS = [1, 1.5, 2, 2.5];
 const ZOOM_START = 1;     // index into ZOOM_LEVELS: starts at 1.5x
-const ZOOM_BTN_HTML = '<button class="zoom-btn" type="button" aria-label="Zoom in on this page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.9-4.9M10.5 7.5v6M7.5 10.5h6"/></svg></button>';
-let zoomView = null;
-function openZoomView(btn){
-  if(zoomView || signModal) return;
-  const pageEl = btn.closest('.page');
-  const w = pageEl ? pageEl.offsetWidth : 0, h = pageEl ? pageEl.offsetHeight : 0;
+const ZOOM_BTN_HTML = '<button class="zoom-btn" id="zoomBtn" type="button" aria-label="Zoom in on this page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.9-4.9M10.5 7.5v6M7.5 10.5h6"/></svg></button>';
+let zoomView = null, zoomBook = null;   // zoomBook: { pageFlip, pages } of the flipbook on screen
+function openZoomView(){
+  if(zoomView || signModal || !zoomBook) return;
+  const { pageFlip, pages } = zoomBook;
+  const i = pageFlip.getCurrentPageIndex();
+  const shown = [pages[i]].filter(Boolean);   // the book is always one page wide (the stage is at most 480px)
+  const opener = document.getElementById('zoomBtn');
+  // the pages as they are now, minus what StPageFlip adds to them (position, flip transforms, ids)
+  const copies = shown.map(pageEl=>{
+    const clone = pageEl.cloneNode(true);
+    clone.removeAttribute('style'); clone.removeAttribute('id'); clone.removeAttribute('data-density');
+    clone.className = Array.from(pageEl.classList).filter(c=> !/^(stf__|--)/.test(c)).join(' ');
+    clone.querySelectorAll('[id]').forEach(n=> n.removeAttribute('id'));
+    return { clone, w:pageEl.offsetWidth, h:pageEl.offsetHeight };
+  });
+  const w = copies.reduce((t, c)=> t + c.w, 0), h = Math.max(...copies.map(c=> c.h));
   if(!w || !h) return;
-  const opener = btn;
-  // the page as it is now, minus what StPageFlip adds to it (position, flip transforms, ids) and its own zoom button
-  const clone = pageEl.cloneNode(true);
-  clone.removeAttribute('style'); clone.removeAttribute('id'); clone.removeAttribute('data-density');
-  clone.className = Array.from(pageEl.classList).filter(c=> !/^(stf__|--)/.test(c)).join(' ');
-  clone.querySelectorAll('[id]').forEach(n=> n.removeAttribute('id'));
-  clone.querySelectorAll('.zoom-btn').forEach(n=> n.remove());
 
   const root = document.createElement('div');
   root.className = 'zv'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-label', 'Zoomed page');
@@ -3184,9 +3191,12 @@ function openZoomView(btn){
     </div>`;
   const $ = id=> root.querySelector('#' + id);
   const scroller = root.querySelector('.zv-scroll'), stage = root.querySelector('.zv-stage'), sheet = root.querySelector('.zv-sheet');
-  sheet.style.width = w + 'px'; sheet.style.height = h + 'px';
-  sheet.appendChild(clone);
+  sheet.style.width = w + 'px';
+  copies.forEach(c=>{ c.clone.style.width = c.w + 'px'; sheet.appendChild(c.clone); });
   document.body.appendChild(root);
+  const hh = Math.max(h, ...copies.map(c=> c.clone.scrollHeight));   // a long page shows in full (the copy is not a scroll box of its own)
+  sheet.style.height = hh + 'px';
+  copies.forEach(c=>{ c.clone.style.height = hh + 'px'; });
   const page = document.getElementById('customer');
   if(page) page.setAttribute('inert', '');
   const prevOverflow = document.documentElement.style.overflow;
@@ -3199,7 +3209,7 @@ function openZoomView(btn){
     const fy = stage.offsetHeight ? (scroller.scrollTop + scroller.clientHeight / 2) / stage.offsetHeight : 0;
     level = i;
     const k = ZOOM_LEVELS[i];
-    stage.style.width = (w * k) + 'px'; stage.style.height = (h * k) + 'px';
+    stage.style.width = (w * k) + 'px'; stage.style.height = (hh * k) + 'px';
     sheet.style.transform = `scale(${k})`;
     $('zvOut').disabled = i === 0; $('zvIn').disabled = i === ZOOM_LEVELS.length - 1;
     $('zvLevel').textContent = k + '×';
@@ -3219,8 +3229,7 @@ function openZoomView(btn){
     else{ root.classList.add('is-closing'); setTimeout(()=> root.remove(), 200); }
     document.documentElement.style.overflow = prevOverflow;
     if(page) page.removeAttribute('inert');
-    const back = opener.isConnected ? opener : document.querySelector('#book .zoom-btn');
-    if(back) back.focus();
+    if(opener && opener.isConnected) opener.focus();
   };
   // keyboard: Escape closes, Tab stays inside the zoom view
   const onKey = e=>{
@@ -3240,8 +3249,7 @@ function openZoomView(btn){
   scroller.focus();
 }
 document.addEventListener('click', e=>{
-  const b = e.target && e.target.closest && e.target.closest('.zoom-btn');
-  if(b && !b.closest('.zv')) openZoomView(b);
+  if(e.target && e.target.closest && e.target.closest('#zoomBtn')) openZoomView();
 });
 
 /* ---------------- routing ---------------- */
