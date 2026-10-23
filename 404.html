@@ -15,6 +15,7 @@
   --bark:#241a14; --walnut:#3c2c22; --oak:#a97e4f; --brass:#b08d57;
   --linen:#f3ede1; --linen-soft:rgba(243,237,225,.62); --paper:#faf6ee; --ink:#2a2019; --ink-soft:#6b5c4d; --line:#d9cbb2;
   --ok:#4c6b4f; --bad:#a1493f;
+  --dark:#272727;   /* the dark pages / sidebar / dialog header (the dark pages still write it out as #272727) */
 }
 *{ box-sizing:border-box; }
 html,body{ margin:0; min-height:100%; background:var(--linen); font-family:'Work Sans',sans-serif; color:var(--ink); }
@@ -424,10 +425,14 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .phone-line{ margin:18px 0 0; max-width:34ch; font-size:15px; line-height:1.5; color:var(--linen-soft); }
 .phone-line a{ color:var(--linen); font-weight:600; white-space:nowrap; }
 .signed-box{ margin-top:16px; width:100%; max-width:340px; }
-.signed-line{ font-size:15px; line-height:1.5; color:var(--linen); }
-.signed-img{ margin:10px auto 14px; padding:8px; background:#fff; border-radius:6px; }
+.signed-card{ padding:16px 16px 14px; border:1px solid var(--line); border-radius:4px; background:linear-gradient(180deg,#fff,var(--paper)); color:var(--ink); text-align:center; box-shadow:0 10px 25px -10px rgba(0,0,0,.5); }
+.signed-stamp{ display:inline-block; margin-bottom:10px; padding:2px 14px; border:2px solid var(--ok); border-radius:4px; transform:rotate(-3deg); font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--ok); }
+.signed-by{ font-family:'IBM Plex Mono',monospace; font-size:18px; color:var(--ink-soft); }
+.signed-name{ margin:2px 0; font-family:'Fraunces',serif; font-weight:600; font-size:24px; line-height:1.2; overflow-wrap:anywhere; }
+.signed-date{ font-family:'IBM Plex Mono',monospace; font-size:18px; color:var(--ink-soft); }
+.signed-img{ margin:12px auto 14px; padding:8px; background:#fff; border:1px solid var(--line); border-radius:4px; }
 .signed-img img{ display:block; max-width:100%; max-height:110px; margin:0 auto; }
-.dbtn.copy{ width:100%; min-height:56px; font-size:16px; background:none; border-color:var(--brass); color:var(--linen); }
+.dbtn.copy{ width:100%; min-height:56px; font-size:18px; background:none; border:2px solid var(--brass); color:var(--ink); }
 .dbtn.copy:hover{ background:var(--brass); color:#fff; }
 .dbtn.decline{ background:none; border-color:var(--bad); color:var(--bad); }
 .dbtn.decline:hover{ background:var(--bad); color:#fff; }
@@ -442,51 +447,70 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .decided-state.declined .badge{ background:#f0dcd9; color:var(--bad); }
 .decided-msg{ font-size:13px; max-width:38ch; }
 
-/* ===== e-signature dialog: full screen, white, black text, nothing under 18px ===== */
-.sg-modal{ position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; background:#fff; color:#000; font-family:'Work Sans',sans-serif; font-size:18px; line-height:1.45; }
-.sg-top{ flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px 8px 20px; border-bottom:2px solid #000; }
-.sg-stepno{ font-size:20px; font-weight:600; }
-.sg-x{ flex:none; width:56px; height:56px; border:2px solid #000; border-radius:8px; background:#fff; color:#000; font-size:32px; line-height:1; cursor:pointer; }
+/* ===== e-signature dialog: a full-screen page of the book. Paper background, dark header like the sidebar, serif titles ===== */
+.sg-modal{ position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); font-family:'Work Sans',sans-serif; font-size:18px; line-height:1.5; }
+.sg-top{ flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px 8px 20px; background:var(--dark); border-bottom:2px solid var(--brass); }
+.sg-logo{ display:block; width:96px; height:auto; aspect-ratio:8/5; object-fit:cover; object-position:50% 46%; mix-blend-mode:lighten; }
+.sg-x{ flex:none; width:56px; height:56px; border:2px solid var(--brass); border-radius:5px; background:none; color:var(--linen); font-size:32px; line-height:1; cursor:pointer; }
+.sg-x:hover:not(:disabled){ background:var(--brass); color:#fff; }
+.sg-x:disabled{ opacity:.4; cursor:default; }
+.sg-prog{ flex:none; width:100%; max-width:720px; margin:0 auto; padding:14px 20px 0; }
+.sg-stepno{ font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--walnut); }
+.sg-bar{ display:flex; gap:6px; margin-top:8px; }
+.sg-bar i{ flex:1; height:6px; border-radius:3px; background:var(--line); }
+.sg-bar i.on{ background:var(--brass); }
 .sg-scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-.sg-body{ min-height:100%; display:flex; flex-direction:column; gap:16px; width:100%; max-width:720px; margin:0 auto; padding:20px; }
+.sg-body{ min-height:100%; display:flex; flex-direction:column; gap:16px; width:100%; max-width:720px; margin:0 auto; padding:14px 20px 20px; }
 .sg-step{ display:flex; flex-direction:column; gap:16px; flex:1 1 auto; min-height:0; }
 .sg-step[hidden]{ display:none; }
-.sg-modal h2{ margin:0; font-family:'Fraunces',serif; font-size:30px; line-height:1.2; font-weight:600; color:#000; }
+.sg-modal h2{ margin:0; font-size:32px; line-height:1.15; color:var(--ink); }
 .sg-modal h2:focus{ outline:none; }
 .sg-modal p{ margin:0; font-size:18px; }
-.sg-input{ width:100%; min-height:64px; padding:10px 14px; border:3px solid #000; border-radius:8px; font-family:inherit; font-size:24px; color:#000; background:#fff; }
-.sg-btn{ width:100%; min-height:56px; padding:10px 18px; border:2px solid #000; border-radius:8px; background:#fff; color:#000; font-family:inherit; font-size:20px; font-weight:600; cursor:pointer; }
-.sg-btn.primary{ background:#3f5a42; border-color:#3f5a42; color:#fff; }
+.sg-input{ width:100%; min-height:64px; padding:10px 14px; border:2px solid var(--brass); border-radius:5px; background:#fff; color:var(--ink); font-family:inherit; font-size:24px; }
+.sg-btn{ width:100%; min-height:56px; padding:10px 18px; border:2px solid var(--brass); border-radius:5px; background:none; color:var(--ink); font-family:inherit; font-size:20px; font-weight:600; cursor:pointer; }
+.sg-btn:hover:not(:disabled){ background:var(--linen); }
+.sg-btn.primary{ background:var(--brass); color:#fff; }
+.sg-btn.primary:hover:not(:disabled){ background:var(--oak); border-color:var(--oak); }
 .sg-btn:disabled{ opacity:.6; cursor:default; }
 .sg-btn-row{ display:flex; gap:12px; }
 .sg-btn-row .sg-btn{ flex:1 1 0; }
-.sg-link{ align-self:center; min-height:56px; padding:8px 16px; border:0; background:none; color:#000; font-family:inherit; font-size:20px; font-weight:600; text-decoration:underline; cursor:pointer; }
-.sg-error{ font-size:18px; font-weight:600; color:#8a1f12; }
+.sg-link{ align-self:center; min-height:56px; padding:8px 16px; border:0; background:none; color:var(--ink); font-family:inherit; font-size:20px; font-weight:600; text-decoration:underline; cursor:pointer; }
+.sg-error{ font-size:18px; font-weight:600; color:var(--bad); }
 .sg-error:empty{ display:none; }
-.sg-tip{ display:none; padding:10px 14px; border-radius:8px; background:#f3ede1; font-size:18px; }
-@media (orientation:portrait) and (max-width:700px){ .sg-tip{ display:block; } }
-.sg-padwrap{ position:relative; flex:1 1 auto; min-height:220px; border:3px dashed #a08f74; border-radius:10px; background:#fff; }
+.sg-padwrap{ position:relative; flex:1 1 auto; min-height:220px; border:1px solid var(--line); border-radius:6px; background:#fff; box-shadow:0 10px 25px -10px rgba(0,0,0,.5); }
 .sg-padwrap canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; }
-.sg-guide{ position:absolute; left:6%; right:6%; bottom:26%; border-bottom:2px solid #d9cbb2; pointer-events:none; }
-.sg-guide span{ position:absolute; left:0; bottom:6px; font-size:18px; color:#b3a68f; }
+.sg-guide{ position:absolute; left:6%; right:6%; bottom:26%; border-bottom:2px solid var(--line); pointer-events:none; }
+.sg-guide span{ position:absolute; left:0; bottom:6px; font-size:18px; color:var(--ink-soft); opacity:.55; }
 .sg-padwrap.has-ink .sg-guide span{ display:none; }
-.sg-review{ display:flex; flex-direction:column; gap:6px; padding:14px 16px; border:2px solid #000; border-radius:8px; }
-.sg-review .k{ font-size:18px; font-weight:600; }
-.sg-review .v{ font-size:24px; overflow-wrap:anywhere; }
-.sg-review img{ display:block; max-width:100%; max-height:150px; margin:4px 0; }
-.sg-check{ display:flex; align-items:center; gap:14px; min-height:64px; padding:12px 14px; border:3px solid #000; border-radius:8px; font-size:20px; font-weight:600; cursor:pointer; }
-.sg-check input{ flex:none; width:32px; height:32px; margin:0; accent-color:#3f5a42; }
+.sg-review{ padding:4px 16px 10px; border:1px solid var(--line); border-radius:4px; background:linear-gradient(180deg,#fff,var(--paper)); font-family:'IBM Plex Mono',monospace; }
+.sg-row{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); color:var(--ink-soft); font-size:18px; }
+.sg-row .v{ color:var(--ink); font-size:20px; text-align:right; overflow-wrap:anywhere; }
+.sg-row.sig{ flex-direction:column; align-items:flex-start; }
+.sg-row.sig img{ display:block; max-width:100%; max-height:150px; }
+.sg-row.grand{ border-bottom:none; margin-top:3px; padding-top:12px; color:var(--ink); font-weight:600; }
+.sg-row.grand .v{ font-size:26px; font-weight:600; }
+.sg-check{ display:flex; align-items:center; gap:14px; min-height:64px; padding:12px 14px; border:2px solid var(--brass); border-radius:5px; background:#fff; font-size:20px; font-weight:600; cursor:pointer; }
+.sg-check input{ flex:none; width:32px; height:32px; margin:0; accent-color:var(--brass); }
 .sg-phone{ margin-top:auto; padding-top:8px; font-size:18px; }
-.sg-phone a{ color:#000; font-weight:600; white-space:nowrap; }
-@media (orientation:landscape) and (max-height:520px){
+.sg-phone a{ color:var(--ink); font-weight:600; white-space:nowrap; }
+@media (max-height:520px){
   .sg-top{ padding-top:4px; padding-bottom:4px; }
+  .sg-logo{ width:72px; }
+  .sg-prog{ padding-top:8px; }
   .sg-body, .sg-step{ gap:10px; }
-  .sg-body{ padding:10px 20px; }
+  .sg-body{ padding:8px 20px 10px; }
   .sg-modal h2{ font-size:24px; }
   .sg-padwrap{ min-height:120px; }
+  #sgS2 > p{ display:none; }   /* the title says it; the room goes to the signing box */
 }
-@media (prefers-reduced-motion:no-preference){ .sg-modal{ animation:sgIn .15s ease-out; } }
-@keyframes sgIn{ from{ opacity:0; } to{ opacity:1; } }
+@media (prefers-reduced-motion:no-preference){
+  .sg-modal{ animation:sgIn .22s ease-out; }
+  .sg-modal.is-closing{ animation:sgOut .18s ease-in forwards; pointer-events:none; }
+  .sg-step.is-in{ animation:sgStepIn .25s ease-out; }
+}
+@keyframes sgIn{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+@keyframes sgOut{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateY(14px); } }
+@keyframes sgStepIn{ from{ opacity:0; transform:translateX(var(--sg-from,18px)); } to{ opacity:1; transform:none; } }
 
 /* ===== dark content pages: Quote / Service / Decision ===== */
 .dark-page{ background:#272727; border-color:#3d3d3d; color:var(--linen); }
@@ -534,6 +558,42 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .quote .totals div{ padding:3px 0; }
 .quote .totals .grand{ margin-top:2px; padding-top:6px; font-size:13px; }
 .quote .note{ margin-top:8px; font-size:10px; }
+/* ===== customer pinch-zoom: StPageFlip sets touch-action:pan-y on the book, which blocks pinch-zoom. pan-y + pinch-zoom keeps
+   sideways swipes for turning pages and lets the browser zoom. Zoomed in (html.is-zoomed, set from visualViewport.scale) the browser gets
+   every gesture back so a zoomed page can be panned, and the page-turn swipe is switched off in JS (see installZoomGuard). ===== */
+#custStage .stf__parent, #custStage .page{ touch-action:pan-y pinch-zoom; }
+html.is-zoomed #custStage .stf__parent, html.is-zoomed #custStage .page{ touch-action:auto; }
+
+/* ===== customer text size (A- / A+): --tz is 1, 1.25 or 1.5 and is read only by the customer flipbook pages ===== */
+#custStage{ --tz:1; }
+.tsz{ position:fixed; top:10px; right:10px; z-index:50; display:flex; align-items:center; gap:6px; padding:5px 6px 5px 12px; background:var(--bark); border:1px solid var(--brass); border-radius:6px; color:var(--linen); }
+.tsz-label{ font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:.06em; text-transform:uppercase; }
+.tsz-btn{ flex:none; width:48px; height:48px; border:1px solid var(--brass); border-radius:4px; background:none; color:var(--linen); font-family:'Fraunces',serif; font-size:20px; font-weight:600; cursor:pointer; }
+.tsz-btn:hover:not(:disabled){ background:var(--brass); color:var(--bark); }
+.tsz-btn:disabled{ opacity:.35; cursor:default; }
+.tsz-btn:focus-visible{ outline:3px solid var(--brass); outline-offset:2px; }
+#custStage .dark-page .eyebrow{ font-size:calc(10.5px*var(--tz)); }
+#custStage .quote h2.title{ font-size:calc(24px*var(--tz)); }
+#custStage .service h2.title, #custStage .decision h2.title{ font-size:calc(21px*var(--tz)); }
+#custStage .quote table{ font-size:calc(11.5px*var(--tz)); }
+#custStage .quote thead th{ font-size:calc(9px*var(--tz)); }
+#custStage .quote .totals{ width:calc(220px*var(--tz)); max-width:100%; font-size:calc(11.5px*var(--tz)); }
+#custStage .quote .totals .grand{ font-size:calc(13px*var(--tz)); }
+#custStage .quote .note{ font-size:calc(10px*var(--tz)); }
+#custStage .pageno{ font-size:calc(10px*var(--tz)); }
+#custStage .service .svc-col h3{ font-size:calc(12px*var(--tz)); }
+#custStage .service .svc-col li{ font-size:calc(11px*var(--tz)); }
+#custStage .service .contact{ font-size:calc(9.5px*var(--tz)); }
+#custStage .decision p.lead{ font-size:calc(13.5px*var(--tz)); }
+#custStage .decision-btns .dbtn{ font-size:calc(16px*var(--tz)); }
+#custStage .decision-btns .dbtn.sign{ font-size:calc(19px*var(--tz)); }
+#custStage .decline-form textarea{ font-size:calc(13px*var(--tz)); }
+#custStage .decision-error{ font-size:calc(12.5px*var(--tz)); }
+#custStage .phone-line{ font-size:calc(15px*var(--tz)); }
+#custStage .decided-msg{ font-size:calc(13px*var(--tz)); }
+#custStage .decided-state .badge{ font-size:calc(12px*var(--tz)); }
+#custStage .signed-stamp, #custStage .signed-by, #custStage .signed-date, #custStage .dbtn.copy{ font-size:calc(18px*var(--tz)); }
+#custStage .signed-name{ font-size:calc(24px*var(--tz)); }
 .controls{ display:flex; align-items:center; gap:16px; }
 .nav-btn{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; background:transparent; color:var(--linen); border:1px solid #5a4433; padding:8px 15px; border-radius:3px; cursor:pointer; }
 .nav-btn:hover:not(:disabled){ background:var(--brass); color:#241a14; border-color:var(--brass); }
@@ -2604,6 +2664,12 @@ async function renderCustomer(routeInfo){
   }).join('') || '<tr><td colspan="4" style="color:var(--ink-soft);">Line items to follow.</td></tr>';
 
   stage.innerHTML = `
+    <div class="tsz" role="group" aria-label="Text size">
+      <span class="tsz-label" aria-hidden="true">Text size</span>
+      <button class="tsz-btn" id="tszDown" type="button" aria-label="Make text smaller">A&minus;</button>
+      <button class="tsz-btn" id="tszUp" type="button" aria-label="Make text larger">A+</button>
+      <span class="sr-only" id="tszNow" role="status"></span>
+    </div>
     <div class="book-wrap">
       <div class="spine-shadow"></div>
       <div class="book-back"></div>
@@ -2652,8 +2718,28 @@ async function renderCustomer(routeInfo){
     </div>
   `;
 
+  initTextSize(stage);
   renderDecisionPage(q);
   wireBook();
+}
+
+// A- / A+ : three text sizes for the flipbook pages, remembered in localStorage (which can be blocked, so every access is guarded).
+const TEXT_SIZES = [['Normal', 1], ['Large', 1.25], ['Extra large', 1.5]];
+const TEXT_SIZE_KEY = 'dcf.textSize';
+function initTextSize(stage){
+  let step = 0;
+  try{ const n = parseInt(localStorage.getItem(TEXT_SIZE_KEY), 10); if(n >= 0 && n < TEXT_SIZES.length) step = n; }catch(e){ /* private mode: start at Normal */ }
+  const down = document.getElementById('tszDown'), up = document.getElementById('tszUp'), now = document.getElementById('tszNow');
+  const apply = (i, say)=>{
+    step = i;
+    stage.style.setProperty('--tz', String(TEXT_SIZES[i][1]));
+    down.disabled = i === 0; up.disabled = i === TEXT_SIZES.length - 1;
+    if(say) now.textContent = 'Text size: ' + TEXT_SIZES[i][0];
+    try{ localStorage.setItem(TEXT_SIZE_KEY, String(i)); }catch(e){ /* not remembered */ }
+  };
+  down.addEventListener('click', ()=>{ if(step > 0) apply(step - 1, true); });
+  up.addEventListener('click', ()=>{ if(step < TEXT_SIZES.length - 1) apply(step + 1, true); });
+  apply(step, false);
 }
 
 // "Today" in the UK, as YYYY-MM-DD: a quote is valid up to and including its valid-until date.
@@ -2778,27 +2864,32 @@ function openSignModal(q){
   const root = document.createElement('div');
   root.className = 'sg-modal'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-labelledby', 'sgH1');
   root.innerHTML = `
-    <div class="sg-top"><div class="sg-stepno" id="sgStepNo" aria-live="polite">Step 1 of 3</div>
+    <div class="sg-top"><img class="sg-logo" src="${escapeHtml(siteBase())}/floors-for-living-logo.png" alt="${escapeHtml(customerBrand())}">
       <button class="sg-x" id="sgClose" type="button" aria-label="Close without signing">&times;</button></div>
+    <div class="sg-prog"><div class="sg-stepno" id="sgStepNo" aria-live="polite">Step 1 of 3</div>
+      <div class="sg-bar" aria-hidden="true"><i class="on"></i><i></i><i></i></div></div>
     <div class="sg-scroll"><div class="sg-body">
       <section class="sg-step" id="sgS1" aria-labelledby="sgH1">
-        <h2 id="sgH1" tabindex="-1">Type your full name</h2>
-        <input class="sg-input" id="sgName" type="text" aria-labelledby="sgH1" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="100">
+        <h2 id="sgH1" tabindex="-1">Your name</h2>
+        <p id="sgL1">Type your full name below.</p>
+        <input class="sg-input" id="sgName" type="text" aria-labelledby="sgH1 sgL1" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="100">
         <div class="sg-error" id="sgE1" role="alert"></div>
         <button class="sg-btn primary" id="sgNext1" type="button">Next</button>
       </section>
       <section class="sg-step" id="sgS2" aria-labelledby="sgH2" hidden>
-        <h2 id="sgH2" tabindex="-1">Sign with your finger in the white box</h2>
-        <div class="sg-tip">Tip: turn your phone sideways for more room</div>
+        <h2 id="sgH2" tabindex="-1">Your signature</h2>
+        <p>Sign with your finger in the white box.</p>
         <div class="sg-padwrap" id="sgPadWrap"><canvas id="sgCanvas" role="img" aria-label="Signature box. Draw your signature with your finger or mouse."></canvas><div class="sg-guide" aria-hidden="true"><span>Sign here</span></div></div>
         <div class="sg-error" id="sgE2" role="alert"></div>
         <div class="sg-btn-row"><button class="sg-btn" id="sgClear" type="button">Clear</button><button class="sg-btn primary" id="sgDone" type="button">Done</button></div>
       </section>
       <section class="sg-step" id="sgS3" aria-labelledby="sgH3" hidden>
         <h2 id="sgH3" tabindex="-1">Check and confirm</h2>
-        <div class="sg-review"><span class="k">Your name</span><span class="v" id="sgRevName"></span>
-          <span class="k">Your signature</span><img id="sgRevSig" alt="Your signature">
-          <span class="k">Quote total (including VAT)</span><span class="v">${escapeHtml(money(calcTotals(q).total))}</span></div>
+        <div class="sg-review">
+          <div class="sg-row"><span>Name</span><span class="v" id="sgRevName"></span></div>
+          <div class="sg-row sig"><span>Signature</span><img id="sgRevSig" alt="Your signature"></div>
+          <div class="sg-row grand"><span>Total (incl. VAT)</span><span class="v">${escapeHtml(money(calcTotals(q).total))}</span></div>
+        </div>
         <label class="sg-check"><input type="checkbox" id="sgTick"><span>I accept this quote and the terms and conditions</span></label>
         <div class="sg-error" id="sgE3" role="alert"></div>
         <button class="sg-btn primary" id="sgConfirm" type="button">Confirm and accept</button>
@@ -2816,9 +2907,14 @@ function openSignModal(q){
   signModal = st;
 
   const showStep = n=>{
+    const back = n < st.step;
     st.step = n;
     [1, 2, 3].forEach(i=> { $('sgS' + i).hidden = i !== n; });
     $('sgStepNo').textContent = `Step ${n} of 3`;
+    root.querySelectorAll('.sg-bar i').forEach((seg, i)=> seg.classList.toggle('on', i < n));
+    const cur = $('sgS' + n);
+    cur.style.setProperty('--sg-from', back ? '-18px' : '18px');
+    cur.classList.remove('is-in'); void cur.offsetWidth; cur.classList.add('is-in');
     root.setAttribute('aria-labelledby', 'sgH' + n);
     root.querySelector('.sg-scroll').scrollTop = 0;
     if(n === 1) $('sgName').focus(); else $('sgH' + n).focus();
@@ -2827,7 +2923,9 @@ function openSignModal(q){
   const close = ()=>{
     if(st.busy) return;
     if(st.ro) st.ro.disconnect();
-    root.remove(); signModal = null;
+    signModal = null;
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) root.remove();
+    else{ root.classList.add('is-closing'); setTimeout(()=> root.remove(), 200); }
     document.removeEventListener('keydown', onKey, true);
     document.documentElement.style.overflow = prevOverflow;
     if(page) page.removeAttribute('inert');
@@ -2941,9 +3039,14 @@ async function showSignedBox(q, signed){
   const box = document.getElementById('signedBox');
   if(!sig || !box) return;
   box.hidden = false;
-  box.innerHTML = `<div class="signed-line">Signed by <b>${escapeHtml(sig.name)}</b> on <b>${escapeHtml(fmtSignedDate(sig.signedAt))}</b></div>
-    <div class="signed-img"><img alt="${escapeHtml('Signature of ' + sig.name)}"></div>
-    <button class="dbtn copy" id="saveCopyBtn" type="button">Save a copy</button>`;
+  box.innerHTML = `<div class="signed-card">
+      <div class="signed-stamp">Signed</div>
+      <div class="signed-by">Signed by</div>
+      <div class="signed-name">${escapeHtml(sig.name)}</div>
+      <div class="signed-date">on ${escapeHtml(fmtSignedDate(sig.signedAt))}</div>
+      <div class="signed-img"><img alt="${escapeHtml('Signature of ' + sig.name)}"></div>
+      <button class="dbtn copy" id="saveCopyBtn" type="button">Save a copy</button>
+    </div>`;
   box.querySelector('img').src = sig.signature;
   document.getElementById('saveCopyBtn').addEventListener('click', ()=> saveSignedCopy(q));
 }
@@ -3018,8 +3121,9 @@ function wireBook(){
     maxShadowOpacity: 0.5,
     showCover: false,
     usePortrait: true,
-    mobileScrollSupport: false
+    mobileScrollSupport: true     // false makes the library cancel every touch, which blocks pinch-zoom
   });
+  installZoomGuard();
   pageFlip.loadFromHTML(pages);
 
   function updateControls(){
@@ -3034,6 +3138,24 @@ function wireBook(){
   nextBtn.addEventListener('click', ()=> pageFlip.flipNext());
   prevBtn.addEventListener('click', ()=> pageFlip.flipPrev());
   dots.forEach(d=> d.addEventListener('click', ()=> pageFlip.flip(parseInt(d.dataset.i,10))));
+}
+
+/* ---------------- pinch-zoom ---------------- */
+// While the page is pinch-zoomed in, dragging must pan the page, not turn it: the library's touch/mouse start handlers are
+// cut off in the capture phase (so its page-turn drag never begins). The on-screen Prev/Next buttons are ordinary clicks and
+// always work. html.is-zoomed also hands touch-action back to the browser (see the CSS).
+let zoomGuardOn = false;
+function installZoomGuard(){
+  if(zoomGuardOn) return;
+  zoomGuardOn = true;
+  const vv = window.visualViewport;
+  const zoomed = ()=> !!vv && vv.scale > 1.02;
+  const sync = ()=> document.documentElement.classList.toggle('is-zoomed', zoomed());
+  if(vv) vv.addEventListener('resize', sync);
+  ['touchstart', 'mousedown'].forEach(t=> window.addEventListener(t, e=>{
+    if(zoomed() && e.target && e.target.closest && e.target.closest('#book')) e.stopPropagation();
+  }, true));
+  sync();
 }
 
 /* ---------------- routing ---------------- */
