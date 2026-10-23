@@ -34,8 +34,6 @@ The dark pages (Quote, Service, Decision) and the admin sidebar use `#272727`, b
 
 **Cards:** `.qcard` (white, `1px --line`, radius 5), `.stream` and signed card (gradient `#fff` to `--paper`, `1px --line`, radius 4), `.quotebox` (`1px --line`, radius 4), `.editor-summary` (`--paper`, radius 6). Soft shadow used for raised cards: `0 10px 25px -10px rgba(0,0,0,.5)`. Spacing is mostly 12-16px gaps.
 
-**Customer text size:** the flipbook pages read `--tz` (1, 1.25 or 1.5) from the A- / A+ control. New text on those pages should use `calc(Npx*var(--tz))` (see the "customer text size" block in the CSS).
-
 ## Supabase
 Project URL and the **publishable** key are in `index.html`. Admins sign in with Supabase Auth (email + password); public sign-ups and anonymous sign-ins must stay off.
 
@@ -54,18 +52,19 @@ Change the database by adding a **new numbered, dated section at the bottom of `
 - **Create a quote:** admin "New quote" makes a blank quote (ref `DCF-` + 6 digits, random 10-character slug, valid-until from Settings, default terms), then Save upserts it. Copy link (or Mark as sent) shares it; staff can also record a phone answer or reopen a quote.
 - **Customer views it:** `/q/<slug>` calls `get_quote` and `get_business`, then `record_view` (counts the view; a draft becomes "sent"). Expired quotes (past valid-until, UK date) cannot be answered.
 - **Sign (accept):** last page, "Sign to accept this quote" opens the full-screen dialog: 1 type name, 2 sign on the `signature_pad` canvas (loaded from cdnjs, pinned, with an integrity hash), 3 check and tick the box, then `sign_quote()` accepts the quote and stores the signature in one step. The page then shows "Signed by NAME on DATE" with the signature and a "Save a copy" print view. The admin sees the signature in the quote's Decision box.
+- **Zoom:** every flipbook page has a magnifier button (top right) that opens that page full screen and larger (1x to 2.5x, starts at 1.5x) with +, - and Close. The zoom view scrolls and pinches like a normal page and never turns the page. Page turns come from `installSwipe()` (one finger, mostly horizontal) and the Prev / Next buttons.
 - **Decline:** "Decline this quote" shows a reason box, then `submit_decision(..., 'declined', reason)`. A declined quote shows no signing button.
 - **Dashboard:** worked out in the browser from the quotes list. Won = accepted quotes created in the period; win rate = accepted / non-draft; average time to decision; lost = declined; sent vs accepted per week (8 weeks); "Needs attention" lists (expiring soon, opened repeatedly with no answer, never opened). Reminders use `reminder_days` from Settings.
 
 ## Rules for future changes
 1. **Never collect or store customer email addresses or any extra personal data.** Only what the quote and signature need (name, signature, timestamp, quote snapshot).
 2. **Never remove or change the Decline flow** unless explicitly asked.
-3. **Keep customer pages simple for older customers:** text at least 18px, buttons at least 56px tall, high contrast, plain words. (Some older flipbook pages use smaller text; the A- / A+ control and pinch-zoom cover those. New customer-facing UI must meet the rule.)
-4. **Customer pages must always allow zooming.** Never add `maximum-scale` or `user-scalable=no`, and never use `touch-action:none` outside the signature canvas. The book uses `touch-action:pan-y pinch-zoom` and `mobileScrollSupport:true`; page-turn swiping is switched off while `visualViewport.scale > 1`.
+3. **Keep customer pages simple for older customers:** text at least 18px, buttons at least 56px tall, high contrast, plain words. (Some older flipbook pages use smaller text; the zoom button covers those. New customer-facing UI must meet the rule.)
+4. **Customer-facing flipbook pages use the zoom button for zooming. Page-turn swipes must only respond to single-finger horizontal swipes, never to pinch gestures.**
 5. **Reuse the design tokens above.** Do not hardcode new colours or fonts.
 6. **No secrets in the repo.** Only the publishable Supabase key belongs in `index.html`. Never commit a service-role key, a Resend key or a webhook secret.
 7. **Always open a pull request. Never push to `main`.**
 8. Keep `index.html` and `404.html` identical, and keep the SQL log up to date.
 
 ## Testing
-No build or test suite. Serve the folder with a single-page fallback (`npx serve -s .`) and open `/q/<slug>`; it talks to the live Supabase, so use a test quote. For automated checks, Playwright with the Supabase `rpc` calls mocked works well (the flipbook, signing dialog, zoom and text size were all tested that way).
+No build or test suite. Serve the folder with a single-page fallback (`npx serve -s .`) and open `/q/<slug>`; it talks to the live Supabase, so use a test quote. For automated checks, Playwright with the Supabase `rpc` calls mocked works well (the flipbook, swipes, zoom view and signing dialog were all tested that way).
