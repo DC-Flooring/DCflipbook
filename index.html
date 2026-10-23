@@ -287,6 +287,8 @@ h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
 .decision-box .views-detail{ margin-top:8px; padding-top:0; border-top:none; }
 .decision-box .staff-tag{ margin-top:0; }
 .decision-box .staff-note{ font-style:italic; overflow-wrap:anywhere; }
+.sig-admin{ margin-top:8px; font-size:12.5px; line-height:1.55; color:var(--ink-soft); }
+.sig-admin img{ display:block; max-width:100%; max-height:90px; margin-top:6px; padding:6px; background:#fff; border:1px solid var(--line); border-radius:4px; }
 .rec-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 .rec-btns .btn{ flex:1 1 130px; padding:9px 10px; font-size:12.5px; }
 .modal-back{ position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(36,26,20,.55); }
@@ -406,13 +408,27 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 /* StPageFlip forces inline display:block on the page element mid-flip, which defeats the
    .decision flex-centering above (justify/align-items only work on a flex container). Centering
    is done instead on this absolutely-positioned inner wrapper, which stays flex regardless. */
-.decision-inner{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:26px 22px 22px 32px; box-sizing:border-box; }
+.decision-inner{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:26px 22px 22px 32px; box-sizing:border-box; overflow-y:auto; }
+.decision-inner > :first-child{ margin-top:auto; }
+.decision-inner > :last-child{ margin-bottom:auto; }
 .decision h2.title{ margin-bottom:8px; }
 .decision p.lead{ font-size:13.5px; color:var(--ink-soft); max-width:44ch; margin:0 0 24px; }
-.decision-btns{ display:flex; gap:12px; }
+.decision-btns{ display:flex; flex-direction:column; gap:14px; width:100%; max-width:380px; }
 .dbtn{ padding:12px 22px; border-radius:5px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; }
-.dbtn.accept{ background:var(--ok); color:#fff; }
-.dbtn.accept:hover{ background:#3f5a42; }
+.decision-btns .dbtn{ width:100%; min-height:56px; font-size:16px; }
+.dbtn.sign{ background:var(--ok); color:#fff; font-size:19px; }
+.decision-btns .dbtn.sign{ font-size:19px; }
+.dbtn.sign:hover{ background:#3f5a42; }
+.dbtn:focus-visible, .sg-modal :focus-visible{ outline:3px solid var(--brass); outline-offset:3px; }
+.dbtn:disabled{ opacity:.6; cursor:default; }
+.phone-line{ margin:18px 0 0; max-width:34ch; font-size:15px; line-height:1.5; color:var(--linen-soft); }
+.phone-line a{ color:var(--linen); font-weight:600; white-space:nowrap; }
+.signed-box{ margin-top:16px; width:100%; max-width:340px; }
+.signed-line{ font-size:15px; line-height:1.5; color:var(--linen); }
+.signed-img{ margin:10px auto 14px; padding:8px; background:#fff; border-radius:6px; }
+.signed-img img{ display:block; max-width:100%; max-height:110px; margin:0 auto; }
+.dbtn.copy{ width:100%; min-height:56px; font-size:16px; background:none; border-color:var(--brass); color:var(--linen); }
+.dbtn.copy:hover{ background:var(--brass); color:#fff; }
 .dbtn.decline{ background:none; border-color:var(--bad); color:var(--bad); }
 .dbtn.decline:hover{ background:var(--bad); color:#fff; }
 .decline-form{ margin-top:20px; width:100%; max-width:380px; }
@@ -425,6 +441,52 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .decided-state.accepted .badge{ background:#dbe6dc; color:var(--ok); }
 .decided-state.declined .badge{ background:#f0dcd9; color:var(--bad); }
 .decided-msg{ font-size:13px; max-width:38ch; }
+
+/* ===== e-signature dialog: full screen, white, black text, nothing under 18px ===== */
+.sg-modal{ position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; background:#fff; color:#000; font-family:'Work Sans',sans-serif; font-size:18px; line-height:1.45; }
+.sg-top{ flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px 8px 20px; border-bottom:2px solid #000; }
+.sg-stepno{ font-size:20px; font-weight:600; }
+.sg-x{ flex:none; width:56px; height:56px; border:2px solid #000; border-radius:8px; background:#fff; color:#000; font-size:32px; line-height:1; cursor:pointer; }
+.sg-scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.sg-body{ min-height:100%; display:flex; flex-direction:column; gap:16px; width:100%; max-width:720px; margin:0 auto; padding:20px; }
+.sg-step{ display:flex; flex-direction:column; gap:16px; flex:1 1 auto; min-height:0; }
+.sg-step[hidden]{ display:none; }
+.sg-modal h2{ margin:0; font-family:'Fraunces',serif; font-size:30px; line-height:1.2; font-weight:600; color:#000; }
+.sg-modal h2:focus{ outline:none; }
+.sg-modal p{ margin:0; font-size:18px; }
+.sg-input{ width:100%; min-height:64px; padding:10px 14px; border:3px solid #000; border-radius:8px; font-family:inherit; font-size:24px; color:#000; background:#fff; }
+.sg-btn{ width:100%; min-height:56px; padding:10px 18px; border:2px solid #000; border-radius:8px; background:#fff; color:#000; font-family:inherit; font-size:20px; font-weight:600; cursor:pointer; }
+.sg-btn.primary{ background:#3f5a42; border-color:#3f5a42; color:#fff; }
+.sg-btn:disabled{ opacity:.6; cursor:default; }
+.sg-btn-row{ display:flex; gap:12px; }
+.sg-btn-row .sg-btn{ flex:1 1 0; }
+.sg-link{ align-self:center; min-height:56px; padding:8px 16px; border:0; background:none; color:#000; font-family:inherit; font-size:20px; font-weight:600; text-decoration:underline; cursor:pointer; }
+.sg-error{ font-size:18px; font-weight:600; color:#8a1f12; }
+.sg-error:empty{ display:none; }
+.sg-tip{ display:none; padding:10px 14px; border-radius:8px; background:#f3ede1; font-size:18px; }
+@media (orientation:portrait) and (max-width:700px){ .sg-tip{ display:block; } }
+.sg-padwrap{ position:relative; flex:1 1 auto; min-height:220px; border:3px dashed #a08f74; border-radius:10px; background:#fff; }
+.sg-padwrap canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+.sg-guide{ position:absolute; left:6%; right:6%; bottom:26%; border-bottom:2px solid #d9cbb2; pointer-events:none; }
+.sg-guide span{ position:absolute; left:0; bottom:6px; font-size:18px; color:#b3a68f; }
+.sg-padwrap.has-ink .sg-guide span{ display:none; }
+.sg-review{ display:flex; flex-direction:column; gap:6px; padding:14px 16px; border:2px solid #000; border-radius:8px; }
+.sg-review .k{ font-size:18px; font-weight:600; }
+.sg-review .v{ font-size:24px; overflow-wrap:anywhere; }
+.sg-review img{ display:block; max-width:100%; max-height:150px; margin:4px 0; }
+.sg-check{ display:flex; align-items:center; gap:14px; min-height:64px; padding:12px 14px; border:3px solid #000; border-radius:8px; font-size:20px; font-weight:600; cursor:pointer; }
+.sg-check input{ flex:none; width:32px; height:32px; margin:0; accent-color:#3f5a42; }
+.sg-phone{ margin-top:auto; padding-top:8px; font-size:18px; }
+.sg-phone a{ color:#000; font-weight:600; white-space:nowrap; }
+@media (orientation:landscape) and (max-height:520px){
+  .sg-top{ padding-top:4px; padding-bottom:4px; }
+  .sg-body, .sg-step{ gap:10px; }
+  .sg-body{ padding:10px 20px; }
+  .sg-modal h2{ font-size:24px; }
+  .sg-padwrap{ min-height:120px; }
+}
+@media (prefers-reduced-motion:no-preference){ .sg-modal{ animation:sgIn .15s ease-out; } }
+@keyframes sgIn{ from{ opacity:0; } to{ opacity:1; } }
 
 /* ===== dark content pages: Quote / Service / Decision ===== */
 .dark-page{ background:#272727; border-color:#3d3d3d; color:var(--linen); }
@@ -1185,6 +1247,7 @@ function decisionBoxHtml(q){
     if(staffNote(q)) lines.push(`<div class="views-detail staff-note">Note: “${escapeHtml(staffNote(q))}”</div>`);
   }else{
     lines.push(`<div class="views-detail">${escapeHtml(`Customer ${q.status}${when ? ' on ' + when : ''}.`)}</div>`);
+    if(q.status === 'accepted') lines.push('<div class="sig-admin" id="sigAdmin" hidden></div>');
   }
   return `<div class="decision-box">${lines.join('')}<div class="rec-btns"><button class="btn btn-ghost" id="reopenBtn" type="button">Reopen quote</button></div></div>`;
 }
@@ -1237,6 +1300,21 @@ function openRecordDialog(decision){
     else showToast(`Recorded ${quoteName(saved)} as ${decision} (${(RECORD_METHODS.find(([k])=> k === method) || [])[1].toLowerCase()}).`);
     await afterDecisionChange(ref, saved || await getQuote(ref));
   });
+}
+// The customer's e-signature (name, drawing, when) in the Decision box of an accepted quote. Quotes accepted without one show nothing.
+async function showAdminSignature(q){
+  const box = document.getElementById('sigAdmin');
+  if(!box || q.status !== 'accepted') return;
+  let row = null;
+  try{
+    const res = await adminFetch(`quote_signatures?quote_ref=eq.${encodeURIComponent(q.ref)}&select=full_name,signature,signed_at`);
+    if(res.ok){ const rows = await res.json(); row = rows[0] || null; }
+  }catch(e){ return; }
+  const now = document.getElementById('sigAdmin');
+  if(!row || !now || !draft || draft.ref !== q.ref) return;
+  now.hidden = false;
+  now.innerHTML = `Signed by <b>${escapeHtml(row.full_name)}</b> on <b>${escapeHtml(fmtDateTime(row.signed_at))}</b><img alt="${escapeHtml('Signature of ' + row.full_name)}">`;
+  now.querySelector('img').src = row.signature;
 }
 async function reopenQuote(){
   if(!draft) return;
@@ -1797,6 +1875,7 @@ function renderEditor(){
   if(recAcc) recAcc.addEventListener('click', ()=> openRecordDialog('accepted'));
   if(recDec) recDec.addEventListener('click', ()=> openRecordDialog('declined'));
   if(reopen) reopen.addEventListener('click', reopenQuote);
+  showAdminSignature(draft);
   const chaseBtn = document.getElementById('chaseBtn');
   if(chaseBtn) chaseBtn.addEventListener('click', async ()=>{
     const q = (await loadQuotes(false)).find(x=> x.ref === draft.ref);
@@ -1880,7 +1959,9 @@ function refreshTotalsOnly(){
 }
 
 /* ---------------- print quote (A4, client-side) ---------------- */
-function buildPrintHtml(q){
+// opts (customer "Save a copy"): { business, brand, signature:{name, signature, signedAt} } swaps in the customer-side business
+// details and prints the signature in place of the "Ready to go ahead?" box. Without opts this is the staff print, unchanged.
+function buildPrintHtml(q, opts = {}){
   const {subtotal, vat, total} = calcTotals(q);
   const items = q.lineItems.filter(li=> (li.product||'').trim() || (li.unitPrice||'').toString().trim());
   const rows = items.map(li=>{
@@ -1889,7 +1970,9 @@ function buildPrintHtml(q){
   }).join('') || '<tr><td colspan="4">Line items to follow.</td></tr>';
   const notes = (q.notes||'').trim();
   const name = (q.customerName||'').trim();
-  const biz = brandName();
+  const biz = opts.brand || brandName();
+  const bizDetails = opts.business || BUSINESS;
+  const sig = opts.signature || null;
   const link = quoteLink(q);
   const linkText = link.replace(/^https?:\/\//, '');
   const logo = siteBase() + '/floors-for-living-logo.png';
@@ -1899,8 +1982,8 @@ function buildPrintHtml(q){
     address:'<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
   };
   const contact = ['phone','email','address']
-    .filter(k=> (BUSINESS[k]||'').trim())
-    .map(k=> `<span>${icons[k]}${escapeHtml(BUSINESS[k].trim())}</span>`).join('');
+    .filter(k=> (bizDetails[k]||'').trim())
+    .map(k=> `<span>${icons[k]}${escapeHtml(bizDetails[k].trim())}</span>`).join('');
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
 <title>${escapeHtml('Quote ' + q.ref + (name ? ' – ' + name : ''))}</title>
@@ -1954,6 +2037,10 @@ table.items{ width:100%; border-collapse:collapse; }
 .accept h3{ margin:0 0 1.5mm; font-size:11.5pt; font-weight:600; }
 .accept p{ margin:0; }
 .accept a{ color:var(--ink); font-weight:600; text-decoration:none; overflow-wrap:anywhere; }
+.signed{ margin-top:8mm; padding:5mm 6mm; border:.6pt solid #e6dcc8; border-left:1.6mm solid var(--accent); border-radius:2mm; break-inside:avoid; page-break-inside:avoid; }
+.signed h3{ margin:0 0 1.5mm; font-size:11.5pt; font-weight:600; }
+.signed p{ margin:0; }
+.signed img{ display:block; max-width:70mm; max-height:28mm; margin-top:3mm; }
 .signoff{ margin-top:10mm; font-size:10pt; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 
 @media print{ .page{ width:auto; } }
@@ -1980,7 +2067,9 @@ table.items{ width:100%; border-collapse:collapse; }
   <div class="closing">
     <div class="totals"><div><span>Subtotal</span><span>${money(subtotal)}</span></div><div><span>VAT (20%)</span><span>${money(vat)}</span></div><div class="grand"><span>Total</span><span>${money(total)}</span></div></div>
     ${notes ? `<div class="terms"><div class="label">Terms</div><p>${escapeHtml(notes)}</p></div>` : ''}
-    <div class="accept"><h3>Ready to go ahead?</h3><p>You can accept or decline online at <a href="${escapeHtml(link)}">${escapeHtml(linkText)}</a>. Or just reply to the message we sent you.</p></div>
+    ${sig
+      ? `<div class="signed"><h3>Accepted and signed</h3><p>Signed by <b>${escapeHtml(sig.name)}</b> on <b>${escapeHtml(fmtSignedDate(sig.signedAt, true))}</b></p><img src="${escapeHtml(sig.signature)}" alt="${escapeHtml('Signature of ' + sig.name)}"></div>`
+      : `<div class="accept"><h3>Ready to go ahead?</h3><p>You can accept or decline online at <a href="${escapeHtml(link)}">${escapeHtml(linkText)}</a>. Or just reply to the message we sent you.</p></div>`}
     <div class="signoff">Thank you for choosing ${escapeHtml(biz)}</div>
   </div>
 </div>
@@ -2574,35 +2663,53 @@ function todayLondon(){
 function isExpired(q){ return !!q.validUntil && q.validUntil < todayLondon(); }
 function fmtDate(s){ if(!s) return '—'; const d = new Date(s+'T00:00:00'); return isNaN(d) ? s : d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
 
-function renderDecisionPage(q){
+// "Prefer to accept over the phone?" line: only shown when a shop number has been saved on the Settings page.
+function phoneLineHtml(cls){
+  const phone = (CUSTOMER_BUSINESS.phone || '').trim();
+  if(!phone) return '';
+  const tel = phone.replace(/[^\d+]/g, '');
+  return `<p class="${cls}">Prefer to accept over the phone? Call us on ${tel ? `<a href="tel:${escapeHtml(tel)}">${escapeHtml(phone)}</a>` : `<b>${escapeHtml(phone)}</b>`}</p>`;
+}
+function fmtSignedDate(iso, withTime){
+  const d = new Date(iso);
+  if(isNaN(d)) return '';
+  const o = { timeZone:'Europe/London', day:'numeric', month:'long', year:'numeric' };
+  if(withTime){ o.hour = '2-digit'; o.minute = '2-digit'; }
+  return d.toLocaleString('en-GB', o);
+}
+
+function renderDecisionPage(q, signed){
   const el = document.getElementById('decisionPage');
   if(q.response){
     const cls = decisionClass(q.response.decision);
-    el.innerHTML = `<div class="decision-inner"><div class="decided-state ${cls}">
+    el.innerHTML = `<div class="decision-inner"><div class="decided-state ${cls}" id="decidedState" tabindex="-1">
       <div class="badge">${cls==='accepted'?'Quote accepted':'Quote declined'}</div>
       <div class="decided-msg">
         ${cls==='accepted' ? "Thanks — we've got your confirmation. We'll be in touch to get things booked in." : "Thanks for letting us know."}
         ${q.response.reason ? `<div style="margin-top:10px; font-style:italic;">"${escapeHtml(q.response.reason)}"</div>` : ''}
       </div>
+      ${cls==='accepted' ? '<div class="signed-box" id="signedBox" hidden></div>' : ''}
     </div></div>`;
+    if(cls === 'accepted') showSignedBox(q, signed);
     return;
   }
   el.innerHTML = `
     <div class="decision-inner">
       <h2 class="title">What would you like to do?</h2>
-      <p class="lead">Happy with the quote? Confirm below and we'll get your fitting booked in. If it's not quite right, let us know why.</p>
+      <p class="lead">Happy with the quote? Sign below and we'll get your fitting booked in. If it's not quite right, let us know why.</p>
       <div class="decision-btns">
-        <button class="dbtn accept" id="acceptBtn">Accept quote</button>
-        <button class="dbtn decline" id="declineBtn">Decline</button>
+        <button class="dbtn sign" id="signBtn" type="button">Sign to accept this quote</button>
+        <button class="dbtn decline" id="declineBtn" type="button">Decline this quote</button>
       </div>
       <div class="decline-form" id="declineForm" style="display:none;">
         <textarea id="declineReason" placeholder="Tell us why — price, timing, changed your mind about the product..."></textarea>
         <button class="btn btn-primary">Submit</button>
       </div>
       <div class="decision-error" id="decisionError" role="alert"></div>
+      ${phoneLineHtml('phone-line')}
     </div>
   `;
-  document.getElementById('acceptBtn').addEventListener('click', ()=> submitDecision(q, 'accepted', ''));
+  document.getElementById('signBtn').addEventListener('click', ()=> openSignModal(q));
   document.getElementById('declineBtn').addEventListener('click', ()=>{
     document.getElementById('declineForm').style.display = 'block';
   });
@@ -2612,9 +2719,248 @@ function renderDecisionPage(q){
   });
 }
 
+/* ---------------- e-signature ---------------- */
+// signature_pad, pinned, loaded from cdnjs the first time the signing dialog opens.
+const SIGNATURE_PAD_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.7/signature_pad.umd.min.js';
+const SIGNATURE_PAD_SRI = 'sha384-dPowQo9uxJU703klzvnG+vzLHQDNmO/zREXw6BhCMupB54CE70wj6SWOGVPySK3s';
+const SIGNATURE_MAX_WIDTH = 600;        // px width of the saved PNG
+let signaturePadPromise = null;
+function loadSignaturePad(){
+  if(window.SignaturePad) return Promise.resolve();
+  if(signaturePadPromise) return signaturePadPromise;
+  signaturePadPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = SIGNATURE_PAD_SRC; s.integrity = SIGNATURE_PAD_SRI; s.crossOrigin = 'anonymous';
+    s.onload = ()=> window.SignaturePad ? resolve() : (signaturePadPromise = null, reject(new Error('signature_pad missing')));
+    s.onerror = ()=>{ signaturePadPromise = null; s.remove(); reject(new Error('signature_pad failed to load')); };
+    document.head.appendChild(s);
+  });
+  return signaturePadPromise;
+}
+
+// Keeps the drawing sized to its box. On a rotation or resize the strokes are scaled to fit the new box (never cleared).
+function fitSignaturePad(st){
+  const rect = st.canvas.parentElement.getBoundingClientRect();
+  const w = Math.round(rect.width), h = Math.round(rect.height);
+  if(!w || !h || (w === st.w && h === st.h)) return;   // hidden, or nothing changed
+  const data = st.pad.toData();
+  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  st.canvas.width = w * ratio; st.canvas.height = h * ratio;
+  st.canvas.getContext('2d').scale(ratio, ratio);
+  st.pad.clear();
+  if(data.length && st.w){
+    const k = Math.min(w / st.w, h / st.h), dx = (w - st.w * k) / 2, dy = (h - st.h * k) / 2;
+    data.forEach(g=> g.points.forEach(p=>{ p.x = p.x * k + dx; p.y = p.y * k + dy; }));
+    st.pad.fromData(data, { clear:false });
+  }
+  st.w = w; st.h = h;
+  st.wrap.classList.toggle('has-ink', !st.pad.isEmpty());
+}
+// The drawing as a transparent PNG data URL, cropped to the ink and capped at SIGNATURE_MAX_WIDTH wide.
+function signaturePng(st){
+  const ratio = st.canvas.width / st.w;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  st.pad.toData().forEach(g=> g.points.forEach(p=>{ x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }));
+  const pad = 14, minW = 200, minH = 80;
+  let cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, w = Math.max(x1 - x0 + pad * 2, minW), h = Math.max(y1 - y0 + pad * 2, minH);
+  w = Math.min(w, st.w); h = Math.min(h, st.h);
+  const left = Math.min(Math.max(cx - w / 2, 0), st.w - w), top = Math.min(Math.max(cy - h / 2, 0), st.h - h);
+  const outW = Math.min(SIGNATURE_MAX_WIDTH, Math.round(w * ratio)), outH = Math.max(1, Math.round(outW * h / w));
+  const out = document.createElement('canvas'); out.width = outW; out.height = outH;
+  out.getContext('2d').drawImage(st.canvas, left * ratio, top * ratio, w * ratio, h * ratio, 0, 0, outW, outH);
+  return out.toDataURL('image/png');
+}
+
+let signModal = null;     // { root, restore, ... } while the dialog is open
+function openSignModal(q){
+  if(signModal) return;
+  const opener = document.activeElement;
+  const root = document.createElement('div');
+  root.className = 'sg-modal'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-labelledby', 'sgH1');
+  root.innerHTML = `
+    <div class="sg-top"><div class="sg-stepno" id="sgStepNo" aria-live="polite">Step 1 of 3</div>
+      <button class="sg-x" id="sgClose" type="button" aria-label="Close without signing">&times;</button></div>
+    <div class="sg-scroll"><div class="sg-body">
+      <section class="sg-step" id="sgS1" aria-labelledby="sgH1">
+        <h2 id="sgH1" tabindex="-1">Type your full name</h2>
+        <input class="sg-input" id="sgName" type="text" aria-labelledby="sgH1" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="100">
+        <div class="sg-error" id="sgE1" role="alert"></div>
+        <button class="sg-btn primary" id="sgNext1" type="button">Next</button>
+      </section>
+      <section class="sg-step" id="sgS2" aria-labelledby="sgH2" hidden>
+        <h2 id="sgH2" tabindex="-1">Sign with your finger in the white box</h2>
+        <div class="sg-tip">Tip: turn your phone sideways for more room</div>
+        <div class="sg-padwrap" id="sgPadWrap"><canvas id="sgCanvas" role="img" aria-label="Signature box. Draw your signature with your finger or mouse."></canvas><div class="sg-guide" aria-hidden="true"><span>Sign here</span></div></div>
+        <div class="sg-error" id="sgE2" role="alert"></div>
+        <div class="sg-btn-row"><button class="sg-btn" id="sgClear" type="button">Clear</button><button class="sg-btn primary" id="sgDone" type="button">Done</button></div>
+      </section>
+      <section class="sg-step" id="sgS3" aria-labelledby="sgH3" hidden>
+        <h2 id="sgH3" tabindex="-1">Check and confirm</h2>
+        <div class="sg-review"><span class="k">Your name</span><span class="v" id="sgRevName"></span>
+          <span class="k">Your signature</span><img id="sgRevSig" alt="Your signature">
+          <span class="k">Quote total (including VAT)</span><span class="v">${escapeHtml(money(calcTotals(q).total))}</span></div>
+        <label class="sg-check"><input type="checkbox" id="sgTick"><span>I accept this quote and the terms and conditions</span></label>
+        <div class="sg-error" id="sgE3" role="alert"></div>
+        <button class="sg-btn primary" id="sgConfirm" type="button">Confirm and accept</button>
+        <button class="sg-link" id="sgBack" type="button">Go back</button>
+      </section>
+      ${phoneLineHtml('sg-phone')}
+    </div></div>`;
+  document.body.appendChild(root);
+  const $ = id=> root.querySelector('#' + id);
+  const page = document.getElementById('customer');
+  if(page) page.setAttribute('inert', '');
+  const prevOverflow = document.documentElement.style.overflow;
+  document.documentElement.style.overflow = 'hidden';
+  const st = { root, pad:null, canvas:$('sgCanvas'), wrap:$('sgPadWrap'), w:0, h:0, ro:null, name:'', png:'', step:1, busy:false };
+  signModal = st;
+
+  const showStep = n=>{
+    st.step = n;
+    [1, 2, 3].forEach(i=> { $('sgS' + i).hidden = i !== n; });
+    $('sgStepNo').textContent = `Step ${n} of 3`;
+    root.setAttribute('aria-labelledby', 'sgH' + n);
+    root.querySelector('.sg-scroll').scrollTop = 0;
+    if(n === 1) $('sgName').focus(); else $('sgH' + n).focus();
+    if(n === 2 && st.pad) fitSignaturePad(st);
+  };
+  const close = ()=>{
+    if(st.busy) return;
+    if(st.ro) st.ro.disconnect();
+    root.remove(); signModal = null;
+    document.removeEventListener('keydown', onKey, true);
+    document.documentElement.style.overflow = prevOverflow;
+    if(page) page.removeAttribute('inert');
+    const back = document.getElementById('signBtn') || opener;
+    if(back && back.focus) back.focus();
+  };
+  st.close = close;
+
+  // keyboard: Escape closes, Tab stays inside the dialog
+  const onKey = e=>{
+    if(e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if(e.key !== 'Tab') return;
+    const items = Array.from(root.querySelectorAll('button, input, a[href], [tabindex="0"]')).filter(n=> !n.disabled && n.offsetParent !== null);
+    if(!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if(!root.contains(document.activeElement)){ e.preventDefault(); first.focus(); }
+    else if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  };
+  document.addEventListener('keydown', onKey, true);
+  // the flipbook listens for touches/mouse on the page underneath: keep the dialog's events to itself
+  ['mousedown', 'touchstart', 'pointerdown'].forEach(t=> root.addEventListener(t, e=> e.stopPropagation()));
+  $('sgClose').addEventListener('click', close);
+
+  // step 1: name
+  const next1 = ()=>{
+    const name = $('sgName').value.replace(/\s+/g, ' ').trim();
+    if(name.length < 2){ $('sgE1').textContent = 'Please type your full name.'; $('sgName').focus(); return; }
+    $('sgE1').textContent = ''; st.name = name;
+    showStep(2);
+  };
+  $('sgNext1').addEventListener('click', next1);
+  $('sgName').addEventListener('keydown', e=>{ if(e.key === 'Enter' && !e.isComposing){ e.preventDefault(); next1(); } });
+  $('sgName').addEventListener('input', ()=>{ $('sgE1').textContent = ''; });
+
+  // step 2: signature (the library loads while they type their name)
+  loadSignaturePad().then(()=>{
+    if(signModal !== st) return;
+    const Pad = window.SignaturePad.default || window.SignaturePad;
+    st.pad = new Pad(st.canvas, { penColor:'#000', minWidth:1.5, maxWidth:3.5, backgroundColor:'rgba(0,0,0,0)' });
+    st.pad.addEventListener('beginStroke', ()=> { st.wrap.classList.add('has-ink'); $('sgE2').textContent = ''; });
+    st.ro = new ResizeObserver(()=> fitSignaturePad(st));
+    st.ro.observe(st.wrap);
+    fitSignaturePad(st);
+  }).catch(()=>{ st.loadFailed = true; });
+  $('sgClear').addEventListener('click', ()=>{ if(st.pad) st.pad.clear(); st.wrap.classList.remove('has-ink'); $('sgE2').textContent = ''; });
+  $('sgDone').addEventListener('click', ()=>{
+    if(!st.pad){
+      $('sgE2').textContent = st.loadFailed
+        ? "The signing box couldn't load. Please check your connection and try again, or use the phone number below."
+        : 'The signing box is still loading. Please wait a moment and try again.';
+      return;
+    }
+    if(st.pad.isEmpty()){ $('sgE2').textContent = 'Please sign in the white box first.'; return; }
+    $('sgE2').textContent = '';
+    st.png = signaturePng(st);
+    $('sgRevName').textContent = st.name; $('sgRevSig').src = st.png;
+    $('sgTick').checked = false; $('sgE3').textContent = '';
+    showStep(3);
+  });
+
+  // step 3: check and confirm
+  $('sgBack').addEventListener('click', ()=> showStep(2));
+  $('sgTick').addEventListener('change', ()=>{ $('sgE3').textContent = ''; });
+  $('sgConfirm').addEventListener('click', async ()=>{
+    if(st.busy) return;
+    if(!$('sgTick').checked){ $('sgE3').textContent = 'Please tick the box to accept the quote.'; $('sgTick').focus(); return; }
+    const setBusy = on=>{ st.busy = on; ['sgConfirm', 'sgBack', 'sgClose'].forEach(id=> { $(id).disabled = on; }); $('sgConfirm').textContent = on ? 'Please wait…' : 'Confirm and accept'; };
+    $('sgE3').textContent = ''; setBusy(true);
+    let recorded = false;
+    try{
+      recorded = await rpc('sign_quote', { p_slug:q.shortSlug, p_name:st.name, p_signature:st.png });
+    }catch(e){
+      setBusy(false);
+      $('sgE3').textContent = "Sorry, we couldn't send that. Please check your connection and try again, or use the phone number below.";
+      return;
+    }
+    // show what is actually stored: this also covers a quote that was already answered
+    let fresh = null;
+    try{ fresh = await getQuoteBySlug(q.shortSlug); }catch(e){}
+    if(fresh){ q.status = fresh.status; q.response = fresh.response; q.validUntil = fresh.validUntil; }
+    else if(recorded){ q.status = 'accepted'; q.response = { decision:'accepted', reason:'', respondedAt:new Date().toISOString() }; }
+    const decided = !!q.response && (q.status === 'accepted' || q.status === 'declined');
+    setBusy(false);
+    if(!decided){
+      $('sgE3').textContent = ((q.status === 'sent' || q.status === 'draft') && isExpired(q))
+        ? 'This quote has expired, please contact us'
+        : "Sorry, we couldn't record your signature. Please try again, or use the phone number below.";
+      return;
+    }
+    const signed = recorded ? { name:st.name, signature:st.png, signedAt:(q.response && q.response.respondedAt) || new Date().toISOString() } : undefined;
+    close();
+    renderDecisionPage(q, signed);
+    const done = document.getElementById('decidedState'); if(done) done.focus();
+  });
+
+  showStep(1);
+}
+
+// "Signed by <name> on <date>" with the signature, on the last page of an accepted quote. Quotes accepted without a signature
+// (recorded by staff, or accepted before signing existed) show nothing extra.
+async function showSignedBox(q, signed){
+  let sig = signed || q._signature;
+  if(sig === undefined){
+    try{
+      const r = await rpc('get_signature', { p_slug:q.shortSlug });
+      sig = r ? { name:r.full_name, signature:r.signature, signedAt:r.signed_at } : null;
+    }catch(e){ sig = null; }
+  }
+  q._signature = sig || null;
+  const box = document.getElementById('signedBox');
+  if(!sig || !box) return;
+  box.hidden = false;
+  box.innerHTML = `<div class="signed-line">Signed by <b>${escapeHtml(sig.name)}</b> on <b>${escapeHtml(fmtSignedDate(sig.signedAt))}</b></div>
+    <div class="signed-img"><img alt="${escapeHtml('Signature of ' + sig.name)}"></div>
+    <button class="dbtn copy" id="saveCopyBtn" type="button">Save a copy</button>`;
+  box.querySelector('img').src = sig.signature;
+  document.getElementById('saveCopyBtn').addEventListener('click', ()=> saveSignedCopy(q));
+}
+// A clean, print-friendly page of the whole quote with the signature, for the customer to print or save as PDF.
+function saveSignedCopy(q){
+  const sig = q._signature;
+  if(!sig) return;
+  const w = window.open('', '_blank');   // opened synchronously from the click so pop-up blockers allow it
+  if(!w){ alert('Your browser blocked the new window — allow pop-ups for this site and try again.'); return; }
+  w.document.open();
+  w.document.write(buildPrintHtml(q, { business:CUSTOMER_BUSINESS, brand:customerBrand(), signature:sig }));
+  w.document.close();
+}
+
 async function submitDecision(q, decision, reason){
   const busy = on=>{
-    ['acceptBtn','declineBtn'].forEach(id=>{ const b = document.getElementById(id); if(b) b.disabled = on; });
+    ['signBtn','declineBtn'].forEach(id=>{ const b = document.getElementById(id); if(b) b.disabled = on; });
     document.querySelectorAll('#declineForm .btn').forEach(b=> b.disabled = on);
   };
   const fail = text=>{ const e = document.getElementById('decisionError'); if(e) e.textContent = text; };
