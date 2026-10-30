@@ -394,19 +394,17 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .swatch .cap{ padding:8px 9px 10px; }
 .swatch .cap .p{ font-family:'Fraunces',serif; font-weight:600; font-size:12.5px; }
 .swatch .cap .s{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--ink-soft); margin-top:2px; }
-.svc-grid{ display:flex; gap:24px; margin-top:4px; }
-.svc-col{ flex:1; }
-.svc-col h3{ font-family:'Fraunces',serif; font-size:14px; margin:0 0 9px; }
-.svc-col ul{ margin:0; padding-left:0; list-style:none; }
-.svc-col li{ font-size:12.5px; color:var(--ink-soft); line-height:1.65; padding-left:15px; position:relative; }
-.svc-col li::before{ content:"—"; position:absolute; left:0; color:var(--brass); }
 .contact{ margin-top:auto; padding-top:14px; border-top:1px solid var(--line); font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); line-height:1.85; }
 .contact b{ color:var(--ink); font-weight:500; }
 .decision{ justify-content:center; align-items:center; text-align:center; }
 /* StPageFlip forces inline display:block on the page element mid-flip, which defeats the
    .decision flex-centering above (justify/align-items only work on a flex container). Centering
    is done instead on this absolutely-positioned inner wrapper, which stays flex regardless. */
-.decision-inner{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:26px 22px 22px 32px; box-sizing:border-box; }
+.decision-inner{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:26px 22px 84px 32px; box-sizing:border-box; }
+/* the contact line sits at the foot of the page, above the page number; it steps aside on a very small booklet (a phone on its side) */
+.decision{ container-type:size; container-name:decisionpage; }
+.decision .contact{ position:absolute; left:32px; right:22px; bottom:36px; margin:0; padding-top:9px; font-size:10px; line-height:1.6; text-align:center; overflow-wrap:anywhere; }
+@container decisionpage (max-height:430px){ .decision .contact{ display:none; } }
 .decision h2.title{ margin-bottom:8px; }
 .decision p.lead{ font-size:13.5px; color:var(--ink-soft); max-width:44ch; margin:0 0 24px; }
 .decision-btns{ display:flex; gap:12px; }
@@ -426,7 +424,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .decided-state.declined .badge{ background:#f0dcd9; color:var(--bad); }
 .decided-msg{ font-size:13px; max-width:38ch; }
 
-/* ===== dark content pages: Quote / Service / Decision ===== */
+/* ===== dark content pages: Quote / Decision ===== */
 .dark-page{ background:#272727; border-color:#3d3d3d; color:var(--linen); }
 .dark-page::before{ background:linear-gradient(to right, rgba(0,0,0,.35), transparent); }
 .dark-page .eyebrow{ font-family:'Poppins',sans-serif; font-weight:500; letter-spacing:.16em; color:var(--brass); }
@@ -444,8 +442,6 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .dark-page .swatch .cap .p{ color:var(--linen); }
 .dark-page .swatch .cap .s{ color:var(--linen-soft); }
 
-.dark-page .svc-col h3{ color:var(--brass); }
-.dark-page .svc-col li{ color:var(--linen-soft); }
 .dark-page .contact{ color:var(--linen-soft); border-top-color:#3d3d3d; }
 .dark-page .contact b{ color:var(--linen); }
 
@@ -455,16 +451,14 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .dark-page .dbtn.decline:hover{ background:#c96b5c; color:#fff; }
 .dark-page .decline-form textarea{ background:#1d1d1d; border-color:#3d3d3d; color:var(--linen); }
 
-/* tightened spacing so Included/Next steps/contact all fit without scrolling */
-.service .svc-grid{ gap:18px; margin-top:2px; }
-.service .svc-col h3{ font-size:12px; margin:0 0 6px; }
-.service .svc-col li{ font-size:11px; line-height:1.5; padding-left:12px; margin-bottom:1px; }
-.service .contact{ padding-top:10px; font-size:9.5px; line-height:1.55; }
-.service h2.title{ margin:0 0 10px; }
-
 /* tightened spacing so long itemised breakdowns (8-10+ rows) keep totals visible;
    .page already has overflow:hidden auto as a scroll fallback beyond that */
 .quote h2.title{ margin:0 0 10px; font-size:24px; }
+/* Itemised Breakdown only: the heading and the column labels in Singel, one accent word in Auttera.
+   Everything with a number or a £ (items, quantities, prices, totals, VAT, notes) stays in the existing fonts. */
+.page.quote h2.title{ font-family:"Singel","Poppins","Helvetica Neue",Arial,sans-serif; font-weight:600; letter-spacing:.03em; }
+.page.quote thead th{ font-family:"Singel","Poppins","Helvetica Neue",Arial,sans-serif; font-weight:600; letter-spacing:.07em; font-size:9.5px; white-space:nowrap; }
+.page.quote .eyebrow .accent{ font-family:"Auttera","Fraunces",Georgia,serif; font-weight:400; font-size:21px; letter-spacing:.02em; text-transform:none; line-height:1; vertical-align:-1px; margin-left:.15em; }
 .quote table{ font-size:11.5px; }
 .quote thead th{ padding:6px 9px; font-size:9px; }
 .quote tbody td{ padding:6px 9px; }
@@ -560,7 +554,7 @@ html.book-locked, html.book-locked body{ overflow:hidden; }
   .page{ padding:28px 24px 28px 38px; }
   .decision-inner{ padding:28px 24px 28px 38px; }
   .cover{ padding-left:38px; }
-  .streams, .svc-grid{ flex-direction:column; }
+  .streams{ flex-direction:column; }
   .swatches{ grid-template-columns:repeat(2,1fr); }
   .quote{ padding-top:18px; padding-bottom:14px; }
   .quote h2.title{ font-size:20px; margin-bottom:8px; }
@@ -656,9 +650,21 @@ const CHASE_SNOOZE_DAYS = 3;           // "Chased" keeps a quote out of Needs at
 const SNOOZE_OPTIONS = [[1, '1 day'], [3, '3 days'], [7, '1 week']];   // the Snooze menu
 const EXTEND_OPTIONS = [[7, '+7 days'], [14, '+14 days']];            // the Extend menu (plus "Pick a date")
 const TOAST_MS = 8000;                 // how long the "Undo" toast stays up
-const IMG_VERSION = 2;                 // bump when 1.png / 2.png / 3.png are replaced, so browsers fetch the new pictures
+const IMG_VERSION = 2;                 // bump when 1.png / 2.png / 3.png or the fonts in /fonts are replaced, so browsers fetch the new files
 const BRAND_FALLBACK = 'Floors for Living';   // used wherever the business name from Settings is empty
 const SETTINGS_WAIT_MS = 2500;         // how long the first screen waits for the settings row before using defaults
+
+// Self-hosted fonts for the Itemised Breakdown page (no CDN). The rules are added here, not in the stylesheet, so their URLs
+// carry the same ?v= as the page images and a replaced font file is never served from an old cache.
+// Singel (600) has £ and dashes; Auttera has NO £ or dashes, so it is only used for one fixed accent word.
+(function addBookletFonts(){
+  const st = document.createElement('style');
+  st.id = 'bookletFonts';
+  st.textContent =
+    `@font-face{ font-family:"Singel"; font-style:normal; font-weight:600; font-display:swap; src:url("/fonts/singel-semibold.otf?v=${IMG_VERSION}") format("opentype"); }` +
+    `@font-face{ font-family:"Auttera"; font-style:normal; font-weight:400; font-display:swap; src:url("/fonts/auttera.otf?v=${IMG_VERSION}") format("opentype"); }`;
+  document.head.appendChild(st);
+})();
 
 // Business settings live in the `settings` table (row id 1) and are edited on the Settings page.
 // These are the fallbacks used until that row loads, or if it can't be loaded.
@@ -2505,8 +2511,6 @@ document.addEventListener('keydown', e=>{
 });
 
 /* ---------------- CUSTOMER render ---------------- */
-const PAGE_TABS = ['Cover','About','Quote','Service','Decision'];
-
 async function renderCustomer(routeInfo){
   const stage = document.getElementById('custStage');
   let q;
@@ -2524,10 +2528,6 @@ async function renderCustomer(routeInfo){
     return;
   }
   if(!isPreview()) recordView(routeInfo.value);   // not awaited, errors swallowed inside
-  // Service page contact line: the business name from Settings (or "Floors for Living"), then whatever details have been filled in
-  const cb = CUSTOMER_BUSINESS;
-  const contactLines = `<b>${escapeHtml(brand)}</b>${cb.address ? ' — ' + escapeHtml(cb.address) : ''}`
-    + ([cb.phone, cb.email].filter(Boolean).length ? '<br>' + [cb.phone, cb.email].filter(Boolean).map(escapeHtml).join(' · ') : '');
   const {subtotal, vat, total} = calcTotals(q);
   const liRows = q.lineItems.filter(li=>li.product).map(li=>{
     const qty = parseFloat(li.qty), price=parseFloat(li.unitPrice)||0;
@@ -2563,20 +2563,11 @@ async function renderCustomer(routeInfo){
         </div>
 
         <div class="page quote dark-page" data-density="hard">
-          <div class="eyebrow">Your Quote</div><h2 class="title">Itemised breakdown</h2>
+          <div class="eyebrow">Your <span class="accent">Quote</span></div><h2 class="title">Itemised breakdown</h2>
           <div class="quotebox"><table><thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Unit Price</th><th class="num">Total</th></tr></thead><tbody>${liRows}</tbody></table></div>
           <div class="totals"><div><span>Subtotal</span><span>${money(subtotal)}</span></div><div><span>VAT (20%)</span><span>${money(vat)}</span></div><div class="grand"><span>Total</span><span>${money(total)}</span></div></div>
           <div class="note">${escapeHtml(q.notes)}</div>
         <div class="pageno">04</div></div>
-
-        <div class="page service dark-page" data-density="hard">
-          <div class="eyebrow">Service</div><h2 class="title">What's included &amp; next steps</h2>
-          <div class="svc-grid">
-            <div class="svc-col"><h3>Included</h3><ul><li>Delivery to site or collection</li><li>Professional fitting</li><li>Aftercare guidance</li><li>Standard warranty</li></ul></div>
-            <div class="svc-col"><h3>Next steps</h3><ul><li>Confirm your order</li><li>Book your fitting date</li><li>Site measure if required</li><li>Installation day</li></ul></div>
-          </div>
-          <div class="contact">${contactLines}</div>
-        <div class="pageno">05</div></div>
 
         <div class="page decision dark-page" id="decisionPage" data-density="hard"></div>
       </div>
@@ -2601,6 +2592,13 @@ function todayLondon(){
 function isExpired(q){ return !!q.validUntil && q.validUntil < todayLondon(); }
 function fmtDate(s){ if(!s) return '—'; const d = new Date(s+'T00:00:00'); return isNaN(d) ? s : d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
 
+// The shop's contact line at the foot of the Decision page: business name, phone, email (from get_business(), or "Floors for Living").
+// Every value is escaped, and anything that is empty is left out.
+function decisionFooterHtml(){
+  const cb = CUSTOMER_BUSINESS;
+  const details = [cb.phone, cb.email].filter(v=> v && v.trim()).map(v=> escapeHtml(v.trim())).join(' · ');
+  return `<div class="contact"><b>${escapeHtml(customerBrand())}</b>${details ? '<br>' + details : ''}</div><div class="pageno">05</div>`;
+}
 function renderDecisionPage(q){
   const el = document.getElementById('decisionPage');
   if(q.response){
@@ -2611,7 +2609,7 @@ function renderDecisionPage(q){
         ${cls==='accepted' ? "Thanks — we've got your confirmation. We'll be in touch to get things booked in." : "Thanks for letting us know."}
         ${q.response.reason ? `<div style="margin-top:10px; font-style:italic;">"${escapeHtml(q.response.reason)}"</div>` : ''}
       </div>
-    </div></div>`;
+    </div></div>${decisionFooterHtml()}`;
     return;
   }
   el.innerHTML = `
@@ -2628,6 +2626,7 @@ function renderDecisionPage(q){
       </div>
       <div class="decision-error" id="decisionError" role="alert"></div>
     </div>
+    ${decisionFooterHtml()}
   `;
   document.getElementById('acceptBtn').addEventListener('click', ()=> submitDecision(q, 'accepted', ''));
   document.getElementById('declineBtn').addEventListener('click', ()=>{
