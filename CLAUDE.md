@@ -14,6 +14,9 @@ A flip-book style digital quote tool for flooring customers (Floors for Living /
 | `1.png` `2.png` `3.png` | Flipbook cover, about and how-we-work pages (images with text baked in). Bump `IMG_VERSION` in `index.html` when you replace them. |
 | `floors-for-living-logo.png` | Logo (light artwork on black; shown with `mix-blend-mode:lighten` on dark backgrounds). `DC Flooring Logo.png` is not used by the app. |
 | `vendor/` | StPageFlip 2.0.7 (`page-flip.browser.js`), served locally on purpose. See `vendor/README.md`. |
+| `fonts/` | Self-hosted Montserrat and Inter (woff2, OFL licences) for the admin. See `fonts/README.md`. |
+| `design-check/` | Screenshots of every admin screen (390px and 1440px, dark and light), the contrast report, and `tests/` (Playwright scripts with mocked Supabase). See `design-check/README.md`. |
+| `design-system/`, `.claude/skills/` | Output of the UI UX Pro Max skill. Its palette and fonts are **not** used (the admin theme below overrides them); use it for spacing, states, accessibility and chart guidance. |
 | `supabase/sql-log.sql` | **The source of truth for the database.** Numbered, dated sections, run by hand in the Supabase SQL Editor. |
 | `supabase/security/` | The original lock-down scripts (blocks A/B/C) and their README. Later changes are in `sql-log.sql`. |
 | `supabase/functions/notify-decision/` | Edge Function that emails when a quote becomes accepted or declined (database webhook on `quotes` UPDATE). See `DEPLOY.md`. |
@@ -22,17 +25,21 @@ A flip-book style digital quote tool for flooring customers (Floors for Living /
 Routes: `/q/<slug>` is the customer flipbook (`?preview=1` is the admin's preview and is not counted as a view). Everything else is the admin (`#/dashboard`, `#/quotes`, `#/reminders`, `#/settings`).
 
 ## Design system (use these, do not invent new ones)
-**Colour tokens** (`:root` in `index.html`):
-`--bark #241a14`, `--walnut #3c2c22`, `--oak #a97e4f`, `--brass #b08d57` (the accent), `--linen #f3ede1`, `--linen-soft rgba(243,237,225,.62)`, `--paper #faf6ee` (page background), `--ink #2a2019`, `--ink-soft #6b5c4d`, `--line #d9cbb2`, `--ok #4c6b4f`, `--bad #a1493f`, `--dark #272727`.
-The dark pages (Quote, Service, Decision) and the admin sidebar use `#272727`, borders `#3d3d3d`, inputs `#1d1d1d`. Status pills: accepted `#dbe6dc`, declined `#f0dcd9`, sent `#e0d3ba`, expired `#efe0c8`.
+There are two looks. They must not leak into each other.
 
-**Fonts** (Google Fonts, `@import` at the top): `Fraunces` (serif, headings and titles), `Work Sans` (body), `IBM Plex Mono` (small uppercase labels, numbers, totals), `Poppins` (titles on the dark pages).
+### Admin (dark by default, light option)
+Everything is scoped to `html[data-theme="dark"|"light"]`, which is set only on the admin side (before first paint, from `localStorage` `dcf.theme`). It is removed on customer pages, including "Preview as customer". New admin CSS goes in the "ADMIN THEME" block and must start with `html[data-theme]`.
+- **Tokens** (`--bg --panel --tile --tile-active --border --text --muted --accent --accent-hover --on-accent --accent-text --focus`): dark `#1c1c1c #272727 #303030 #3a3a3a #3a3a3a #f5f5f5 #a8a8a8 #b08d57 #c29d65 #1c1c1c #c9a66f #b08d57`; light `#f2f2ef #ffffff #f6f6f3 #eeeeea #e2e2dd #1c1c1c #6b6b66 #b08d57 #c29d65 #1c1c1c #7a5a2c #7a5a2c`. Status colours: `--green #5fae7a / --red #d0675f / --amber #d9a441` for fills, dots and borders (dark; the light values are darker) and `--green-text --red-text --amber-text` when used as text. Other: `--control-border` (form fields, 3:1), `--red-solid` (destructive buttons), `--chart-sent --chart-won`.
+- **Shape and spacing:** `--radius-panel 20px`, `--radius-tile 14px`, `--radius-pill 999px`; `--space-0..5` = 4, 8, 16, 24, 32, 48px (an 8px grid, 16 and 24 are the usual gaps); `--target 44px` minimum touch target. No gradients, glows or heavy shadows.
+- **Fonts:** `--font-display` Montserrat 600/700 (headings, numbers, small uppercase labels), `--font-body` Inter 400/500/600. Money and counts use tabular figures. Text is never under 12px.
+- **Pieces:** panels (`--panel`, 20px) holding inner tiles (`--tile`, 14px); the sidebar (logo panel, collapse chevron, nav panel with a light active pill, theme toggle and Log out; a bottom bar under 800px); segmented period control; brass pill buttons; status pills carry a dot as well as a colour; a 2px `--focus` outline on keyboard focus.
+- **Dashboard:** KPI row (Potential revenue is the brass highlight tile), Needs attention (tablist) next to the selected quote's detail panel (desktop only; a phone opens the full-screen quote), and a plain-SVG weekly chart. The numbers come from `dashboardStats()`, `attentionLists()` and `weeklySeries()`: change how they look, not what they say.
 
-**Book:** pages are 480 x 672 (portrait, stretches 260-700 wide). Page padding is `26px 22px 22px 32px`; page background `--paper`, border `1px solid --line`, radius 6px, `overflow:hidden auto`.
-
-**Buttons:** admin `.btn` is `10px 18px`, radius 4px, 13px/600; `.btn-primary` is brass with white text (hover `--oak`); `.btn-ghost` is outlined (`--line`, hover brass). Customer `.dbtn` (last page) has radius 5px, `min-height:56px`; the Sign button is `--ok` green, Decline is the outlined red secondary. The signing dialog uses `.sg-btn` (primary brass, secondary brass outline, 56px+).
-
-**Cards:** `.qcard` (white, `1px --line`, radius 5), `.stream` and signed card (gradient `#fff` to `--paper`, `1px --line`, radius 4), `.quotebox` (`1px --line`, radius 4), `.editor-summary` (`--paper`, radius 6). Soft shadow used for raised cards: `0 10px 25px -10px rgba(0,0,0,.5)`. Spacing is mostly 12-16px gaps.
+### Customer booklet (leave alone)
+**Colour tokens** (`:root`): `--bark #241a14`, `--walnut #3c2c22`, `--oak #a97e4f`, `--brass #b08d57`, `--linen #f3ede1`, `--linen-soft rgba(243,237,225,.62)`, `--paper #faf6ee` (page background), `--ink #2a2019`, `--ink-soft #6b5c4d`, `--line #d9cbb2`, `--ok #4c6b4f`, `--bad #a1493f`, `--dark #272727`. The dark pages (Quote, Service, Decision) use `#272727`, borders `#3d3d3d`, inputs `#1d1d1d`.
+**Fonts** (Google Fonts, `@import` at the top; the booklet needs it): `Fraunces` (serif titles), `Work Sans` (body), `IBM Plex Mono` (labels, numbers), `Poppins` (dark-page titles).
+**Book:** pages are 480 x 672 (portrait, stretches 260-700 wide). Page padding `26px 22px 22px 32px`; page background `--paper`, border `1px solid --line`, radius 6px, `overflow:hidden auto`.
+**Buttons:** customer `.dbtn` (last page) has radius 5px, `min-height:56px`; Sign is `--ok` green, Decline is the outlined red secondary. The signing dialog uses `.sg-btn` (primary brass, secondary brass outline, 56px+). Cards: `.stream` and the signed card (gradient `#fff` to `--paper`, `1px --line`, radius 4), raised-card shadow `0 10px 25px -10px rgba(0,0,0,.5)`.
 
 ## Supabase
 Project URL and the **publishable** key are in `index.html`. Admins sign in with Supabase Auth (email + password); public sign-ups and anonymous sign-ins must stay off.
@@ -61,10 +68,10 @@ Change the database by adding a **new numbered, dated section at the bottom of `
 2. **Never remove or change the Decline flow** unless explicitly asked.
 3. **Keep customer pages simple for older customers:** text at least 18px, buttons at least 56px tall, high contrast, plain words. (Some older flipbook pages use smaller text; the zoom button covers those. New customer-facing UI must meet the rule.)
 4. **Customer-facing flipbook pages use the zoom button for zooming. Page-turn swipes must only respond to single-finger horizontal swipes, never to pinch gestures.**
-5. **Reuse the design tokens above.** Do not hardcode new colours or fonts.
+5. **Reuse the design tokens above.** Do not hardcode new colours or fonts. Admin changes use the admin tokens under `html[data-theme]`; never set `data-theme` on a customer page, and never let an admin change alter the booklet or the print layout (compare screenshots before and after).
 6. **No secrets in the repo.** Only the publishable Supabase key belongs in `index.html`. Never commit a service-role key, a Resend key or a webhook secret.
 7. **Always open a pull request. Never push to `main`.**
 8. Keep `index.html` and `404.html` identical, and keep the SQL log up to date.
 
 ## Testing
-No build or test suite. Serve the folder with a single-page fallback (`npx serve -s .`) and open `/q/<slug>`; it talks to the live Supabase, so use a test quote. For automated checks, Playwright with the Supabase `rpc` calls mocked works well (the flipbook, swipes, zoom view and signing dialog were all tested that way).
+No build step. `design-check/tests/` has Playwright scripts that run the app against mocked Supabase data (see `design-check/README.md`): old-vs-new dashboard numbers, booklet pixel comparison, an off-token colour audit, a contrast check that reads the real tokens, and a keyboard/behaviour walkthrough. To look at the app by hand, serve the folder with a single-page fallback (`npx serve -s .`) and open `/q/<slug>`; it talks to the live Supabase, so use a test quote. For automated checks, Playwright with the Supabase `rpc` calls mocked works well (the flipbook, swipes, zoom view and signing dialog were all tested that way).

@@ -1,0 +1,100 @@
+
+=== dark ===
+pass  15.63  (need 4.5)  text on bg
+pass   7.17  (need 4.5)  muted on bg
+pass   7.44  (need 4.5)  accent-text on bg
+pass  13.70  (need 4.5)  text on panel
+pass   6.28  (need 4.5)  muted on panel
+pass   6.52  (need 4.5)  accent-text on panel
+pass  12.11  (need 4.5)  text on tile
+pass   5.55  (need 4.5)  muted on tile
+pass   5.76  (need 4.5)  accent-text on tile
+pass  10.43  (need 4.5)  text on tileActive
+pass   4.78  (need 4.5)  muted on tileActive
+pass   4.97  (need 4.5)  accent-text on tileActive
+pass   7.32  (need 4.5)  green-text on panel
+pass   6.46  (need 4.5)  green-text on tile
+pass   5.57  (need 4.5)  green-text on tileActive
+pass   6.44  (need 4.5)  red-text on panel
+pass   5.69  (need 4.5)  red-text on tile
+pass   4.90  (need 4.5)  red-text on tileActive
+pass   7.66  (need 4.5)  amber-text on panel
+pass   6.77  (need 4.5)  amber-text on tile
+pass   5.83  (need 4.5)  amber-text on tileActive
+pass  10.50  (need 4.5)  pill: normal text on green pill bg over panel
+pass   9.35  (need 4.5)  pill: normal text on green pill bg over tile
+pass  11.21  (need 4.5)  pill: normal text on red pill bg over panel
+pass  10.00  (need 4.5)  pill: normal text on red pill bg over tile
+pass  10.12  (need 4.5)  pill: normal text on amber pill bg over panel
+pass   9.00  (need 4.5)  pill: normal text on amber pill bg over tile
+pass   6.12  (need 4.5)  destructive button: white on red-solid
+pass   7.35  (need 4.5)  red-text on bg (errors on the login screen)
+pass   5.51  (need 3)  focus ring vs bg
+pass   4.83  (need 3)  focus ring vs panel
+pass   4.27  (need 3)  focus ring vs tile
+pass   3.68  (need 3)  focus ring vs tileActive
+pass   5.56  (need 3)  status dot/border (green) vs panel
+pass   4.12  (need 3)  status dot/border (red) vs panel
+pass   6.64  (need 3)  status dot/border (amber) vs panel
+pass   5.51  (need 4.5)  on-accent text on accent (buttons, active tab, KPI)
+pass   6.74  (need 4.5)  on-accent text on accent-hover
+pass  15.63  (need 4.5)  nav active text on pill
+pass   5.55  (need 4.5)  muted text on nav hover (tile)
+pass   4.70  (need 4.5)  red on bg (login error)
+pass   4.83  (need 3)  accent fill (active tab / period / nav pill) vs panel
+pass   3.48  (need 3)  form-field border vs panel
+pass   3.07  (need 3)  form-field border vs tile
+pass   4.33  (need 3)  chart: sent bars vs panel
+pass   4.83  (need 3)  chart: accepted bars vs panel
+pass   1.12  (need 1.1)  chart: sent vs accepted bars (neighbours)
+
+=== light ===
+pass  15.19  (need 4.5)  text on bg
+pass   4.78  (need 4.5)  muted on bg
+pass   5.63  (need 4.5)  accent-text on bg
+pass  17.04  (need 4.5)  text on panel
+pass   5.36  (need 4.5)  muted on panel
+pass   6.31  (need 4.5)  accent-text on panel
+pass  15.74  (need 4.5)  text on tile
+pass   4.95  (need 4.5)  muted on tile
+pass   5.83  (need 4.5)  accent-text on tile
+pass  14.65  (need 4.5)  text on tileActive
+pass   4.61  (need 4.5)  muted on tileActive
+pass   5.43  (need 4.5)  accent-text on tileActive
+pass   5.23  (need 4.5)  green-text on panel
+pass   4.83  (need 4.5)  green-text on tile
+pass   4.50  (need 4.5)  green-text on tileActive
+pass   5.89  (need 4.5)  red-text on panel
+pass   5.44  (need 4.5)  red-text on tile
+pass   5.06  (need 4.5)  red-text on tileActive
+pass   5.91  (need 4.5)  amber-text on panel
+pass   5.46  (need 4.5)  amber-text on tile
+pass   5.08  (need 4.5)  amber-text on tileActive
+pass  14.53  (need 4.5)  pill: normal text on green pill bg over panel
+pass  13.49  (need 4.5)  pill: normal text on green pill bg over tile
+pass  14.68  (need 4.5)  pill: normal text on red pill bg over panel
+pass  13.61  (need 4.5)  pill: normal text on red pill bg over tile
+pass  14.41  (need 4.5)  pill: normal text on amber pill bg over panel
+pass  13.37  (need 4.5)  pill: normal text on amber pill bg over tile
+pass   5.89  (need 4.5)  destructive button: white on red-solid
+pass   5.25  (need 4.5)  red-text on bg (errors on the login screen)
+pass   5.63  (need 3)  focus ring vs bg
+pass   6.31  (need 3)  focus ring vs panel
+pass   5.83  (need 3)  focus ring vs tile
+pass   5.43  (need 3)  focus ring vs tileActive
+pass   5.23  (need 3)  status dot/border (green) vs panel
+pass   5.89  (need 3)  status dot/border (red) vs panel
+pass   5.91  (need 3)  status dot/border (amber) vs panel
+pass   5.51  (need 4.5)  on-accent text on accent (buttons, active tab, KPI)
+pass   6.74  (need 4.5)  on-accent text on accent-hover
+pass   5.51  (need 4.5)  nav active text on pill
+pass   4.95  (need 4.5)  muted text on nav hover (tile)
+pass   5.25  (need 4.5)  red on bg (login error)
+pass   3.09  (need 3)  accent fill (active tab / period / nav pill) vs panel
+pass   3.43  (need 3)  form-field border vs panel
+pass   3.16  (need 3)  form-field border vs tile
+pass   3.43  (need 3)  chart: sent bars vs panel
+pass   4.00  (need 3)  chart: accepted bars vs panel
+pass   1.17  (need 1.1)  chart: sent vs accepted bars (neighbours)
+
+FAILS: 0
