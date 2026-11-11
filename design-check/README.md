@@ -16,7 +16,7 @@ npm i -D playwright            # or set PLAYWRIGHT_PATH / CHROME_PATH to an exis
 git worktree add ../dcf-old origin/main~N   # a checkout of the OLD version, only needed for cmp.js and booklet.js
 cd design-check/tests
 OLD=../../../dcf-old node cmp.js       # every dashboard number, old code vs new code, 4 periods x (full, empty) data
-OLD=../../../dcf-old node booklet.js   # customer booklet (6 pages, sign dialog, zoom view) and print HTML: pixel-identical to before?
+OLD=../../../dcf-old node booklet.js   # customer booklet (every page, sign dialog, zoom view) and print HTML: pixel-identical to before?
 node audit.js      # off-token backgrounds / text / borders / fonts, and text under 12px, on every admin screen and theme
 node contrast.js   # contrast of every token pair
 node interact.js   # keyboard walkthrough, tabs and rows, actions and Undo, theme and sidebar memory, mobile layout and 44px targets

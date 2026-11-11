@@ -2,7 +2,7 @@
 
 ## What this is
 A flip-book style digital quote tool for flooring customers (Floors for Living / DC Flooring).
-- **Customer side:** a quote link (`/q/<slug>`) opens a page-turning flipbook: cover, about, how we work, itemised quote, service, then a last page to **sign to accept** or **decline**.
+- **Customer side:** a quote link (`/q/<slug>`) opens a page-turning flipbook: five pages: cover, about, how we work, itemised quote (04), then the Decision page (05) to **sign to accept** or **decline**, with the shop's name, phone and email at the foot.
 - **Admin side:** the same app, behind a Supabase email + password login. A quote builder, a quotes list, reminders, a dashboard and a Settings page.
 - **Hosting:** static site on GitHub Pages (custom domain in `CNAME`). The database is Supabase (free project). There is no build step and no framework.
 
@@ -11,7 +11,7 @@ A flip-book style digital quote tool for flooring customers (Floors for Living /
 | --- | --- |
 | `index.html` | The whole app: CSS, HTML and JS in one file (customer flipbook, admin, signing dialog, print view). |
 | `404.html` | **Must stay byte-identical to `index.html`** (`cp index.html 404.html`). GitHub Pages serves it for `/q/<slug>` links, which is how the single page handles those routes. |
-| `1.png` `2.png` `3.png` | Flipbook cover, about and how-we-work pages (images with text baked in). Bump `IMG_VERSION` in `index.html` when you replace them. |
+| `1.webp` `2.webp` `3.png` | Flipbook cover, about and how-we-work pages (1000x1400, text baked in). Bump `IMG_VERSION` in `index.html` when you replace them. |
 | `floors-for-living-logo.png` | Logo (light artwork on black; shown with `mix-blend-mode:lighten` on dark backgrounds). `DC Flooring Logo.png` is not used by the app. |
 | `vendor/` | StPageFlip 2.0.7 (`page-flip.browser.js`), served locally on purpose. See `vendor/README.md`. |
 | `fonts/` | Self-hosted Montserrat and Inter (woff2, OFL licences) for the admin. See `fonts/README.md`. |
@@ -36,7 +36,7 @@ Everything is scoped to `html[data-theme="dark"|"light"]`, which is set only on 
 - **Dashboard:** KPI row (Potential revenue is the brass highlight tile), Needs attention (tablist) next to the selected quote's detail panel (desktop only; a phone opens the full-screen quote), and a plain-SVG weekly chart. The numbers come from `dashboardStats()`, `attentionLists()` and `weeklySeries()`: change how they look, not what they say.
 
 ### Customer booklet (leave alone)
-**Colour tokens** (`:root`): `--bark #241a14`, `--walnut #3c2c22`, `--oak #a97e4f`, `--brass #b08d57`, `--linen #f3ede1`, `--linen-soft rgba(243,237,225,.62)`, `--paper #faf6ee` (page background), `--ink #2a2019`, `--ink-soft #6b5c4d`, `--line #d9cbb2`, `--ok #4c6b4f`, `--bad #a1493f`, `--dark #272727`. The dark pages (Quote, Service, Decision) use `#272727`, borders `#3d3d3d`, inputs `#1d1d1d`.
+**Colour tokens** (`:root`): `--bark #241a14`, `--walnut #3c2c22`, `--oak #a97e4f`, `--brass #b08d57`, `--linen #f3ede1`, `--linen-soft rgba(243,237,225,.62)`, `--paper #faf6ee` (page background), `--ink #2a2019`, `--ink-soft #6b5c4d`, `--line #d9cbb2`, `--ok #4c6b4f`, `--bad #a1493f`, `--dark #272727`. The dark pages (Quote, Decision) use `#272727`, borders `#3d3d3d`, inputs `#1d1d1d`.
 **Fonts** (Google Fonts, `@import` at the top; the booklet needs it): `Fraunces` (serif titles), `Work Sans` (body), `IBM Plex Mono` (labels, numbers), `Poppins` (dark-page titles).
 **Book:** pages are 480 x 672 (portrait, stretches 260-700 wide). Page padding `26px 22px 22px 32px`; page background `--paper`, border `1px solid --line`, radius 6px, `overflow:hidden auto`.
 **Buttons:** customer `.dbtn` (last page) has radius 5px, `min-height:56px`; Sign is `--ok` green, Decline is the outlined red secondary. The signing dialog uses `.sg-btn` (primary brass, secondary brass outline, 56px+). Cards: `.stream` and the signed card (gradient `#fff` to `--paper`, `1px --line`, radius 4), raised-card shadow `0 10px 25px -10px rgba(0,0,0,.5)`.
