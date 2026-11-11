@@ -392,14 +392,6 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .swatch .cap{ padding:8px 9px 10px; }
 .swatch .cap .p{ font-family:'Fraunces',serif; font-weight:600; font-size:12.5px; }
 .swatch .cap .s{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--ink-soft); margin-top:2px; }
-.svc-grid{ display:flex; gap:24px; margin-top:4px; }
-.svc-col{ flex:1; }
-.svc-col h3{ font-family:'Fraunces',serif; font-size:14px; margin:0 0 9px; }
-.svc-col ul{ margin:0; padding-left:0; list-style:none; }
-.svc-col li{ font-size:12.5px; color:var(--ink-soft); line-height:1.65; padding-left:15px; position:relative; }
-.svc-col li::before{ content:"—"; position:absolute; left:0; color:var(--brass); }
-.contact{ margin-top:auto; padding-top:14px; border-top:1px solid var(--line); font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); line-height:1.85; }
-.contact b{ color:var(--ink); font-weight:500; }
 .decision{ justify-content:center; align-items:center; text-align:center; }
 /* StPageFlip forces inline display:block on the page element mid-flip, which defeats the
    .decision flex-centering above (justify/align-items only work on a flex container). Centering
@@ -407,6 +399,12 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .decision-inner{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:26px 22px 22px 32px; box-sizing:border-box; overflow-y:auto; }
 .decision-inner > :first-child{ margin-top:auto; }
 .decision-inner > :last-child{ margin-bottom:auto; }
+/* the shop's name, phone and email at the foot of the Decision page (the only place the customer sees them) */
+.decision-inner > .decision-contact{ margin:auto 0 18px; }
+.decision-contact{ width:100%; max-width:380px; padding-top:14px; border-top:1px solid #3d3d3d; font-family:'Work Sans',sans-serif; font-size:18px; line-height:1.5; color:var(--linen-soft); overflow-wrap:anywhere; }
+.decision-contact b{ display:block; color:var(--linen); font-weight:600; }
+.decision-contact a{ color:var(--linen); }
+.decision-contact .dc-sep{ color:var(--brass); }
 .decision h2.title{ margin-bottom:8px; }
 .decision p.lead{ font-size:13.5px; color:var(--ink-soft); max-width:44ch; margin:0 0 24px; }
 .decision-btns{ display:flex; flex-direction:column; gap:14px; width:100%; max-width:380px; }
@@ -507,7 +505,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 @keyframes sgOut{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateY(14px); } }
 @keyframes sgStepIn{ from{ opacity:0; transform:translateX(var(--sg-from,18px)); } to{ opacity:1; transform:none; } }
 
-/* ===== dark content pages: Quote / Service / Decision ===== */
+/* ===== dark content pages: Quote / Decision ===== */
 .dark-page{ background:#272727; border-color:#3d3d3d; color:var(--linen); }
 .dark-page::before{ background:linear-gradient(to right, rgba(0,0,0,.35), transparent); }
 .dark-page .eyebrow{ font-family:'Poppins',sans-serif; font-weight:500; letter-spacing:.16em; color:var(--brass); }
@@ -525,10 +523,6 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .dark-page .swatch .cap .p{ color:var(--linen); }
 .dark-page .swatch .cap .s{ color:var(--linen-soft); }
 
-.dark-page .svc-col h3{ color:var(--brass); }
-.dark-page .svc-col li{ color:var(--linen-soft); }
-.dark-page .contact{ color:var(--linen-soft); border-top-color:#3d3d3d; }
-.dark-page .contact b{ color:var(--linen); }
 
 .dark-page.decision p.lead{ color:var(--linen-soft); }
 .dark-page .decided-msg{ color:var(--linen-soft); }
@@ -536,12 +530,6 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
 .dark-page .dbtn.decline:hover{ background:#c96b5c; color:#fff; }
 .dark-page .decline-form textarea{ background:#1d1d1d; border-color:#3d3d3d; color:var(--linen); }
 
-/* tightened spacing so Included/Next steps/contact all fit without scrolling */
-.service .svc-grid{ gap:18px; margin-top:2px; }
-.service .svc-col h3{ font-size:12px; margin:0 0 6px; }
-.service .svc-col li{ font-size:11px; line-height:1.5; padding-left:12px; margin-bottom:1px; }
-.service .contact{ padding-top:10px; font-size:9.5px; line-height:1.55; }
-.service h2.title{ margin:0 0 10px; }
 
 /* tightened spacing so long itemised breakdowns (8-10+ rows) keep totals visible;
    .page already has overflow:hidden auto as a scroll fallback beyond that */
@@ -644,7 +632,7 @@ td.num, th.num{ text-align:right; font-family:'IBM Plex Mono',monospace; }
   .page{ padding:28px 24px 28px 38px; }
   .decision-inner{ padding:28px 24px 28px 38px; }
   .cover{ padding-left:38px; }
-  .streams, .svc-grid{ flex-direction:column; }
+  .streams{ flex-direction:column; }
   .swatches{ grid-template-columns:repeat(2,1fr); }
   .quote{ padding-top:18px; padding-bottom:14px; }
   .quote h2.title{ font-size:20px; margin-bottom:8px; }
@@ -1159,7 +1147,7 @@ const CHASE_SNOOZE_DAYS = 3;           // "Chased" keeps a quote out of Needs at
 const SNOOZE_OPTIONS = [[1, '1 day'], [3, '3 days'], [7, '1 week']];   // the Snooze menu
 const EXTEND_OPTIONS = [[7, '+7 days'], [14, '+14 days']];            // the Extend menu (plus "Pick a date")
 const TOAST_MS = 8000;                 // how long the "Undo" toast stays up
-const IMG_VERSION = 2;                 // bump when 1.png / 2.png / 3.png are replaced, so browsers fetch the new pictures
+const IMG_VERSION = 3;                 // bump when 1.webp / 2.webp / 3.png are replaced, so browsers fetch the new pictures
 const BRAND_FALLBACK = 'Floors for Living';   // used wherever the business name from Settings is empty
 const SETTINGS_WAIT_MS = 2500;         // how long the first screen waits for the settings row before using defaults
 
@@ -3233,7 +3221,7 @@ document.addEventListener('keydown', e=>{
 });
 
 /* ---------------- CUSTOMER render ---------------- */
-const PAGE_TABS = ['Cover','About','Quote','Service','Decision'];
+const PAGE_TABS = ['Cover','About','How we work','Quote','Decision'];
 
 async function renderCustomer(routeInfo){
   const stage = document.getElementById('custStage');
@@ -3252,10 +3240,6 @@ async function renderCustomer(routeInfo){
     return;
   }
   if(!isPreview()) recordView(routeInfo.value);   // not awaited, errors swallowed inside
-  // Service page contact line: the business name from Settings (or "Floors for Living"), then whatever details have been filled in
-  const cb = CUSTOMER_BUSINESS;
-  const contactLines = `<b>${escapeHtml(brand)}</b>${cb.address ? ' — ' + escapeHtml(cb.address) : ''}`
-    + ([cb.phone, cb.email].filter(Boolean).length ? '<br>' + [cb.phone, cb.email].filter(Boolean).map(escapeHtml).join(' · ') : '');
   const {subtotal, vat, total} = calcTotals(q);
   const liRows = q.lineItems.filter(li=>li.product).map(li=>{
     const qty = parseFloat(li.qty), price=parseFloat(li.unitPrice)||0;
@@ -3271,7 +3255,7 @@ async function renderCustomer(routeInfo){
       <div id="book">
 
         <div class="page img-page" data-density="hard">
-          <img class="page-bg" src="${siteBase()}/1.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — cover">
+          <img class="page-bg" src="${siteBase()}/1.webp?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — cover">
           <div class="cover-fields">
             <div class="cf-name">${escapeHtml(q.customerName)||'—'}</div>
             <div class="cf-ref">Ref: ${escapeHtml(q.ref)}</div>
@@ -3280,7 +3264,7 @@ async function renderCustomer(routeInfo){
         </div>
 
         <div class="page img-page" data-density="hard">
-          <img class="page-bg" src="${siteBase()}/2.png?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — about">
+          <img class="page-bg" src="${siteBase()}/2.webp?v=${IMG_VERSION}" alt="${escapeHtml(brand)} — about">
         </div>
 
         <div class="page img-page" data-density="hard">
@@ -3293,15 +3277,6 @@ async function renderCustomer(routeInfo){
           <div class="totals"><div><span>Subtotal</span><span>${money(subtotal)}</span></div><div><span>VAT (20%)</span><span>${money(vat)}</span></div><div class="grand"><span>Total</span><span>${money(total)}</span></div></div>
           <div class="note">${escapeHtml(q.notes)}</div>
         <div class="pageno">04</div></div>
-
-        <div class="page service dark-page" data-density="hard">
-          <div class="eyebrow">Service</div><h2 class="title">What's included &amp; next steps</h2>
-          <div class="svc-grid">
-            <div class="svc-col"><h3>Included</h3><ul><li>Delivery to site or collection</li><li>Professional fitting</li><li>Aftercare guidance</li><li>Standard warranty</li></ul></div>
-            <div class="svc-col"><h3>Next steps</h3><ul><li>Confirm your order</li><li>Book your fitting date</li><li>Site measure if required</li><li>Installation day</li></ul></div>
-          </div>
-          <div class="contact">${contactLines}</div>
-        <div class="pageno">05</div></div>
 
         <div class="page decision dark-page" id="decisionPage" data-density="hard"></div>
       </div>
@@ -3339,6 +3314,19 @@ function fmtSignedDate(iso, withTime){
   return d.toLocaleString('en-GB', o);
 }
 
+// Contact line at the foot of the Decision page: the business name from get_business() (or "Floors for Living"),
+// then the phone and email if they have been filled in. Every value is escaped; empty fields are left out.
+function decisionContactHtml(){
+  const cb = CUSTOMER_BUSINESS;
+  const phone = (cb.phone || '').trim(), email = (cb.email || '').trim();
+  const tel = phone.replace(/[^\d+]/g, '');
+  const bits = [];
+  if(phone) bits.push(tel ? `<a href="tel:${escapeHtml(tel)}">${escapeHtml(phone)}</a>` : escapeHtml(phone));
+  if(email) bits.push(`<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`);
+  return `<div class="decision-contact"><b>${escapeHtml(customerBrand())}</b>${bits.join('<span class="dc-sep" aria-hidden="true"> · </span>')}</div>`;
+}
+const DECISION_PAGENO = '<div class="pageno">05</div>';
+
 function renderDecisionPage(q, signed){
   const el = document.getElementById('decisionPage');
   if(q.response){
@@ -3350,7 +3338,7 @@ function renderDecisionPage(q, signed){
         ${q.response.reason ? `<div style="margin-top:10px; font-style:italic;">"${escapeHtml(q.response.reason)}"</div>` : ''}
       </div>
       ${cls==='accepted' ? '<div class="signed-box" id="signedBox" hidden></div>' : ''}
-    </div></div>`;
+    </div>${decisionContactHtml()}</div>${DECISION_PAGENO}`;
     if(cls === 'accepted') showSignedBox(q, signed);
     return;
   }
@@ -3368,7 +3356,8 @@ function renderDecisionPage(q, signed){
       </div>
       <div class="decision-error" id="decisionError" role="alert"></div>
       ${phoneLineHtml('phone-line')}
-    </div>
+      ${decisionContactHtml()}
+    </div>${DECISION_PAGENO}
   `;
   document.getElementById('signBtn').addEventListener('click', ()=> openSignModal(q));
   document.getElementById('declineBtn').addEventListener('click', ()=>{

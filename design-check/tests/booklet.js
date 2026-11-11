@@ -4,7 +4,8 @@ async function shoot(root, port, vw, vh, tag) {
   const t = await start({ root, port, quotes: seed(), viewport: { width: vw, height: vh }, session: false });
   const p = t.page; const shots = [];
   await p.goto(`http://localhost:${port}/q/slug100005`); await p.waitForSelector('#book'); await p.waitForTimeout(900);
-  for (let i = 0; i < 6; i++) {
+  const n = await p.evaluate(() => document.querySelectorAll('.dot').length);
+  for (let i = 0; i < n; i++) {
     await p.evaluate(i => document.querySelector('.dot[data-i="' + i + '"]').click(), i); await p.waitForTimeout(1400);
     shots.push(await p.screenshot());
   }
@@ -23,7 +24,7 @@ async function shoot(root, port, vw, vh, tag) {
   for (const [vw, vh] of [[390, 844], [1440, 900]]) {
     const a = await shoot(process.env.OLD, 8221, vw, vh), b = await shoot(REPO, 8221, vw, vh);
     const same = a.shots.length === b.shots.length && a.shots.every((s, i) => s.equals(b.shots[i]));
-    console.log(`${vw}px: ${a.shots.length} screens (6 pages, sign dialog, zoom view) pixel-identical: ${same}; print HTML identical: ${a.print === b.print}; errors: ${JSON.stringify(b.errs)}`);
+    console.log(`${vw}px: ${a.shots.length} screens (pages, sign dialog, zoom view) pixel-identical: ${same}; print HTML identical: ${a.print === b.print}; errors: ${JSON.stringify(b.errs)}`);
     if (!same) { bad++; a.shots.forEach((s, i) => { if (!s.equals(b.shots[i])) console.log('  differs: screen', i); }); }
     if (a.print !== b.print) bad++;
   }

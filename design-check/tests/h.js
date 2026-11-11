@@ -44,7 +44,7 @@ async function start({ root, port, quotes, viewport = { width: 1440, height: 900
   const srv = http.createServer((req, res) => {
     const u = req.url.split('?')[0]; let f = path.join(root, decodeURIComponent(u));
     if (u.startsWith('/q/') || !fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(root, 'index.html');
-    res.setHeader('Content-Type', { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.woff2': 'font/woff2' }[path.extname(f)] || 'application/octet-stream');
+    res.setHeader('Content-Type', { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2' }[path.extname(f)] || 'application/octet-stream');
     fs.createReadStream(f).pipe(res);
   }).listen(port);
   const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}).catch(() => chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' }));
@@ -71,6 +71,11 @@ async function start({ root, port, quotes, viewport = { width: 1440, height: 900
         const fn = rest.slice(4); const body = JSON.parse(route.request().postData() || '{}'); store.calls.push({ fn, body });
         if (fn === 'get_business') return route.fulfill({ status: 200, headers: cors, body: JSON.stringify({ business_name: 'Floors for Living', phone: '01632 960123', email: 'hello@example.com', address: '1 High Street' }) });
         if (fn === 'get_quote') { const r = store.quotes.find(x => x.short_slug === body.p_slug); return route.fulfill({ status: 200, headers: cors, body: JSON.stringify(r || null) }); }
+        // accept / decline: update the stored quote the way the real functions do, so the page can read the result back
+        const target = body.p_slug && store.quotes.find(x => x.short_slug === body.p_slug && !x.response);
+        if (fn === 'submit_decision' && target) { target.status = body.p_decision; target.response = { decision: body.p_decision, reason: body.p_reason || '', respondedAt: NOW.toISOString() }; store.signed = null; return route.fulfill({ status: 200, headers: cors, body: 'true' }); }
+        if (fn === 'sign_quote' && target) { target.status = 'accepted'; target.response = { decision: 'accepted', reason: '', respondedAt: NOW.toISOString() }; store.signed = { full_name: body.p_name, signature: body.p_signature, signed_at: NOW.toISOString() }; return route.fulfill({ status: 200, headers: cors, body: 'true' }); }
+        if (fn === 'get_signature' && store.signed) return route.fulfill({ status: 200, headers: cors, body: JSON.stringify(store.signed) });
         return route.fulfill({ status: 200, headers: cors, body: 'null' });
       }
       if (rest.startsWith('settings')) return route.fulfill({ status: 200, headers: cors, body: JSON.stringify([store.settings]) });
